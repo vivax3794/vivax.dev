@@ -6,6 +6,7 @@
             </div>
         </QBtn>
         <QToolbarTitle class="text-h4">
+            !!!Under construction!!!
         </QToolbarTitle>
         <QBtn flat :icon="matPalette" to="/art" size="lg">Art</QBtn>
         <QBtn flat :icon="matViewList" to="/projects" size="lg">Projects</QBtn>
