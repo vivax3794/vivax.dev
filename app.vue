@@ -18,4 +18,10 @@
 
 <script setup lang="ts">
 import { matPalette, matViewList, matNewspaper } from "@quasar/extras/material-icons";
+
+useSeoMeta({
+    title: 'Vivax.dev',
+    description: 'The place for all my projects and art, and also a blog.',
+    ogImage: '/favicon.png',
+})
 </script>
