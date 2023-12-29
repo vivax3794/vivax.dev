@@ -1,0 +1,24 @@
+{
+    "name": "nuxt-app",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "nuxt build",
+        "dev": "nuxt dev",
+        "generate": "nuxt generate",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare"
+    },
+    "devDependencies": {
+        "@nuxt/content": "^2.10.0",
+        "nuxt": "^3.9.0",
+        "nuxt-quasar-ui": "^2.0.7",
+        "sass": "^1.69.5",
+        "vue": "^3.3.13",
+        "vue-router": "^4.2.5"
+    },
+    "dependencies": {
+        "@quasar/extras": "^1.16.9",
+        "quasar": "^2.14.2"
+    }
+}
