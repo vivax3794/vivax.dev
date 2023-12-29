@@ -1,12 +1,14 @@
 <template>
     <div class="row justify-center">
-        <div v-for="art in ART_WORK" class="card q-ma-md">
-            <QImg :src="art.path" class="image shadow-3">
-                <div class="absolute-bottom card-text">
+        <div v-for="art in ART_WORK" class="q-ma-md">
+            <div class="card shadow-3">
+                <QImg :src="art.path" class="image">
+                </QImg>
+                <div class="card-text absolute-bottom">
                     <div class="text-h4 text-center">{{ art.name }}</div>
-                    <div v-html="art.description" class="text-subtitle1 text-center description"></div>
+                    <div v-html="art.description" class="text-subtitle1 text-center q-px-sm description"></div>
                 </div>
-            </QImg>
+            </div>
         </div>
     </div>
 </template>
@@ -14,11 +16,16 @@
 <style scoped lang="scss">
 .card {
     width: 400px;
+    position: relative;
+    background-color: rgb(47, 47, 47);
+    border-radius: 20px;
+    overflow: hidden;
 }
 
 .image {
-    background-color: rgb(47, 47, 47);
-    border-radius: 20px;
+    margin-bottom: 80px;
+    padding-bottom: 0px;
+    transition: all 1s;
 }
 
 .description {
@@ -28,18 +35,26 @@
 
 .card-text {
     height: 80px;
+    width: 400px;
     transition: all 1s;
     background-color: black;
     opacity: 0.9;
+    // position: absolute;
+    // bottom: 0px;
 }
 
-.image:hover {
+.card:hover {
     .card-text {
         height: 100%;
     }
 
     .description {
         opacity: 1;
+    }
+
+    .image {
+        margin-bottom: 0px;
+        padding-bottom: 80px;
     }
 }
 </style>

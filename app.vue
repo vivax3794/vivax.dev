@@ -1,8 +1,11 @@
 <template>
     <QToolbar class="q-py-md bg-black">
-        <QBtn flat icon="img:/favicon.png" to="/" size="lg"></QBtn>
+        <QBtn flat icon="img:/favicon.png" to="/" size="lg">
+            <div class="text-h5 q-ml-sm">
+                Vivax.dev
+            </div>
+        </QBtn>
         <QToolbarTitle class="text-h4">
-            Vivax.dev
         </QToolbarTitle>
         <QBtn flat :icon="matPalette" to="/art" size="lg">Art</QBtn>
         <QBtn flat :icon="matViewList" to="/projects" size="lg">Projects</QBtn>
