@@ -36,5 +36,12 @@ export default defineNuxtConfig({
             },
             dark: true,
         }
+    },
+
+    content: {
+        highlight: {
+            theme: "github-dark",
+            preload: ["python", "rust"],
+        }
     }
 })

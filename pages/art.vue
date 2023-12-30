@@ -89,7 +89,7 @@ const ART_WORK: ArtWork[] = [
     {
         name: "Uzi",
         path: "/art/UziTrace.png",
-        description: "My first digital drawing that wasnt pixel art! I did this after I got my drawing tablet, it is a traced drawing of <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman'>Uzi from murder drones</a>, specifically this <a href='https://static.wikia.nocookie.net/murder-drones/images/3/35/Uzicutout.png/revision/latest?cb=20231207044805'>reference picture</a>"
+        description: "My first digital drawing that wasnt pixel art! I did this after I got my drawing tablet, it is a traced drawing of <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman'>Uzi from murder drones</a>, specifically this <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman?file=Uzicutout.png'>reference picture</a>"
     },
     // {
     //     name: "Random doddle",
