@@ -14,8 +14,11 @@
 </template>
 
 <style scoped lang="scss">
+$card-width: 400px;
+$title-height: 80px;
+
 .card {
-    width: 400px;
+    width: $card-width;
     position: relative;
     background-color: rgb(47, 47, 47);
     border-radius: 20px;
@@ -23,7 +26,7 @@
 }
 
 .image {
-    margin-bottom: 80px;
+    margin-bottom: $title-height;
     padding-bottom: 0px;
     transition: all 1s;
 }
@@ -34,8 +37,8 @@
 }
 
 .card-text {
-    height: 80px;
-    width: 400px;
+    height: $title-height;
+    width: $card-width;
     transition: all 1s;
     background-color: black;
     opacity: 0.9;
@@ -54,7 +57,7 @@
 
     .image {
         margin-bottom: 0px;
-        padding-bottom: 80px;
+        padding-bottom: $title-height;
     }
 }
 </style>
