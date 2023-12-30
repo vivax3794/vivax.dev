@@ -92,7 +92,7 @@ const PROJECTS: Project[] = [{
 },
 {
     name: "Spinny Jumper",
-    description: "Small fodian game I made for a game in the course of a week",
+    description: "Small foddian game I made for a game in the course of a week",
     image: "https://img.itch.zone/aW1nLzEzMDYyMDYwLnBuZw==/original/QoYYFX.png",
     links: [
         { type: "Itch", href: "https://vivax.itch.io/spinny-jumper" }
