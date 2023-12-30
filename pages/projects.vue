@@ -61,7 +61,7 @@ const PROJECTS: Project[] = [{
 },
 {
     name: "Deepnarration",
-    description: "A frontend for a ai platform that I am paid to make.",
+    description: "A frontend for an ai platform that I am paid to make.",
     links: [
         { type: "GitHub", href: "https://github.com/vivax3794/deepnarration" },
         { href: "https://deepnarration.matissetec.dev/" }
