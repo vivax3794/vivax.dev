@@ -25,3 +25,16 @@ useSeoMeta({
     ogImage: '/favicon.png',
 })
 </script>
+
+<style lang="scss">
+.page-enter-active,
+.page-leave-active {
+    transition: all 0.2s;
+}
+
+.page-enter-from,
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-50px);
+}
+</style>

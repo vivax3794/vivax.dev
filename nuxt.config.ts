@@ -8,6 +8,10 @@ export default defineNuxtConfig({
 
     css: ["~/assets/global.scss"],
     app: {
+        pageTransition: {
+            name: "page",
+            mode: "out-in"
+        },
         head: {
             link: [
                 { rel: "icon", type: "image/png", href: "/favicon.png" }
