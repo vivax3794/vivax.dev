@@ -2,7 +2,7 @@
     <div>
         <ContentList path="/blog" v-slot="{ list }">
             <div class="page">
-                <NuxtLink v-for="article in list.reverse()" :key="article._path" :to="article._path">
+                <NuxtLink v-for="article in list.slice().reverse()" :key="article._path" :to="article._path">
                     <div class="card q-ma-md shadow-3 row">
                         <div class="col-8">
                             <div class="text-h4 text-white">{{ article.title }}</div>
