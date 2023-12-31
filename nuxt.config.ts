@@ -43,5 +43,12 @@ export default defineNuxtConfig({
             theme: "github-dark",
             preload: ["python", "rust"],
         }
+    },
+
+    nitro: {
+        prerender: {
+            crawlLinks: true,
+            routes: ["/"],
+        }
     }
 })
