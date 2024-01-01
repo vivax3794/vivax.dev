@@ -9,7 +9,7 @@
                             <div class="desc">{{ article.description }}</div>
                         </div>
                         <div class="col" v-if="article.image !== undefined">
-                            <img class="image" :src="article.image" />
+                            <img class="image" :src="$img(article.image)" />
                         </div>
                     </div>
                 </NuxtLink>

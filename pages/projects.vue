@@ -1,7 +1,7 @@
 <template>
     <div class="row justify-center">
         <div class="row q-ma-md card shadow-3" v-for="project in PROJECTS">
-            <QImg class="col" :src="project.image" v-if="project.image !== undefined" />
+            <QImg class="col" :src="$img(project.image, { height: 300 })" v-if="project.image !== undefined" />
             <div class="col relative-position">
                 <div class="text-h4 text-center full-width q-mb-sm">{{ project.name }}</div>
                 <QSeparator></QSeparator>

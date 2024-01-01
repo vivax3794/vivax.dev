@@ -3,7 +3,8 @@ export default defineNuxtConfig({
     devtools: { enabled: true },
     modules: [
         "@nuxt/content",
-        "nuxt-quasar-ui"
+        "nuxt-quasar-ui",
+        "@nuxt/image"
     ],
 
     css: ["~/assets/global.scss"],
@@ -44,6 +45,10 @@ export default defineNuxtConfig({
             preload: ["python", "rust"],
         }
     },
+
+    image: {
+        inject: true,
+    }
 
     // nitro: {
     //     prerender: {

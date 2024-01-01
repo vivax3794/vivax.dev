@@ -1,6 +1,6 @@
 <template>
     <QToolbar class="q-py-md bg-black">
-        <QBtn flat icon="img:/favicon.png" to="/" size="lg">
+        <QBtn flat :icon="`img:${$img('favicon.png', { width: 34 })}`" to="/" size="lg">
             <div class="text-h5 q-ml-sm">
                 Vivax.dev
             </div>
