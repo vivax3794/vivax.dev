@@ -2,7 +2,7 @@
     <div class="row justify-center">
         <div v-for="art in ART_WORK" class="q-ma-md">
             <div class="card shadow-3">
-                <QImg :src="$img(art.path, { width: 400, format: 'webp' })" class="image" />
+                <QImg :src="$img(art.path, { width: 400, format: art.format || 'webp' })" class="image" />
                 <div class="card-text absolute-bottom">
                     <div class="text-h4 text-center">{{ art.name }}</div>
                     <div v-html="art.description" class="text-subtitle1 text-center q-px-sm description"></div>
@@ -67,6 +67,7 @@ interface ArtWork {
     name: string,
     path: string,
     description: string,
+    format?: string,
 }
 
 const ART_WORK: ArtWork[] = [
@@ -108,7 +109,8 @@ const ART_WORK: ArtWork[] = [
     {
         name: "Raid animation",
         path: "/art/Raid.gif",
-        description: "Raid animation I use for my twitch channel, isnt it cute?"
+        description: "Raid animation I use for my twitch channel, isnt it cute?",
+        format: "gif",
     },
 ];
 </script>
