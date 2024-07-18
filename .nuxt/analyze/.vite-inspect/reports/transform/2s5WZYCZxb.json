@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/run-sequential-promises.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "\nfunction parsePromises (sequentialPromises) {\n  const isList = Array.isArray(sequentialPromises)\n\n  if (isList === true) {\n    const totalJobs = sequentialPromises.length\n    return {\n      isList,\n      totalJobs,\n      resultAggregator: Array(totalJobs).fill(null)\n    }\n  }\n\n  const resultKeys = Object.keys(sequentialPromises)\n  const resultAggregator = {}\n  resultKeys.forEach(keyName => { resultAggregator[ keyName ] = null })\n\n  return {\n    isList,\n    totalJobs: resultKeys.length,\n    resultAggregator,\n    resultKeys\n  }\n}\n\n/**\n * Run a list of Promises sequentially, optionally on multiple threads.\n *\n * @param {*} sequentialPromises - Array of Functions or Object with Functions as values\n *                          Array of Function form: [ (resultAggregator: Array) => Promise<any>, ... ]\n *                          Object form: { [key: string]: (resultAggregator: object) => Promise<any>, ... }\n * @param {*} opts - Optional options Object\n *                   Object form: { threadsNumber?: number, abortOnFail?: boolean }\n *                   Default: { threadsNumber: 1, abortOnFail: true }\n *                   When configuring threadsNumber AND using http requests, be\n *                       aware of the maximum threads that the hosting browser\n *                       supports (usually 5); any number of threads above that\n *                       won't add any real benefits\n * @returns Promise<Array<Object> | Object>\n *    With opts.abortOnFail set to true (which is default):\n *        When sequentialPromises param is Array:\n *          The Promise resolves with an Array of Objects of the following form:\n *             [ { key: number, status: 'fulfilled', value: any }, ... ]\n *          The Promise rejects with an Object of the following form:\n *             { key: number, status: 'rejected', reason: Error, resultAggregator: array }\n *        When sequentialPromises param is Object:\n *          The Promise resolves with an Object of the following form:\n *             { [key: string]: { key: string, status: 'fulfilled', value: any }, ... }\n *          The Promise rejects with an Object of the following form:\n *             { key: string, status: 'rejected', reason: Error, resultAggregator: object }\n *    With opts.abortOnFail set to false:\n *       The Promise is never rejected (no catch() needed)\n *       The Promise resolves with:\n *          An Array of Objects (when sequentialPromises param is also an Array) of the following form:\n *             [ { key: number, status: 'fulfilled', value: any } | { status: 'rejected', reason: Error }, ... ]\n *          An Object (when sequentialPromises param is also an Object) of the following form:\n *             { [key: string]: { key: string, status: 'fulfilled', value: any } | { key: string, status: 'rejected', reason: Error }, ... }\n */\nexport default function runSequentialPromises (\n  sequentialPromises,\n  { threadsNumber = 1, abortOnFail = true } = {}\n) {\n  let jobIndex = -1, hasAborted = false\n\n  const { isList, totalJobs, resultAggregator, resultKeys } = parsePromises(sequentialPromises)\n\n  const getPromiseThread = () => new Promise((resolve, reject) => {\n    function runNextPromise () {\n      const currentJobIndex = ++jobIndex\n\n      if (hasAborted === true || currentJobIndex >= totalJobs) {\n        resolve()\n        return\n      }\n\n      const key = isList === true ? currentJobIndex : resultKeys[ currentJobIndex ]\n\n      sequentialPromises[ key ](resultAggregator)\n        .then(value => {\n          if (hasAborted === true) {\n            resolve()\n            return // early exit\n          }\n\n          resultAggregator[ key ] = { key, status: 'fulfilled', value }\n\n          // timeout so it doesn't interfere with the .catch() below\n          setTimeout(runNextPromise)\n        })\n        .catch(reason => {\n          if (hasAborted === true) {\n            resolve()\n            return // early exit\n          }\n\n          const result = { key, status: 'rejected', reason }\n          resultAggregator[ key ] = result\n\n          if (abortOnFail === true) {\n            hasAborted = true\n            reject({ ...result, resultAggregator })\n            return // early exit\n          }\n\n          // timeout so no interference\n          setTimeout(runNextPromise)\n        })\n    }\n\n    runNextPromise()\n  })\n\n  const threads = Array(threadsNumber).fill(getPromiseThread())\n  return Promise.all(threads).then(() => resultAggregator)\n}\n",
+      "start": 1703982896758,
+      "end": 1703982896834,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896834,
+      "end": 1703982896834,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896834,
+      "end": 1703982896835,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896835,
+      "end": 1703982896835,
+      "order": "normal"
+    }
+  ]
+}

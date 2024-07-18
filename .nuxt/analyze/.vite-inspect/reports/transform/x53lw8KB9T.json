@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/knob/QKnob.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, getCurrentInstance } from 'vue'\n\nimport QCircularProgress from '../circular-progress/QCircularProgress.js'\nimport TouchPan from '../../directives/TouchPan.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { position, stopAndPrevent } from '../../utils/event.js'\nimport { between, normalizeToInterval } from '../../utils/format.js'\nimport { hDir } from '../../utils/private/render.js'\n\nimport { useFormProps, useFormAttrs } from '../../composables/private/use-form.js'\nimport { useCircularCommonProps } from '../circular-progress/use-circular-progress.js'\n\n// PGDOWN, LEFT, DOWN, PGUP, RIGHT, UP\nconst keyCodes = [ 34, 37, 40, 33, 39, 38 ]\nconst commonPropsName = Object.keys(useCircularCommonProps)\n\nexport default createComponent({\n  name: 'QKnob',\n\n  props: {\n    ...useFormProps,\n    ...useCircularCommonProps,\n\n    modelValue: {\n      type: Number,\n      required: true\n    },\n\n    innerMin: Number,\n    innerMax: Number,\n\n    step: {\n      type: Number,\n      default: 1,\n      validator: v => v >= 0\n    },\n\n    tabindex: {\n      type: [ Number, String ],\n      default: 0\n    },\n\n    disable: Boolean,\n    readonly: Boolean\n  },\n\n  emits: [ 'update:modelValue', 'change', 'dragValue' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const model = ref(props.modelValue)\n    const dragging = ref(false)\n\n    const innerMin = computed(() => (\n      isNaN(props.innerMin) === true || props.innerMin < props.min\n        ? props.min\n        : props.innerMin\n    ))\n    const innerMax = computed(() => (\n      isNaN(props.innerMax) === true || props.innerMax > props.max\n        ? props.max\n        : props.innerMax\n    ))\n\n    let centerPosition\n\n    function normalizeModel () {\n      model.value = props.modelValue === null\n        ? innerMin.value\n        : between(props.modelValue, innerMin.value, innerMax.value)\n\n      updateValue(true)\n    }\n\n    watch(\n      () => `${ props.modelValue }|${ innerMin.value }|${ innerMax.value }`,\n      normalizeModel\n    )\n\n    normalizeModel()\n\n    const editable = computed(() => props.disable === false && props.readonly === false)\n\n    const classes = computed(() =>\n      'q-knob non-selectable' + (\n        editable.value === true\n          ? ' q-knob--editable'\n          : (props.disable === true ? ' disabled' : '')\n      )\n    )\n\n    const decimals = computed(() => (String(props.step).trim().split('.')[ 1 ] || '').length)\n    const step = computed(() => (props.step === 0 ? 1 : props.step))\n    const instantFeedback = computed(() => props.instantFeedback === true || dragging.value === true)\n\n    const onEvents = $q.platform.is.mobile === true\n      ? computed(() => (editable.value === true ? { onClick } : {}))\n      : computed(() => (\n        editable.value === true\n          ? {\n              onMousedown,\n              onClick,\n              onKeydown,\n              onKeyup\n            }\n          : {}\n      ))\n\n    const attrs = computed(() => (\n      editable.value === true\n        ? { tabindex: props.tabindex }\n        : { [ `aria-${ props.disable === true ? 'disabled' : 'readonly' }` ]: 'true' }\n    ))\n\n    const circularProps = computed(() => {\n      const agg = {}\n      commonPropsName.forEach(name => {\n        agg[ name ] = props[ name ]\n      })\n      return agg\n    })\n\n    function pan (event) {\n      if (event.isFinal) {\n        updatePosition(event.evt, true)\n        dragging.value = false\n      }\n      else if (event.isFirst) {\n        updateCenterPosition()\n        dragging.value = true\n        updatePosition(event.evt)\n      }\n      else {\n        updatePosition(event.evt)\n      }\n    }\n\n    const directives = computed(() => {\n      return [ [\n        TouchPan,\n        pan,\n        void 0,\n        { prevent: true, stop: true, mouse: true }\n      ] ]\n    })\n\n    function updateCenterPosition () {\n      const { top, left, width, height } = proxy.$el.getBoundingClientRect()\n      centerPosition = {\n        top: top + height / 2,\n        left: left + width / 2\n      }\n    }\n\n    function onMousedown (evt) {\n      updateCenterPosition()\n      updatePosition(evt)\n    }\n\n    function onClick (evt) {\n      updateCenterPosition()\n      updatePosition(evt, true)\n    }\n\n    function onKeydown (evt) {\n      if (!keyCodes.includes(evt.keyCode)) {\n        return\n      }\n\n      stopAndPrevent(evt)\n\n      const\n        stepVal = ([ 34, 33 ].includes(evt.keyCode) ? 10 : 1) * step.value,\n        offset = [ 34, 37, 40 ].includes(evt.keyCode) ? -stepVal : stepVal\n\n      model.value = between(\n        parseFloat((model.value + offset).toFixed(decimals.value)),\n        innerMin.value,\n        innerMax.value\n      )\n\n      updateValue()\n    }\n\n    function updatePosition (evt, change) {\n      const\n        pos = position(evt),\n        height = Math.abs(pos.top - centerPosition.top),\n        distance = Math.sqrt(\n          height ** 2\n          + Math.abs(pos.left - centerPosition.left) ** 2\n        )\n\n      let angle = Math.asin(height / distance) * (180 / Math.PI)\n\n      if (pos.top < centerPosition.top) {\n        angle = centerPosition.left < pos.left ? 90 - angle : 270 + angle\n      }\n      else {\n        angle = centerPosition.left < pos.left ? angle + 90 : 270 - angle\n      }\n\n      if ($q.lang.rtl === true) {\n        angle = normalizeToInterval(-angle - props.angle, 0, 360)\n      }\n      else if (props.angle) {\n        angle = normalizeToInterval(angle - props.angle, 0, 360)\n      }\n\n      if (props.reverse === true) {\n        angle = 360 - angle\n      }\n\n      let newModel = props.min + (angle / 360) * (props.max - props.min)\n\n      if (step.value !== 0) {\n        const modulo = newModel % step.value\n\n        newModel = newModel - modulo\n          + (Math.abs(modulo) >= step.value / 2 ? (modulo < 0 ? -1 : 1) * step.value : 0)\n\n        newModel = parseFloat(newModel.toFixed(decimals.value))\n      }\n\n      newModel = between(newModel, innerMin.value, innerMax.value)\n\n      emit('dragValue', newModel)\n\n      if (model.value !== newModel) {\n        model.value = newModel\n      }\n\n      updateValue(change)\n    }\n\n    function onKeyup (evt) {\n      if (keyCodes.includes(evt.keyCode)) {\n        updateValue(true)\n      }\n    }\n\n    function updateValue (change) {\n      props.modelValue !== model.value && emit('update:modelValue', model.value)\n      change === true && emit('change', model.value)\n    }\n\n    const formAttrs = useFormAttrs(props)\n\n    function getNameInput () {\n      return h('input', formAttrs.value)\n    }\n\n    return () => {\n      const data = {\n        class: classes.value,\n        role: 'slider',\n        'aria-valuemin': innerMin.value,\n        'aria-valuemax': innerMax.value,\n        'aria-valuenow': props.modelValue,\n        ...attrs.value,\n        ...circularProps.value,\n        value: model.value,\n        instantFeedback: instantFeedback.value,\n        ...onEvents.value\n      }\n\n      const child = {\n        default: slots.default\n      }\n\n      if (editable.value === true && props.name !== void 0) {\n        child.internal = getNameInput\n      }\n\n      return hDir(\n        QCircularProgress,\n        data,\n        child,\n        'knob',\n        editable.value,\n        () => directives.value\n      )\n    }\n  }\n})\n",
+      "start": 1703982896303,
+      "end": 1703982896431,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896431,
+      "end": 1703982896431,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896432,
+      "end": 1703982896432,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896432,
+      "end": 1703982896432,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896432,
+      "end": 1703982896432,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896432,
+      "end": 1703982896432,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896432,
+      "end": 1703982896432,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896432,
+      "end": 1703982896432,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896432,
+      "end": 1703982896432,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896432,
+      "end": 1703982896433,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896433,
+      "end": 1703982896433,
+      "order": "normal"
+    }
+  ]
+}

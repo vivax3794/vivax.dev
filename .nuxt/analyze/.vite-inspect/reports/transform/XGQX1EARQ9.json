@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/carousel/QCarousel.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, watch, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue'\n\nimport QBtn from '../btn/QBtn.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport usePanel, { usePanelProps, usePanelEmits } from '../../composables/private/use-panel.js'\nimport useFullscreen, { useFullscreenProps, useFullscreenEmits } from '../../composables/private/use-fullscreen.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { isNumber } from '../../utils/is.js'\nimport { hMergeSlot, hDir } from '../../utils/private/render.js'\n\nconst navigationPositionOptions = [ 'top', 'right', 'bottom', 'left' ]\nconst controlTypeOptions = [ 'regular', 'flat', 'outline', 'push', 'unelevated' ]\n\nexport default createComponent({\n  name: 'QCarousel',\n\n  props: {\n    ...useDarkProps,\n    ...usePanelProps,\n    ...useFullscreenProps,\n\n    transitionPrev: { // usePanelParentProps override\n      type: String,\n      default: 'fade'\n    },\n    transitionNext: { // usePanelParentProps override\n      type: String,\n      default: 'fade'\n    },\n\n    height: String,\n    padding: Boolean,\n\n    controlColor: String,\n    controlTextColor: String,\n    controlType: {\n      type: String,\n      validator: v => controlTypeOptions.includes(v),\n      default: 'flat'\n    },\n\n    autoplay: [ Number, Boolean ],\n\n    arrows: Boolean,\n    prevIcon: String,\n    nextIcon: String,\n\n    navigation: Boolean,\n    navigationPosition: {\n      type: String,\n      validator: v => navigationPositionOptions.includes(v)\n    },\n    navigationIcon: String,\n    navigationActiveIcon: String,\n\n    thumbnails: Boolean\n  },\n\n  emits: [\n    ...useFullscreenEmits,\n    ...usePanelEmits\n  ],\n\n  setup (props, { slots }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const isDark = useDark(props, $q)\n\n    let timer = null, panelsLen\n\n    const {\n      updatePanelsList, getPanelContent,\n      panelDirectives, goToPanel,\n      previousPanel, nextPanel, getEnabledPanels,\n      panelIndex\n    } = usePanel()\n\n    const { inFullscreen } = useFullscreen()\n\n    const style = computed(() => (\n      inFullscreen.value !== true && props.height !== void 0\n        ? { height: props.height }\n        : {}\n    ))\n\n    const direction = computed(() => (props.vertical === true ? 'vertical' : 'horizontal'))\n\n    const classes = computed(() =>\n      `q-carousel q-panel-parent q-carousel--with${ props.padding === true ? '' : 'out' }-padding`\n      + (inFullscreen.value === true ? ' fullscreen' : '')\n      + (isDark.value === true ? ' q-carousel--dark q-dark' : '')\n      + (props.arrows === true ? ` q-carousel--arrows-${ direction.value }` : '')\n      + (props.navigation === true ? ` q-carousel--navigation-${ navigationPosition.value }` : '')\n    )\n\n    const arrowIcons = computed(() => {\n      const ico = [\n        props.prevIcon || $q.iconSet.carousel[ props.vertical === true ? 'up' : 'left' ],\n        props.nextIcon || $q.iconSet.carousel[ props.vertical === true ? 'down' : 'right' ]\n      ]\n\n      return props.vertical === false && $q.lang.rtl === true\n        ? ico.reverse()\n        : ico\n    })\n\n    const navIcon = computed(() => props.navigationIcon || $q.iconSet.carousel.navigationIcon)\n    const navActiveIcon = computed(() => props.navigationActiveIcon || navIcon.value)\n    const navigationPosition = computed(() => props.navigationPosition\n      || (props.vertical === true ? 'right' : 'bottom')\n    )\n\n    const controlProps = computed(() => ({\n      color: props.controlColor,\n      textColor: props.controlTextColor,\n      round: true,\n      [ props.controlType ]: true,\n      dense: true\n    }))\n\n    watch(() => props.modelValue, () => {\n      if (props.autoplay) {\n        startTimer()\n      }\n    })\n\n    watch(() => props.autoplay, val => {\n      if (val) {\n        startTimer()\n      }\n      else if (timer !== null) {\n        clearTimeout(timer)\n        timer = null\n      }\n    })\n\n    function startTimer () {\n      const duration = isNumber(props.autoplay) === true\n        ? Math.abs(props.autoplay)\n        : 5000\n\n      timer !== null && clearTimeout(timer)\n      timer = setTimeout(() => {\n        timer = null\n\n        if (duration >= 0) {\n          nextPanel()\n        }\n        else {\n          previousPanel()\n        }\n      }, duration)\n    }\n\n    onMounted(() => {\n      props.autoplay && startTimer()\n    })\n\n    onBeforeUnmount(() => {\n      timer !== null && clearTimeout(timer)\n    })\n\n    function getNavigationContainer (type, mapping) {\n      return h('div', {\n        class: 'q-carousel__control q-carousel__navigation no-wrap absolute flex'\n          + ` q-carousel__navigation--${ type } q-carousel__navigation--${ navigationPosition.value }`\n          + (props.controlColor !== void 0 ? ` text-${ props.controlColor }` : '')\n      }, [\n        h('div', {\n          class: 'q-carousel__navigation-inner flex flex-center no-wrap'\n        }, getEnabledPanels().map(mapping))\n      ])\n    }\n\n    function getContent () {\n      const node = []\n\n      if (props.navigation === true) {\n        const fn = slots[ 'navigation-icon' ] !== void 0\n          ? slots[ 'navigation-icon' ]\n          : opts => h(QBtn, {\n            key: 'nav' + opts.name,\n            class: `q-carousel__navigation-icon q-carousel__navigation-icon--${ opts.active === true ? '' : 'in' }active`,\n            ...opts.btnProps,\n            onClick: opts.onClick\n          })\n\n        const maxIndex = panelsLen - 1\n        node.push(\n          getNavigationContainer('buttons', (panel, index) => {\n            const name = panel.props.name\n            const active = panelIndex.value === index\n\n            return fn({\n              index,\n              maxIndex,\n              name,\n              active,\n              btnProps: {\n                icon: active === true ? navActiveIcon.value : navIcon.value,\n                size: 'sm',\n                ...controlProps.value\n              },\n              onClick: () => { goToPanel(name) }\n            })\n          })\n        )\n      }\n      else if (props.thumbnails === true) {\n        const color = props.controlColor !== void 0\n          ? ` text-${ props.controlColor }`\n          : ''\n\n        node.push(getNavigationContainer('thumbnails', panel => {\n          const slide = panel.props\n\n          return h('img', {\n            key: 'tmb#' + slide.name,\n            class: `q-carousel__thumbnail q-carousel__thumbnail--${ slide.name === props.modelValue ? '' : 'in' }active` + color,\n            src: slide.imgSrc || slide[ 'img-src' ],\n            onClick: () => { goToPanel(slide.name) }\n          })\n        }))\n      }\n\n      if (props.arrows === true && panelIndex.value >= 0) {\n        if (props.infinite === true || panelIndex.value > 0) {\n          node.push(\n            h('div', {\n              key: 'prev',\n              class: `q-carousel__control q-carousel__arrow q-carousel__prev-arrow q-carousel__prev-arrow--${ direction.value } absolute flex flex-center`\n            }, [\n              h(QBtn, {\n                icon: arrowIcons.value[ 0 ],\n                ...controlProps.value,\n                onClick: previousPanel\n              })\n            ])\n          )\n        }\n\n        if (props.infinite === true || panelIndex.value < panelsLen - 1) {\n          node.push(\n            h('div', {\n              key: 'next',\n              class: 'q-carousel__control q-carousel__arrow q-carousel__next-arrow'\n                + ` q-carousel__next-arrow--${ direction.value } absolute flex flex-center`\n            }, [\n              h(QBtn, {\n                icon: arrowIcons.value[ 1 ],\n                ...controlProps.value,\n                onClick: nextPanel\n              })\n            ])\n          )\n        }\n      }\n\n      return hMergeSlot(slots.control, node)\n    }\n\n    return () => {\n      panelsLen = updatePanelsList(slots)\n\n      return h('div', {\n        class: classes.value,\n        style: style.value\n      }, [\n        hDir(\n          'div',\n          { class: 'q-carousel__slides-container' },\n          getPanelContent(),\n          'sl-cont',\n          props.swipeable,\n          () => panelDirectives.value\n        )\n      ].concat(getContent()))\n    }\n  }\n})\n",
+      "start": 1703982896189,
+      "end": 1703982896278,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896279,
+      "end": 1703982896279,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896279,
+      "end": 1703982896280,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896280,
+      "end": 1703982896280,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896280,
+      "end": 1703982896280,
+      "order": "normal"
+    }
+  ]
+}

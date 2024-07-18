@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/breadcrumbs/QBreadcrumbs.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed } from 'vue'\n\nimport useAlign, { useAlignProps } from '../../composables/private/use-align.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { getNormalizedVNodes } from '../../utils/private/vm.js'\n\nconst disabledValues = [ '', true ]\n\nexport default createComponent({\n  name: 'QBreadcrumbs',\n\n  props: {\n    ...useAlignProps,\n\n    separator: {\n      type: String,\n      default: '/'\n    },\n    separatorColor: String,\n\n    activeColor: {\n      type: String,\n      default: 'primary'\n    },\n\n    gutter: {\n      type: String,\n      validator: v => [ 'none', 'xs', 'sm', 'md', 'lg', 'xl' ].includes(v),\n      default: 'sm'\n    }\n  },\n\n  setup (props, { slots }) {\n    const alignClass = useAlign(props)\n\n    const classes = computed(() =>\n      `flex items-center ${ alignClass.value }${ props.gutter === 'none' ? '' : ` q-gutter-${ props.gutter }` }`\n    )\n\n    const sepClass = computed(() => (props.separatorColor ? ` text-${ props.separatorColor }` : ''))\n    const activeClass = computed(() => ` text-${ props.activeColor }`)\n\n    return () => {\n      const vnodes = getNormalizedVNodes(\n        hSlot(slots.default)\n      )\n\n      if (vnodes.length === 0) { return }\n\n      let els = 1\n\n      const\n        child = [],\n        len = vnodes.filter(c => c.type !== void 0 && c.type.name === 'QBreadcrumbsEl').length,\n        separator = slots.separator !== void 0\n          ? slots.separator\n          : () => props.separator\n\n      vnodes.forEach(comp => {\n        if (comp.type !== void 0 && comp.type.name === 'QBreadcrumbsEl') {\n          const middle = els < len\n          const disabled = comp.props !== null && disabledValues.includes(comp.props.disable)\n          const cls = (middle === true ? '' : ' q-breadcrumbs--last')\n            + (disabled !== true && middle === true ? activeClass.value : '')\n\n          els++\n\n          child.push(\n            h('div', {\n              class: `flex items-center${ cls }`\n            }, [ comp ])\n          )\n\n          if (middle === true) {\n            child.push(\n              h('div', {\n                class: 'q-breadcrumbs__separator' + sepClass.value\n              }, separator())\n            )\n          }\n        }\n        else {\n          child.push(comp)\n        }\n      })\n\n      return h('div', {\n        class: 'q-breadcrumbs'\n      }, [\n        h('div', { class: classes.value }, child)\n      ])\n    }\n  }\n})\n",
+      "start": 1703982896135,
+      "end": 1703982896206,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896206,
+      "end": 1703982896206,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896206,
+      "end": 1703982896207,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896207,
+      "end": 1703982896207,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/private/use-fullscreen.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { ref, watch, onBeforeMount, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue'\n\nimport History from '../../history.js'\nimport { vmHasRouter } from '../../utils/private/vm.js'\n\nlet counter = 0\n\nexport const useFullscreenProps = {\n  fullscreen: Boolean,\n  noRouteFullscreenExit: Boolean\n}\n\nexport const useFullscreenEmits = [ 'update:fullscreen', 'fullscreen' ]\n\nexport default function () {\n  const vm = getCurrentInstance()\n  const { props, emit, proxy } = vm\n\n  let historyEntry, fullscreenFillerNode, container\n  const inFullscreen = ref(false)\n\n  vmHasRouter(vm) === true && watch(() => proxy.$route.fullPath, () => {\n    props.noRouteFullscreenExit !== true && exitFullscreen()\n  })\n\n  watch(() => props.fullscreen, v => {\n    if (inFullscreen.value !== v) {\n      toggleFullscreen()\n    }\n  })\n\n  watch(inFullscreen, v => {\n    emit('update:fullscreen', v)\n    emit('fullscreen', v)\n  })\n\n  function toggleFullscreen () {\n    if (inFullscreen.value === true) {\n      exitFullscreen()\n    }\n    else {\n      setFullscreen()\n    }\n  }\n\n  function setFullscreen () {\n    if (inFullscreen.value === true) {\n      return\n    }\n\n    inFullscreen.value = true\n    container = proxy.$el.parentNode\n    container.replaceChild(fullscreenFillerNode, proxy.$el)\n    document.body.appendChild(proxy.$el)\n\n    counter++\n    if (counter === 1) {\n      document.body.classList.add('q-body--fullscreen-mixin')\n    }\n\n    historyEntry = {\n      handler: exitFullscreen\n    }\n    History.add(historyEntry)\n  }\n\n  function exitFullscreen () {\n    if (inFullscreen.value !== true) {\n      return\n    }\n\n    if (historyEntry !== void 0) {\n      History.remove(historyEntry)\n      historyEntry = void 0\n    }\n\n    container.replaceChild(proxy.$el, fullscreenFillerNode)\n    inFullscreen.value = false\n\n    counter = Math.max(0, counter - 1)\n\n    if (counter === 0) {\n      document.body.classList.remove('q-body--fullscreen-mixin')\n\n      if (proxy.$el.scrollIntoView !== void 0) {\n        setTimeout(() => { proxy.$el.scrollIntoView() })\n      }\n    }\n  }\n\n  onBeforeMount(() => {\n    fullscreenFillerNode = document.createElement('span')\n  })\n\n  onMounted(() => {\n    props.fullscreen === true && setFullscreen()\n  })\n\n  onBeforeUnmount(exitFullscreen)\n\n  // expose public methods\n  Object.assign(proxy, {\n    toggleFullscreen,\n    setFullscreen,\n    exitFullscreen\n  })\n\n  return {\n    inFullscreen,\n    toggleFullscreen\n  }\n}\n",
+      "start": 1703982897219,
+      "end": 1703982897305,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897305,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    }
+  ]
+}

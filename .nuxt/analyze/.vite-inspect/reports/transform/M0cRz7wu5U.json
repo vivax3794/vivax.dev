@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/Screen.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { isRuntimeSsrPreHydration, client } from './Platform.js'\n\nimport defineReactivePlugin from '../utils/private/define-reactive-plugin.js'\nimport { listenOpts, noop } from '../utils/event.js'\nimport debounce from '../utils/debounce.js'\n\nconst SIZE_LIST = [ 'sm', 'md', 'lg', 'xl' ]\nconst { passive } = listenOpts\n\nexport default defineReactivePlugin({\n  width: 0,\n  height: 0,\n  name: 'xs',\n\n  sizes: {\n    sm: 600,\n    md: 1024,\n    lg: 1440,\n    xl: 1920\n  },\n\n  lt: {\n    sm: true,\n    md: true,\n    lg: true,\n    xl: true\n  },\n  gt: {\n    xs: false,\n    sm: false,\n    md: false,\n    lg: false\n  },\n\n  xs: true,\n  sm: false,\n  md: false,\n  lg: false,\n  xl: false\n}, {\n  setSizes: noop,\n  setDebounce: noop,\n\n  install ({ $q, onSSRHydrated }) {\n    $q.screen = this\n\n    if (__QUASAR_SSR_SERVER__) { return }\n\n    if (this.__installed === true) {\n      if ($q.config.screen !== void 0) {\n        if ($q.config.screen.bodyClasses === false) {\n          document.body.classList.remove(`screen--${ this.name }`)\n        }\n        else {\n          this.__update(true)\n        }\n      }\n      return\n    }\n\n    const { visualViewport } = window\n    const target = visualViewport || window\n    const scrollingElement = document.scrollingElement || document.documentElement\n    const getSize = visualViewport === void 0 || client.is.mobile === true\n      ? () => [\n          Math.max(window.innerWidth, scrollingElement.clientWidth),\n          Math.max(window.innerHeight, scrollingElement.clientHeight)\n        ]\n      : () => [\n          visualViewport.width * visualViewport.scale + window.innerWidth - scrollingElement.clientWidth,\n          visualViewport.height * visualViewport.scale + window.innerHeight - scrollingElement.clientHeight\n        ]\n\n    const classes = $q.config.screen !== void 0 && $q.config.screen.bodyClasses === true\n\n    this.__update = force => {\n      const [ w, h ] = getSize()\n\n      if (h !== this.height) {\n        this.height = h\n      }\n\n      if (w !== this.width) {\n        this.width = w\n      }\n      else if (force !== true) {\n        return\n      }\n\n      let s = this.sizes\n\n      this.gt.xs = w >= s.sm\n      this.gt.sm = w >= s.md\n      this.gt.md = w >= s.lg\n      this.gt.lg = w >= s.xl\n      this.lt.sm = w < s.sm\n      this.lt.md = w < s.md\n      this.lt.lg = w < s.lg\n      this.lt.xl = w < s.xl\n      this.xs = this.lt.sm\n      this.sm = this.gt.xs === true && this.lt.md === true\n      this.md = this.gt.sm === true && this.lt.lg === true\n      this.lg = this.gt.md === true && this.lt.xl === true\n      this.xl = this.gt.lg\n\n      s = (this.xs === true && 'xs')\n        || (this.sm === true && 'sm')\n        || (this.md === true && 'md')\n        || (this.lg === true && 'lg')\n        || 'xl'\n\n      if (s !== this.name) {\n        if (classes === true) {\n          document.body.classList.remove(`screen--${ this.name }`)\n          document.body.classList.add(`screen--${ s }`)\n        }\n        this.name = s\n      }\n    }\n\n    let updateEvt, updateSizes = {}, updateDebounce = 16\n\n    this.setSizes = sizes => {\n      SIZE_LIST.forEach(name => {\n        if (sizes[ name ] !== void 0) {\n          updateSizes[ name ] = sizes[ name ]\n        }\n      })\n    }\n    this.setDebounce = deb => {\n      updateDebounce = deb\n    }\n\n    const start = () => {\n      const style = getComputedStyle(document.body)\n\n      // if css props available\n      if (style.getPropertyValue('--q-size-sm')) {\n        SIZE_LIST.forEach(name => {\n          this.sizes[ name ] = parseInt(style.getPropertyValue(`--q-size-${ name }`), 10)\n        })\n      }\n\n      this.setSizes = sizes => {\n        SIZE_LIST.forEach(name => {\n          if (sizes[ name ]) {\n            this.sizes[ name ] = sizes[ name ]\n          }\n        })\n        this.__update(true)\n      }\n\n      this.setDebounce = delay => {\n        updateEvt !== void 0 && target.removeEventListener('resize', updateEvt, passive)\n        updateEvt = delay > 0\n          ? debounce(this.__update, delay)\n          : this.__update\n        target.addEventListener('resize', updateEvt, passive)\n      }\n\n      this.setDebounce(updateDebounce)\n\n      if (Object.keys(updateSizes).length !== 0) {\n        this.setSizes(updateSizes)\n        updateSizes = void 0 // free up memory\n      }\n      else {\n        this.__update()\n      }\n\n      // due to optimizations, this would be left out otherwise\n      classes === true && this.name === 'xs'\n        && document.body.classList.add('screen--xs')\n    }\n\n    if (isRuntimeSsrPreHydration.value === true) {\n      onSSRHydrated.push(start)\n    }\n    else {\n      start()\n    }\n  }\n})\n",
+      "start": 1703982896706,
+      "end": 1703982896751,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896751,
+      "end": 1703982896751,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { isRuntimeSsrPreHydration, client } from \"./Platform.js\";\nimport defineReactivePlugin from \"../utils/private/define-reactive-plugin.js\";\nimport { listenOpts, noop } from \"../utils/event.js\";\nimport debounce from \"../utils/debounce.js\";\nconst SIZE_LIST = [\"sm\", \"md\", \"lg\", \"xl\"];\nconst { passive } = listenOpts;\nexport default defineReactivePlugin({\n  width: 0,\n  height: 0,\n  name: \"xs\",\n  sizes: {\n    sm: 600,\n    md: 1024,\n    lg: 1440,\n    xl: 1920\n  },\n  lt: {\n    sm: true,\n    md: true,\n    lg: true,\n    xl: true\n  },\n  gt: {\n    xs: false,\n    sm: false,\n    md: false,\n    lg: false\n  },\n  xs: true,\n  sm: false,\n  md: false,\n  lg: false,\n  xl: false\n}, {\n  setSizes: noop,\n  setDebounce: noop,\n  install({ $q, onSSRHydrated }) {\n    $q.screen = this;\n    if (false) {\n      return;\n    }\n    if (this.__installed === true) {\n      if ($q.config.screen !== void 0) {\n        if ($q.config.screen.bodyClasses === false) {\n          document.body.classList.remove(`screen--${this.name}`);\n        } else {\n          this.__update(true);\n        }\n      }\n      return;\n    }\n    const { visualViewport } = window;\n    const target = visualViewport || window;\n    const scrollingElement = document.scrollingElement || document.documentElement;\n    const getSize = visualViewport === void 0 || client.is.mobile === true ? () => [\n      Math.max(window.innerWidth, scrollingElement.clientWidth),\n      Math.max(window.innerHeight, scrollingElement.clientHeight)\n    ] : () => [\n      visualViewport.width * visualViewport.scale + window.innerWidth - scrollingElement.clientWidth,\n      visualViewport.height * visualViewport.scale + window.innerHeight - scrollingElement.clientHeight\n    ];\n    const classes = $q.config.screen !== void 0 && $q.config.screen.bodyClasses === true;\n    this.__update = (force) => {\n      const [w, h] = getSize();\n      if (h !== this.height) {\n        this.height = h;\n      }\n      if (w !== this.width) {\n        this.width = w;\n      } else if (force !== true) {\n        return;\n      }\n      let s = this.sizes;\n      this.gt.xs = w >= s.sm;\n      this.gt.sm = w >= s.md;\n      this.gt.md = w >= s.lg;\n      this.gt.lg = w >= s.xl;\n      this.lt.sm = w < s.sm;\n      this.lt.md = w < s.md;\n      this.lt.lg = w < s.lg;\n      this.lt.xl = w < s.xl;\n      this.xs = this.lt.sm;\n      this.sm = this.gt.xs === true && this.lt.md === true;\n      this.md = this.gt.sm === true && this.lt.lg === true;\n      this.lg = this.gt.md === true && this.lt.xl === true;\n      this.xl = this.gt.lg;\n      s = this.xs === true && \"xs\" || this.sm === true && \"sm\" || this.md === true && \"md\" || this.lg === true && \"lg\" || \"xl\";\n      if (s !== this.name) {\n        if (classes === true) {\n          document.body.classList.remove(`screen--${this.name}`);\n          document.body.classList.add(`screen--${s}`);\n        }\n        this.name = s;\n      }\n    };\n    let updateEvt, updateSizes = {}, updateDebounce = 16;\n    this.setSizes = (sizes) => {\n      SIZE_LIST.forEach((name) => {\n        if (sizes[name] !== void 0) {\n          updateSizes[name] = sizes[name];\n        }\n      });\n    };\n    this.setDebounce = (deb) => {\n      updateDebounce = deb;\n    };\n    const start = () => {\n      const style = getComputedStyle(document.body);\n      if (style.getPropertyValue(\"--q-size-sm\")) {\n        SIZE_LIST.forEach((name) => {\n          this.sizes[name] = parseInt(style.getPropertyValue(`--q-size-${name}`), 10);\n        });\n      }\n      this.setSizes = (sizes) => {\n        SIZE_LIST.forEach((name) => {\n          if (sizes[name]) {\n            this.sizes[name] = sizes[name];\n          }\n        });\n        this.__update(true);\n      };\n      this.setDebounce = (delay) => {\n        updateEvt !== void 0 && target.removeEventListener(\"resize\", updateEvt, passive);\n        updateEvt = delay > 0 ? debounce(this.__update, delay) : this.__update;\n        target.addEventListener(\"resize\", updateEvt, passive);\n      };\n      this.setDebounce(updateDebounce);\n      if (Object.keys(updateSizes).length !== 0) {\n        this.setSizes(updateSizes);\n        updateSizes = void 0;\n      } else {\n        this.__update();\n      }\n      classes === true && this.name === \"xs\" && document.body.classList.add(\"screen--xs\");\n    };\n    if (isRuntimeSsrPreHydration.value === true) {\n      onSSRHydrated.push(start);\n    } else {\n      start();\n    }\n  }\n});\n",
+      "start": 1703982896752,
+      "end": 1703982896759,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896762,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    }
+  ]
+}

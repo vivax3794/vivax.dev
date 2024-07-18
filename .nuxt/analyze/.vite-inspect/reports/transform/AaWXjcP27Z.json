@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/linear-progress/QLinearProgress.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, getCurrentInstance } from 'vue'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport useSize, { useSizeProps } from '../../composables/private/use-size.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hMergeSlot } from '../../utils/private/render.js'\n\nconst defaultSizes = {\n  xs: 2,\n  sm: 4,\n  md: 6,\n  lg: 10,\n  xl: 14\n}\n\nfunction width (val, reverse, $q) {\n  return {\n    transform: reverse === true\n      ? `translateX(${ $q.lang.rtl === true ? '-' : '' }100%) scale3d(${ -val },1,1)`\n      : `scale3d(${ val },1,1)`\n  }\n}\n\nexport default createComponent({\n  name: 'QLinearProgress',\n\n  props: {\n    ...useDarkProps,\n    ...useSizeProps,\n\n    value: {\n      type: Number,\n      default: 0\n    },\n    buffer: Number,\n\n    color: String,\n    trackColor: String,\n\n    reverse: Boolean,\n    stripe: Boolean,\n    indeterminate: Boolean,\n    query: Boolean,\n    rounded: Boolean,\n\n    animationSpeed: {\n      type: [ String, Number ],\n      default: 2100\n    },\n\n    instantFeedback: Boolean\n  },\n\n  setup (props, { slots }) {\n    const { proxy } = getCurrentInstance()\n    const isDark = useDark(props, proxy.$q)\n    const sizeStyle = useSize(props, defaultSizes)\n\n    const motion = computed(() => props.indeterminate === true || props.query === true)\n    const widthReverse = computed(() => props.reverse !== props.query)\n    const style = computed(() => ({\n      ...(sizeStyle.value !== null ? sizeStyle.value : {}),\n      '--q-linear-progress-speed': `${ props.animationSpeed }ms`\n    }))\n\n    const classes = computed(() =>\n      'q-linear-progress'\n      + (props.color !== void 0 ? ` text-${ props.color }` : '')\n      + (props.reverse === true || props.query === true ? ' q-linear-progress--reverse' : '')\n      + (props.rounded === true ? ' rounded-borders' : '')\n    )\n\n    const trackStyle = computed(() => width(props.buffer !== void 0 ? props.buffer : 1, widthReverse.value, proxy.$q))\n    const transitionSuffix = computed(() => `with${ props.instantFeedback === true ? 'out' : '' }-transition`)\n\n    const trackClass = computed(() =>\n      'q-linear-progress__track absolute-full'\n      + ` q-linear-progress__track--${ transitionSuffix.value }`\n      + ` q-linear-progress__track--${ isDark.value === true ? 'dark' : 'light' }`\n      + (props.trackColor !== void 0 ? ` bg-${ props.trackColor }` : '')\n    )\n\n    const modelStyle = computed(() => width(motion.value === true ? 1 : props.value, widthReverse.value, proxy.$q))\n    const modelClass = computed(() =>\n      'q-linear-progress__model absolute-full'\n      + ` q-linear-progress__model--${ transitionSuffix.value }`\n      + ` q-linear-progress__model--${ motion.value === true ? 'in' : '' }determinate`\n    )\n\n    const stripeStyle = computed(() => ({ width: `${ props.value * 100 }%` }))\n    const stripeClass = computed(() =>\n      `q-linear-progress__stripe absolute-${ props.reverse === true ? 'right' : 'left' }`\n      + ` q-linear-progress__stripe--${ transitionSuffix.value }`\n    )\n\n    return () => {\n      const child = [\n        h('div', {\n          class: trackClass.value,\n          style: trackStyle.value\n        }),\n\n        h('div', {\n          class: modelClass.value,\n          style: modelStyle.value\n        })\n      ]\n\n      props.stripe === true && motion.value === false && child.push(\n        h('div', {\n          class: stripeClass.value,\n          style: stripeStyle.value\n        })\n      )\n\n      return h('div', {\n        class: classes.value,\n        style: style.value,\n        role: 'progressbar',\n        'aria-valuemin': 0,\n        'aria-valuemax': 1,\n        'aria-valuenow': props.indeterminate === true\n          ? void 0\n          : props.value\n      }, hMergeSlot(slots.default, child))\n    }\n  }\n})\n",
+      "start": 1703982896345,
+      "end": 1703982896467,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896467,
+      "end": 1703982896467,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896467,
+      "end": 1703982896468,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896468,
+      "end": 1703982896468,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/slide-transition/QSlideTransition.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, onBeforeUnmount, Transition } from 'vue'\n\nimport { createComponent } from '../../utils/private/create.js'\n\nexport default createComponent({\n  name: 'QSlideTransition',\n\n  props: {\n    appear: Boolean,\n    duration: {\n      type: Number,\n      default: 300\n    }\n  },\n\n  emits: [ 'show', 'hide' ],\n\n  setup (props, { slots, emit }) {\n    let animating = false, doneFn, element\n    let timer = null, timerFallback = null, animListener, lastEvent\n\n    function cleanup () {\n      doneFn && doneFn()\n      doneFn = null\n      animating = false\n\n      if (timer !== null) {\n        clearTimeout(timer)\n        timer = null\n      }\n\n      if (timerFallback !== null) {\n        clearTimeout(timerFallback)\n        timerFallback = null\n      }\n\n      element !== void 0 && element.removeEventListener('transitionend', animListener)\n      animListener = null\n    }\n\n    function begin (el, height, done) {\n      // here overflowY is 'hidden'\n      if (height !== void 0) {\n        el.style.height = `${ height }px`\n      }\n      el.style.transition = `height ${ props.duration }ms cubic-bezier(.25, .8, .50, 1)`\n\n      animating = true\n      doneFn = done\n    }\n\n    function end (el, event) {\n      el.style.overflowY = null\n      el.style.height = null\n      el.style.transition = null\n      cleanup()\n      event !== lastEvent && emit(event)\n    }\n\n    function onEnter (el, done) {\n      let pos = 0\n      element = el\n\n      // if animationg overflowY is already 'hidden'\n      if (animating === true) {\n        cleanup()\n        pos = el.offsetHeight === el.scrollHeight ? 0 : void 0\n      }\n      else {\n        lastEvent = 'hide'\n        el.style.overflowY = 'hidden'\n      }\n\n      begin(el, pos, done)\n\n      timer = setTimeout(() => {\n        timer = null\n        el.style.height = `${ el.scrollHeight }px`\n        animListener = evt => {\n          timerFallback = null\n\n          if (Object(evt) !== evt || evt.target === el) {\n            end(el, 'show')\n          }\n        }\n        el.addEventListener('transitionend', animListener)\n        timerFallback = setTimeout(animListener, props.duration * 1.1)\n      }, 100)\n    }\n\n    function onLeave (el, done) {\n      let pos\n      element = el\n\n      if (animating === true) {\n        cleanup()\n      }\n      else {\n        lastEvent = 'show'\n        // we need to set overflowY 'hidden' before calculating the height\n        // or else we get small differences\n        el.style.overflowY = 'hidden'\n        pos = el.scrollHeight\n      }\n\n      begin(el, pos, done)\n\n      timer = setTimeout(() => {\n        timer = null\n        el.style.height = 0\n        animListener = evt => {\n          timerFallback = null\n\n          if (Object(evt) !== evt || evt.target === el) {\n            end(el, 'hide')\n          }\n        }\n        el.addEventListener('transitionend', animListener)\n        timerFallback = setTimeout(animListener, props.duration * 1.1)\n      }, 100)\n    }\n\n    onBeforeUnmount(() => {\n      animating === true && cleanup()\n    })\n\n    return () => h(Transition, {\n      css: false,\n      appear: props.appear,\n      onEnter,\n      onLeave\n    }, slots.default)\n  }\n})\n",
+      "start": 1703982896473,
+      "end": 1703982896552,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896552,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    }
+  ]
+}

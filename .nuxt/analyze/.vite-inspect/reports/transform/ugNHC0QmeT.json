@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/icon-set.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import defineReactivePlugin from './utils/private/define-reactive-plugin.js'\nimport { injectProp } from './utils/private/inject-obj-prop.js'\n// no extension on purpose for next one:\nimport materialIcons from '../icon-set/material-icons'\n\nconst Plugin = defineReactivePlugin({\n  iconMapFn: null,\n  __icons: {}\n}, {\n  set (setObject, ssrContext) {\n    const def = { ...setObject, rtl: setObject.rtl === true }\n\n    if (__QUASAR_SSR_SERVER__) {\n      if (ssrContext === void 0) {\n        console.error('SSR ERROR: second param required: Quasar.iconSet.set(iconSet, ssrContext)')\n        return\n      }\n\n      def.set = ssrContext.$q.iconSet.set\n      Object.assign(ssrContext.$q.iconSet, def)\n    }\n    else {\n      def.set = Plugin.set\n      Object.assign(Plugin.__icons, def)\n    }\n  },\n\n  install ({ $q, iconSet, ssrContext }) {\n    if (__QUASAR_SSR_SERVER__) {\n      const initialSet = iconSet || materialIcons\n\n      $q.iconMapFn = ssrContext.$q.config.iconMapFn || this.iconMapFn || null\n      $q.iconSet = {}\n      $q.iconSet.set = setObject => {\n        this.set(setObject, ssrContext)\n      }\n\n      $q.iconSet.set(initialSet)\n    }\n    else {\n      if ($q.config.iconMapFn !== void 0) {\n        this.iconMapFn = $q.config.iconMapFn\n      }\n\n      $q.iconSet = this.__icons\n\n      injectProp($q, 'iconMapFn', () => this.iconMapFn, val => { this.iconMapFn = val })\n\n      if (this.__installed === true) {\n        iconSet !== void 0 && this.set(iconSet)\n      }\n      else {\n        this.set(iconSet || materialIcons)\n      }\n    }\n  }\n})\n\nexport default Plugin\n",
+      "start": 1703982895875,
+      "end": 1703982895990,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982895990,
+      "end": 1703982895990,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import defineReactivePlugin from \"./utils/private/define-reactive-plugin.js\";\nimport { injectProp } from \"./utils/private/inject-obj-prop.js\";\nimport materialIcons from \"../icon-set/material-icons\";\nconst Plugin = defineReactivePlugin({\n  iconMapFn: null,\n  __icons: {}\n}, {\n  set(setObject, ssrContext) {\n    const def = { ...setObject, rtl: setObject.rtl === true };\n    if (false) {\n      if (ssrContext === void 0) {\n        console.error(\"SSR ERROR: second param required: Quasar.iconSet.set(iconSet, ssrContext)\");\n        return;\n      }\n      def.set = ssrContext.$q.iconSet.set;\n      Object.assign(ssrContext.$q.iconSet, def);\n    } else {\n      def.set = Plugin.set;\n      Object.assign(Plugin.__icons, def);\n    }\n  },\n  install({ $q, iconSet, ssrContext }) {\n    if (false) {\n      const initialSet = iconSet || materialIcons;\n      $q.iconMapFn = ssrContext.$q.config.iconMapFn || this.iconMapFn || null;\n      $q.iconSet = {};\n      $q.iconSet.set = (setObject) => {\n        this.set(setObject, ssrContext);\n      };\n      $q.iconSet.set(initialSet);\n    } else {\n      if ($q.config.iconMapFn !== void 0) {\n        this.iconMapFn = $q.config.iconMapFn;\n      }\n      $q.iconSet = this.__icons;\n      injectProp($q, \"iconMapFn\", () => this.iconMapFn, (val) => {\n        this.iconMapFn = val;\n      });\n      if (this.__installed === true) {\n        iconSet !== void 0 && this.set(iconSet);\n      } else {\n        this.set(iconSet || materialIcons);\n      }\n    }\n  }\n});\nexport default Plugin;\n",
+      "start": 1703982895990,
+      "end": 1703982896000,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896000,
+      "end": 1703982896000,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896000,
+      "end": 1703982896000,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896000,
+      "end": 1703982896000,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896000,
+      "end": 1703982896000,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896001,
+      "end": 1703982896001,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896002,
+      "end": 1703982896002,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896002,
+      "end": 1703982896002,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896002,
+      "end": 1703982896002,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896002,
+      "end": 1703982896002,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896002,
+      "end": 1703982896002,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896002,
+      "end": 1703982896002,
+      "order": "normal"
+    }
+  ]
+}

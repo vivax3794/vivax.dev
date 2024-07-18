@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/input/QInput.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, onBeforeUnmount, onMounted, nextTick, getCurrentInstance } from 'vue'\n\nimport useField, { useFieldState, useFieldProps, useFieldEmits, fieldValueIsFilled } from '../../composables/private/use-field.js'\nimport useMask, { useMaskProps } from './use-mask.js'\nimport { useFormProps, useFormInputNameAttr } from '../../composables/private/use-form.js'\nimport useFileFormDomProps from '../../composables/private/use-file-dom-props.js'\nimport useKeyComposition from '../../composables/private/use-key-composition.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stop } from '../../utils/event.js'\nimport { addFocusFn } from '../../utils/private/focus-manager.js'\nimport { injectProp } from '../../utils/private/inject-obj-prop.js'\n\nexport default createComponent({\n  name: 'QInput',\n\n  inheritAttrs: false,\n\n  props: {\n    ...useFieldProps,\n    ...useMaskProps,\n    ...useFormProps,\n\n    modelValue: { required: false },\n\n    shadowText: String,\n\n    type: {\n      type: String,\n      default: 'text'\n    },\n\n    debounce: [ String, Number ],\n\n    autogrow: Boolean, // makes a textarea\n\n    inputClass: [ Array, String, Object ],\n    inputStyle: [ Array, String, Object ]\n  },\n\n  emits: [\n    ...useFieldEmits,\n    'paste', 'change',\n    'keydown', 'click', 'animationend'\n  ],\n\n  setup (props, { emit, attrs }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const temp = {}\n    let emitCachedValue = NaN, typedNumber, stopValueWatcher, emitTimer = null, emitValueFn\n\n    const inputRef = ref(null)\n    const nameProp = useFormInputNameAttr(props)\n\n    const {\n      innerValue,\n      hasMask,\n      moveCursorForPaste,\n      updateMaskValue,\n      onMaskedKeydown,\n      onMaskedClick\n    } = useMask(props, emit, emitValue, inputRef)\n\n    const formDomProps = useFileFormDomProps(props, /* type guard */ true)\n    const hasValue = computed(() => fieldValueIsFilled(innerValue.value))\n\n    const onComposition = useKeyComposition(onInput)\n\n    const state = useFieldState()\n\n    const isTextarea = computed(() =>\n      props.type === 'textarea' || props.autogrow === true\n    )\n\n    const isTypeText = computed(() =>\n      isTextarea.value === true\n      || [ 'text', 'search', 'url', 'tel', 'password' ].includes(props.type)\n    )\n\n    const onEvents = computed(() => {\n      const evt = {\n        ...state.splitAttrs.listeners.value,\n        onInput,\n        onPaste,\n        // Safari < 10.2 & UIWebView doesn't fire compositionend when\n        // switching focus before confirming composition choice\n        // this also fixes the issue where some browsers e.g. iOS Chrome\n        // fires \"change\" instead of \"input\" on autocomplete.\n        onChange,\n        onBlur: onFinishEditing,\n        onFocus: stop\n      }\n\n      evt.onCompositionstart = evt.onCompositionupdate = evt.onCompositionend = onComposition\n\n      if (hasMask.value === true) {\n        evt.onKeydown = onMaskedKeydown\n        // reset selection anchor on pointer selection\n        evt.onClick = onMaskedClick\n      }\n\n      if (props.autogrow === true) {\n        evt.onAnimationend = onAnimationend\n      }\n\n      return evt\n    })\n\n    const inputAttrs = computed(() => {\n      const attrs = {\n        tabindex: 0,\n        'data-autofocus': props.autofocus === true || void 0,\n        rows: props.type === 'textarea' ? 6 : void 0,\n        'aria-label': props.label,\n        name: nameProp.value,\n        ...state.splitAttrs.attributes.value,\n        id: state.targetUid.value,\n        maxlength: props.maxlength,\n        disabled: props.disable === true,\n        readonly: props.readonly === true\n      }\n\n      if (isTextarea.value === false) {\n        attrs.type = props.type\n      }\n\n      if (props.autogrow === true) {\n        attrs.rows = 1\n      }\n\n      return attrs\n    })\n\n    // some browsers lose the native input value\n    // so we need to reattach it dynamically\n    // (like type=\"password\" <-> type=\"text\"; see #12078)\n    watch(() => props.type, () => {\n      if (inputRef.value) {\n        inputRef.value.value = props.modelValue\n      }\n    })\n\n    watch(() => props.modelValue, v => {\n      if (hasMask.value === true) {\n        if (stopValueWatcher === true) {\n          stopValueWatcher = false\n\n          if (String(v) === emitCachedValue) {\n            return\n          }\n        }\n\n        updateMaskValue(v)\n      }\n      else if (innerValue.value !== v) {\n        innerValue.value = v\n\n        if (\n          props.type === 'number'\n          && temp.hasOwnProperty('value') === true\n        ) {\n          if (typedNumber === true) {\n            typedNumber = false\n          }\n          else {\n            delete temp.value\n          }\n        }\n      }\n\n      // textarea only\n      props.autogrow === true && nextTick(adjustHeight)\n    })\n\n    watch(() => props.autogrow, val => {\n      // textarea only\n      if (val === true) {\n        nextTick(adjustHeight)\n      }\n      // if it has a number of rows set respect it\n      else if (inputRef.value !== null && attrs.rows > 0) {\n        inputRef.value.style.height = 'auto'\n      }\n    })\n\n    watch(() => props.dense, () => {\n      props.autogrow === true && nextTick(adjustHeight)\n    })\n\n    function focus () {\n      addFocusFn(() => {\n        const el = document.activeElement\n        if (\n          inputRef.value !== null\n          && inputRef.value !== el\n          && (el === null || el.id !== state.targetUid.value)\n        ) {\n          inputRef.value.focus({ preventScroll: true })\n        }\n      })\n    }\n\n    function select () {\n      inputRef.value !== null && inputRef.value.select()\n    }\n\n    function onPaste (e) {\n      if (hasMask.value === true && props.reverseFillMask !== true) {\n        const inp = e.target\n        moveCursorForPaste(inp, inp.selectionStart, inp.selectionEnd)\n      }\n\n      emit('paste', e)\n    }\n\n    function onInput (e) {\n      if (!e || !e.target) {\n        return\n      }\n\n      if (props.type === 'file') {\n        emit('update:modelValue', e.target.files)\n        return\n      }\n\n      const val = e.target.value\n\n      if (e.target.qComposing === true) {\n        temp.value = val\n\n        return\n      }\n\n      if (hasMask.value === true) {\n        updateMaskValue(val, false, e.inputType)\n      }\n      else {\n        emitValue(val)\n\n        if (isTypeText.value === true && e.target === document.activeElement) {\n          const { selectionStart, selectionEnd } = e.target\n\n          if (selectionStart !== void 0 && selectionEnd !== void 0) {\n            nextTick(() => {\n              if (e.target === document.activeElement && val.indexOf(e.target.value) === 0) {\n                e.target.setSelectionRange(selectionStart, selectionEnd)\n              }\n            })\n          }\n        }\n      }\n\n      // we need to trigger it immediately too,\n      // to avoid \"flickering\"\n      props.autogrow === true && adjustHeight()\n    }\n\n    function onAnimationend (e) {\n      emit('animationend', e)\n      adjustHeight()\n    }\n\n    function emitValue (val, stopWatcher) {\n      emitValueFn = () => {\n        emitTimer = null\n\n        if (\n          props.type !== 'number'\n          && temp.hasOwnProperty('value') === true\n        ) {\n          delete temp.value\n        }\n\n        if (props.modelValue !== val && emitCachedValue !== val) {\n          emitCachedValue = val\n\n          stopWatcher === true && (stopValueWatcher = true)\n          emit('update:modelValue', val)\n\n          nextTick(() => {\n            emitCachedValue === val && (emitCachedValue = NaN)\n          })\n        }\n\n        emitValueFn = void 0\n      }\n\n      if (props.type === 'number') {\n        typedNumber = true\n        temp.value = val\n      }\n\n      if (props.debounce !== void 0) {\n        emitTimer !== null && clearTimeout(emitTimer)\n        temp.value = val\n        emitTimer = setTimeout(emitValueFn, props.debounce)\n      }\n      else {\n        emitValueFn()\n      }\n    }\n\n    // textarea only\n    function adjustHeight () {\n      requestAnimationFrame(() => {\n        const inp = inputRef.value\n        if (inp !== null) {\n          const parentStyle = inp.parentNode.style\n          // chrome does not keep scroll #15498\n          const { scrollTop } = inp\n          // chrome calculates a smaller scrollHeight when in a .column container\n          const { overflowY, maxHeight } = $q.platform.is.firefox === true\n            ? {}\n            : window.getComputedStyle(inp)\n          // on firefox or if overflowY is specified as scroll #14263, #14344\n          // we don't touch overflow\n          // firefox is not so bad in the end\n          const changeOverflow = overflowY !== void 0 && overflowY !== 'scroll'\n\n          // reset height of textarea to a small size to detect the real height\n          // but keep the total control size the same\n          changeOverflow === true && (inp.style.overflowY = 'hidden')\n          parentStyle.marginBottom = (inp.scrollHeight - 1) + 'px'\n          inp.style.height = '1px'\n\n          inp.style.height = inp.scrollHeight + 'px'\n          // we should allow scrollbars only\n          // if there is maxHeight and content is taller than maxHeight\n          changeOverflow === true && (inp.style.overflowY = parseInt(maxHeight, 10) < inp.scrollHeight ? 'auto' : 'hidden')\n          parentStyle.marginBottom = ''\n          inp.scrollTop = scrollTop\n        }\n      })\n    }\n\n    function onChange (e) {\n      onComposition(e)\n\n      if (emitTimer !== null) {\n        clearTimeout(emitTimer)\n        emitTimer = null\n      }\n\n      emitValueFn !== void 0 && emitValueFn()\n\n      emit('change', e.target.value)\n    }\n\n    function onFinishEditing (e) {\n      e !== void 0 && stop(e)\n\n      if (emitTimer !== null) {\n        clearTimeout(emitTimer)\n        emitTimer = null\n      }\n\n      emitValueFn !== void 0 && emitValueFn()\n\n      typedNumber = false\n      stopValueWatcher = false\n      delete temp.value\n\n      // we need to use setTimeout instead of this.$nextTick\n      // to avoid a bug where focusout is not emitted for type date/time/week/...\n      props.type !== 'file' && setTimeout(() => {\n        if (inputRef.value !== null) {\n          inputRef.value.value = innerValue.value !== void 0 ? innerValue.value : ''\n        }\n      })\n    }\n\n    function getCurValue () {\n      return temp.hasOwnProperty('value') === true\n        ? temp.value\n        : (innerValue.value !== void 0 ? innerValue.value : '')\n    }\n\n    onBeforeUnmount(() => {\n      onFinishEditing()\n    })\n\n    onMounted(() => {\n      // textarea only\n      props.autogrow === true && adjustHeight()\n    })\n\n    Object.assign(state, {\n      innerValue,\n\n      fieldClass: computed(() =>\n        `q-${ isTextarea.value === true ? 'textarea' : 'input' }`\n        + (props.autogrow === true ? ' q-textarea--autogrow' : '')\n      ),\n\n      hasShadow: computed(() =>\n        props.type !== 'file'\n        && typeof props.shadowText === 'string'\n        && props.shadowText.length !== 0\n      ),\n\n      inputRef,\n\n      emitValue,\n\n      hasValue,\n\n      floatingLabel: computed(() =>\n        (\n          hasValue.value === true\n          && (props.type !== 'number' || isNaN(innerValue.value) === false)\n        )\n        || fieldValueIsFilled(props.displayValue)\n      ),\n\n      getControl: () => {\n        return h(isTextarea.value === true ? 'textarea' : 'input', {\n          ref: inputRef,\n          class: [\n            'q-field__native q-placeholder',\n            props.inputClass\n          ],\n          style: props.inputStyle,\n          ...inputAttrs.value,\n          ...onEvents.value,\n          ...(\n            props.type !== 'file'\n              ? { value: getCurValue() }\n              : formDomProps.value\n          )\n        })\n      },\n\n      getShadowControl: () => {\n        return h('div', {\n          class: 'q-field__native q-field__shadow absolute-bottom no-pointer-events'\n            + (isTextarea.value === true ? '' : ' text-no-wrap')\n        }, [\n          h('span', { class: 'invisible' }, getCurValue()),\n          h('span', props.shadowText)\n        ])\n      }\n    })\n\n    const renderFn = useField(state)\n\n    // expose public methods\n    Object.assign(proxy, {\n      focus,\n      select,\n      getNativeElement: () => inputRef.value // deprecated\n    })\n\n    injectProp(proxy, 'nativeEl', () => inputRef.value)\n\n    return renderFn\n  }\n})\n",
+      "start": 1703982896283,
+      "end": 1703982896421,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896421,
+      "end": 1703982896421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896421,
+      "end": 1703982896422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896422,
+      "end": 1703982896422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896422,
+      "end": 1703982896422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896422,
+      "end": 1703982896422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896422,
+      "end": 1703982896422,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896422,
+      "end": 1703982896423,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "normal"
+    }
+  ]
+}

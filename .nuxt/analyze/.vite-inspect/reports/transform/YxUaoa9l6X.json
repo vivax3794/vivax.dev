@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/Meta.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { isRuntimeSsrPreHydration } from './Platform.js'\nimport extend from '../utils/extend.js'\n\nlet updateId = null, currentClientMeta\nexport const clientList = []\n\nfunction normalize (meta) {\n  if (meta.title) {\n    meta.title = meta.titleTemplate\n      ? meta.titleTemplate(meta.title)\n      : meta.title\n    delete meta.titleTemplate\n  }\n\n  ;[ [ 'meta', 'content' ], [ 'link', 'href' ] ].forEach(type => {\n    const\n      metaType = meta[ type[ 0 ] ],\n      metaProp = type[ 1 ]\n\n    for (const name in metaType) {\n      const metaLink = metaType[ name ]\n\n      if (metaLink.template) {\n        if (Object.keys(metaLink).length === 1) {\n          delete metaType[ name ]\n        }\n        else {\n          metaLink[ metaProp ] = metaLink.template(metaLink[ metaProp ] || '')\n          delete metaLink.template\n        }\n      }\n    }\n  })\n}\n\nfunction changed (old, def) {\n  if (Object.keys(old).length !== Object.keys(def).length) {\n    return true\n  }\n  for (const key in old) {\n    if (old[ key ] !== def[ key ]) {\n      return true\n    }\n  }\n}\n\nfunction bodyFilter (name) {\n  return [ 'class', 'style' ].includes(name) === false\n}\n\nfunction htmlFilter (name) {\n  return [ 'lang', 'dir' ].includes(name) === false\n}\n\nfunction diff (meta, other) {\n  const add = {}, remove = {}\n\n  if (meta === void 0) {\n    return { add: other, remove }\n  }\n\n  if (meta.title !== other.title) {\n    add.title = other.title\n  }\n\n  ;[ 'meta', 'link', 'script', 'htmlAttr', 'bodyAttr' ].forEach(type => {\n    const old = meta[ type ], cur = other[ type ]\n    remove[ type ] = []\n\n    if (old === void 0 || old === null) {\n      add[ type ] = cur\n      return\n    }\n\n    add[ type ] = {}\n\n    for (const key in old) {\n      if (cur.hasOwnProperty(key) === false) {\n        remove[ type ].push(key)\n      }\n    }\n    for (const key in cur) {\n      if (old.hasOwnProperty(key) === false) {\n        add[ type ][ key ] = cur[ key ]\n      }\n      else if (changed(old[ key ], cur[ key ]) === true) {\n        remove[ type ].push(key)\n        add[ type ][ key ] = cur[ key ]\n      }\n    }\n  })\n\n  return { add, remove }\n}\n\nfunction apply ({ add, remove }) {\n  if (add.title) {\n    document.title = add.title\n  }\n\n  if (Object.keys(remove).length !== 0) {\n    [ 'meta', 'link', 'script' ].forEach(type => {\n      remove[ type ].forEach(name => {\n        document.head.querySelector(`${ type }[data-qmeta=\"${ name }\"]`).remove()\n      })\n    })\n    remove.htmlAttr.filter(htmlFilter).forEach(name => {\n      document.documentElement.removeAttribute(name)\n    })\n    remove.bodyAttr.filter(bodyFilter).forEach(name => {\n      document.body.removeAttribute(name)\n    })\n  }\n\n  ;[ 'meta', 'link', 'script' ].forEach(type => {\n    const metaType = add[ type ]\n\n    for (const name in metaType) {\n      const tag = document.createElement(type)\n      for (const att in metaType[ name ]) {\n        if (att !== 'innerHTML') {\n          tag.setAttribute(att, metaType[ name ][ att ])\n        }\n      }\n      tag.setAttribute('data-qmeta', name)\n      if (type === 'script') {\n        tag.innerHTML = metaType[ name ].innerHTML || ''\n      }\n      document.head.appendChild(tag)\n    }\n  })\n  Object.keys(add.htmlAttr).filter(htmlFilter).forEach(name => {\n    document.documentElement.setAttribute(name, add.htmlAttr[ name ] || '')\n  })\n  Object.keys(add.bodyAttr).filter(bodyFilter).forEach(name => {\n    document.body.setAttribute(name, add.bodyAttr[ name ] || '')\n  })\n}\n\nfunction getAttr (seed) {\n  return att => {\n    const val = seed[ att ]\n    return att + (val !== true && val !== void 0 ? `=\"${ val }\"` : '')\n  }\n}\n\nfunction getHead (meta) {\n  let output = ''\n  if (meta.title) {\n    output += `<title>${ meta.title }</title>`\n  }\n  ;[ 'meta', 'link', 'script' ].forEach(type => {\n    const metaType = meta[ type ]\n\n    for (const att in metaType) {\n      const attrs = Object.keys(metaType[ att ])\n        .filter(att => att !== 'innerHTML')\n        .map(getAttr(metaType[ att ]))\n\n      output += `<${ type } ${ attrs.join(' ') } data-qmeta=\"${ att }\">`\n      if (type === 'script') {\n        output += (metaType[ att ].innerHTML || '') + '</script>'\n      }\n    }\n  })\n  return output\n}\n\nfunction injectServerMeta (ssrContext) {\n  const data = {\n    title: '',\n    titleTemplate: null,\n    meta: {},\n    link: {},\n    htmlAttr: {},\n    bodyAttr: {},\n    noscript: {}\n  }\n\n  const list = ssrContext.__qMetaList\n\n  for (let i = 0; i < list.length; i++) {\n    extend(true, data, list[ i ])\n  }\n\n  normalize(data)\n\n  const nonce = ssrContext.nonce !== void 0\n    ? ` nonce=\"${ ssrContext.nonce }\"`\n    : ''\n\n  const ctx = ssrContext._meta\n\n  const htmlAttr = Object.keys(data.htmlAttr).filter(htmlFilter)\n\n  if (htmlAttr.length !== 0) {\n    ctx.htmlAttrs += (\n      (ctx.htmlAttrs.length !== 0 ? ' ' : '')\n      + htmlAttr.map(getAttr(data.htmlAttr)).join(' ')\n    )\n  }\n\n  ctx.headTags += getHead(data)\n\n  const bodyAttr = Object.keys(data.bodyAttr).filter(bodyFilter)\n\n  if (bodyAttr.length !== 0) {\n    ctx.bodyAttrs += (\n      (ctx.bodyAttrs.length !== 0 ? ' ' : '')\n      + bodyAttr.map(getAttr(data.bodyAttr)).join(' ')\n    )\n  }\n\n  ctx.bodyTags += Object.keys(data.noscript)\n    .map(name => `<noscript data-qmeta=\"${ name }\">${ data.noscript[ name ] }</noscript>`)\n    .join('')\n    + `<script${ nonce } id=\"qmeta-init\">window.__Q_META__=${ delete data.noscript && JSON.stringify(data) }</script>`\n}\n\nfunction updateClientMeta () {\n  updateId = null\n\n  const data = {\n    title: '',\n    titleTemplate: null,\n    meta: {},\n    link: {},\n    script: {},\n    htmlAttr: {},\n    bodyAttr: {}\n  }\n\n  for (let i = 0; i < clientList.length; i++) {\n    const { active, val } = clientList[ i ]\n\n    if (active === true) {\n      extend(true, data, val)\n    }\n  }\n\n  normalize(data)\n\n  apply(diff(currentClientMeta, data))\n  currentClientMeta = data\n}\n\nexport function planClientUpdate () {\n  updateId !== null && clearTimeout(updateId)\n  updateId = setTimeout(updateClientMeta, 50)\n}\n\nexport default {\n  install (opts) {\n    if (__QUASAR_SSR_SERVER__) {\n      const { ssrContext } = opts\n\n      ssrContext.__qMetaList = []\n      ssrContext.onRendered(() => {\n        injectServerMeta(ssrContext)\n      })\n    }\n    else if (this.__installed !== true && isRuntimeSsrPreHydration.value === true) {\n      currentClientMeta = window.__Q_META__\n      document.getElementById('qmeta-init').remove()\n    }\n  }\n}\n",
+      "start": 1703982896691,
+      "end": 1703982896746,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { isRuntimeSsrPreHydration } from \"./Platform.js\";\nimport extend from \"../utils/extend.js\";\nlet updateId = null, currentClientMeta;\nexport const clientList = [];\nfunction normalize(meta) {\n  if (meta.title) {\n    meta.title = meta.titleTemplate ? meta.titleTemplate(meta.title) : meta.title;\n    delete meta.titleTemplate;\n  }\n  ;\n  [[\"meta\", \"content\"], [\"link\", \"href\"]].forEach((type) => {\n    const metaType = meta[type[0]], metaProp = type[1];\n    for (const name in metaType) {\n      const metaLink = metaType[name];\n      if (metaLink.template) {\n        if (Object.keys(metaLink).length === 1) {\n          delete metaType[name];\n        } else {\n          metaLink[metaProp] = metaLink.template(metaLink[metaProp] || \"\");\n          delete metaLink.template;\n        }\n      }\n    }\n  });\n}\nfunction changed(old, def) {\n  if (Object.keys(old).length !== Object.keys(def).length) {\n    return true;\n  }\n  for (const key in old) {\n    if (old[key] !== def[key]) {\n      return true;\n    }\n  }\n}\nfunction bodyFilter(name) {\n  return [\"class\", \"style\"].includes(name) === false;\n}\nfunction htmlFilter(name) {\n  return [\"lang\", \"dir\"].includes(name) === false;\n}\nfunction diff(meta, other) {\n  const add = {}, remove = {};\n  if (meta === void 0) {\n    return { add: other, remove };\n  }\n  if (meta.title !== other.title) {\n    add.title = other.title;\n  }\n  ;\n  [\"meta\", \"link\", \"script\", \"htmlAttr\", \"bodyAttr\"].forEach((type) => {\n    const old = meta[type], cur = other[type];\n    remove[type] = [];\n    if (old === void 0 || old === null) {\n      add[type] = cur;\n      return;\n    }\n    add[type] = {};\n    for (const key in old) {\n      if (cur.hasOwnProperty(key) === false) {\n        remove[type].push(key);\n      }\n    }\n    for (const key in cur) {\n      if (old.hasOwnProperty(key) === false) {\n        add[type][key] = cur[key];\n      } else if (changed(old[key], cur[key]) === true) {\n        remove[type].push(key);\n        add[type][key] = cur[key];\n      }\n    }\n  });\n  return { add, remove };\n}\nfunction apply({ add, remove }) {\n  if (add.title) {\n    document.title = add.title;\n  }\n  if (Object.keys(remove).length !== 0) {\n    [\"meta\", \"link\", \"script\"].forEach((type) => {\n      remove[type].forEach((name) => {\n        document.head.querySelector(`${type}[data-qmeta=\"${name}\"]`).remove();\n      });\n    });\n    remove.htmlAttr.filter(htmlFilter).forEach((name) => {\n      document.documentElement.removeAttribute(name);\n    });\n    remove.bodyAttr.filter(bodyFilter).forEach((name) => {\n      document.body.removeAttribute(name);\n    });\n  }\n  ;\n  [\"meta\", \"link\", \"script\"].forEach((type) => {\n    const metaType = add[type];\n    for (const name in metaType) {\n      const tag = document.createElement(type);\n      for (const att in metaType[name]) {\n        if (att !== \"innerHTML\") {\n          tag.setAttribute(att, metaType[name][att]);\n        }\n      }\n      tag.setAttribute(\"data-qmeta\", name);\n      if (type === \"script\") {\n        tag.innerHTML = metaType[name].innerHTML || \"\";\n      }\n      document.head.appendChild(tag);\n    }\n  });\n  Object.keys(add.htmlAttr).filter(htmlFilter).forEach((name) => {\n    document.documentElement.setAttribute(name, add.htmlAttr[name] || \"\");\n  });\n  Object.keys(add.bodyAttr).filter(bodyFilter).forEach((name) => {\n    document.body.setAttribute(name, add.bodyAttr[name] || \"\");\n  });\n}\nfunction getAttr(seed) {\n  return (att) => {\n    const val = seed[att];\n    return att + (val !== true && val !== void 0 ? `=\"${val}\"` : \"\");\n  };\n}\nfunction getHead(meta) {\n  let output = \"\";\n  if (meta.title) {\n    output += `<title>${meta.title}</title>`;\n  }\n  ;\n  [\"meta\", \"link\", \"script\"].forEach((type) => {\n    const metaType = meta[type];\n    for (const att in metaType) {\n      const attrs = Object.keys(metaType[att]).filter((att2) => att2 !== \"innerHTML\").map(getAttr(metaType[att]));\n      output += `<${type} ${attrs.join(\" \")} data-qmeta=\"${att}\">`;\n      if (type === \"script\") {\n        output += (metaType[att].innerHTML || \"\") + \"</script>\";\n      }\n    }\n  });\n  return output;\n}\nfunction injectServerMeta(ssrContext) {\n  const data = {\n    title: \"\",\n    titleTemplate: null,\n    meta: {},\n    link: {},\n    htmlAttr: {},\n    bodyAttr: {},\n    noscript: {}\n  };\n  const list = ssrContext.__qMetaList;\n  for (let i = 0; i < list.length; i++) {\n    extend(true, data, list[i]);\n  }\n  normalize(data);\n  const nonce = ssrContext.nonce !== void 0 ? ` nonce=\"${ssrContext.nonce}\"` : \"\";\n  const ctx = ssrContext._meta;\n  const htmlAttr = Object.keys(data.htmlAttr).filter(htmlFilter);\n  if (htmlAttr.length !== 0) {\n    ctx.htmlAttrs += (ctx.htmlAttrs.length !== 0 ? \" \" : \"\") + htmlAttr.map(getAttr(data.htmlAttr)).join(\" \");\n  }\n  ctx.headTags += getHead(data);\n  const bodyAttr = Object.keys(data.bodyAttr).filter(bodyFilter);\n  if (bodyAttr.length !== 0) {\n    ctx.bodyAttrs += (ctx.bodyAttrs.length !== 0 ? \" \" : \"\") + bodyAttr.map(getAttr(data.bodyAttr)).join(\" \");\n  }\n  ctx.bodyTags += Object.keys(data.noscript).map((name) => `<noscript data-qmeta=\"${name}\">${data.noscript[name]}</noscript>`).join(\"\") + `<script${nonce} id=\"qmeta-init\">window.__Q_META__=${delete data.noscript && JSON.stringify(data)}</script>`;\n}\nfunction updateClientMeta() {\n  updateId = null;\n  const data = {\n    title: \"\",\n    titleTemplate: null,\n    meta: {},\n    link: {},\n    script: {},\n    htmlAttr: {},\n    bodyAttr: {}\n  };\n  for (let i = 0; i < clientList.length; i++) {\n    const { active, val } = clientList[i];\n    if (active === true) {\n      extend(true, data, val);\n    }\n  }\n  normalize(data);\n  apply(diff(currentClientMeta, data));\n  currentClientMeta = data;\n}\nexport function planClientUpdate() {\n  updateId !== null && clearTimeout(updateId);\n  updateId = setTimeout(updateClientMeta, 50);\n}\nexport default {\n  install(opts) {\n    if (false) {\n      const { ssrContext } = opts;\n      ssrContext.__qMetaList = [];\n      ssrContext.onRendered(() => {\n        injectServerMeta(ssrContext);\n      });\n    } else if (this.__installed !== true && isRuntimeSsrPreHydration.value === true) {\n      currentClientMeta = window.__Q_META__;\n      document.getElementById(\"qmeta-init\").remove();\n    }\n  }\n};\n",
+      "start": 1703982896746,
+      "end": 1703982896759,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896760,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896763,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    }
+  ]
+}

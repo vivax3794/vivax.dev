@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/AppFullscreen.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import defineReactivePlugin from '../utils/private/define-reactive-plugin.js'\nimport { changeGlobalNodesTarget } from '../utils/private/global-nodes.js'\n\nconst prefixes = {}\n\nfunction assignFn (fn) {\n  Object.assign(Plugin, {\n    request: fn,\n    exit: fn,\n    toggle: fn\n  })\n}\n\nfunction getFullscreenElement () {\n  return (\n    document.fullscreenElement\n    || document.mozFullScreenElement\n    || document.webkitFullscreenElement\n    || document.msFullscreenElement\n    || null\n  )\n}\n\nfunction updateEl () {\n  const newEl = Plugin.activeEl = Plugin.isActive === false\n    ? null\n    : getFullscreenElement()\n\n  changeGlobalNodesTarget(\n    newEl === null || newEl === document.documentElement\n      ? document.body\n      : newEl\n  )\n}\n\nfunction togglePluginState () {\n  Plugin.isActive = Plugin.isActive === false\n  updateEl()\n}\n\n// needed for consistency across browsers\nfunction promisify (target, fn) {\n  try {\n    const res = target[ fn ]()\n    return res === void 0\n      ? Promise.resolve()\n      : res\n  }\n  catch (err) {\n    return Promise.reject(err)\n  }\n}\n\nconst Plugin = defineReactivePlugin({\n  isActive: false,\n  activeEl: null\n}, {\n  isCapable: false,\n\n  install ({ $q }) {\n    $q.fullscreen = this\n  }\n})\n\nif (__QUASAR_SSR_SERVER__ === true) {\n  assignFn(() => Promise.resolve())\n}\nelse {\n  prefixes.request = [\n    'requestFullscreen',\n    'msRequestFullscreen', 'mozRequestFullScreen', 'webkitRequestFullscreen'\n  ].find(request => document.documentElement[ request ] !== void 0)\n\n  Plugin.isCapable = prefixes.request !== void 0\n\n  if (Plugin.isCapable === false) {\n    // it means the browser does NOT support it\n    assignFn(() => Promise.reject('Not capable'))\n  }\n  else {\n    Object.assign(Plugin, {\n      request (target) {\n        const el = target || document.documentElement\n        const { activeEl } = Plugin\n\n        if (el === activeEl) {\n          return Promise.resolve()\n        }\n\n        const queue = activeEl !== null && el.contains(activeEl) === true\n          ? Plugin.exit()\n          : Promise.resolve()\n\n        return queue.finally(() => promisify(el, prefixes.request))\n      },\n\n      exit () {\n        return Plugin.isActive === true\n          ? promisify(document, prefixes.exit)\n          : Promise.resolve()\n      },\n\n      toggle (target) {\n        return Plugin.isActive === true\n          ? Plugin.exit()\n          : Plugin.request(target)\n      }\n    })\n\n    prefixes.exit = [\n      'exitFullscreen',\n      'msExitFullscreen', 'mozCancelFullScreen', 'webkitExitFullscreen'\n    ].find(exit => document[ exit ])\n\n    Plugin.isActive = Boolean(getFullscreenElement())\n    Plugin.isActive === true && updateEl()\n\n    ;[\n      'onfullscreenchange',\n      'onmsfullscreenchange', 'onwebkitfullscreenchange'\n    ].forEach(evt => {\n      document[ evt ] = togglePluginState\n    })\n  }\n}\n\nexport default Plugin\n",
+      "start": 1703982896681,
+      "end": 1703982896728,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896728,
+      "end": 1703982896729,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896729,
+      "end": 1703982896729,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import defineReactivePlugin from \"../utils/private/define-reactive-plugin.js\";\nimport { changeGlobalNodesTarget } from \"../utils/private/global-nodes.js\";\nconst prefixes = {};\nfunction assignFn(fn) {\n  Object.assign(Plugin, {\n    request: fn,\n    exit: fn,\n    toggle: fn\n  });\n}\nfunction getFullscreenElement() {\n  return document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;\n}\nfunction updateEl() {\n  const newEl = Plugin.activeEl = Plugin.isActive === false ? null : getFullscreenElement();\n  changeGlobalNodesTarget(\n    newEl === null || newEl === document.documentElement ? document.body : newEl\n  );\n}\nfunction togglePluginState() {\n  Plugin.isActive = Plugin.isActive === false;\n  updateEl();\n}\nfunction promisify(target, fn) {\n  try {\n    const res = target[fn]();\n    return res === void 0 ? Promise.resolve() : res;\n  } catch (err) {\n    return Promise.reject(err);\n  }\n}\nconst Plugin = defineReactivePlugin({\n  isActive: false,\n  activeEl: null\n}, {\n  isCapable: false,\n  install({ $q }) {\n    $q.fullscreen = this;\n  }\n});\nif (false) {\n  assignFn(() => Promise.resolve());\n} else {\n  prefixes.request = [\n    \"requestFullscreen\",\n    \"msRequestFullscreen\",\n    \"mozRequestFullScreen\",\n    \"webkitRequestFullscreen\"\n  ].find((request) => document.documentElement[request] !== void 0);\n  Plugin.isCapable = prefixes.request !== void 0;\n  if (Plugin.isCapable === false) {\n    assignFn(() => Promise.reject(\"Not capable\"));\n  } else {\n    Object.assign(Plugin, {\n      request(target) {\n        const el = target || document.documentElement;\n        const { activeEl } = Plugin;\n        if (el === activeEl) {\n          return Promise.resolve();\n        }\n        const queue = activeEl !== null && el.contains(activeEl) === true ? Plugin.exit() : Promise.resolve();\n        return queue.finally(() => promisify(el, prefixes.request));\n      },\n      exit() {\n        return Plugin.isActive === true ? promisify(document, prefixes.exit) : Promise.resolve();\n      },\n      toggle(target) {\n        return Plugin.isActive === true ? Plugin.exit() : Plugin.request(target);\n      }\n    });\n    prefixes.exit = [\n      \"exitFullscreen\",\n      \"msExitFullscreen\",\n      \"mozCancelFullScreen\",\n      \"webkitExitFullscreen\"\n    ].find((exit) => document[exit]);\n    Plugin.isActive = Boolean(getFullscreenElement());\n    Plugin.isActive === true && updateEl();\n    [\n      \"onfullscreenchange\",\n      \"onmsfullscreenchange\",\n      \"onwebkitfullscreenchange\"\n    ].forEach((evt) => {\n      document[evt] = togglePluginState;\n    });\n  }\n}\nexport default Plugin;\n",
+      "start": 1703982896729,
+      "end": 1703982896747,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896748,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896749,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    }
+  ]
+}

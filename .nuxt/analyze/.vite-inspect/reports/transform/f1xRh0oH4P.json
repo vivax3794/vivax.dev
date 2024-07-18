@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/stepper/QStep.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, inject, getCurrentInstance, KeepAlive } from 'vue'\n\nimport QSlideTransition from '../slide-transition/QSlideTransition.js'\nimport StepHeader from './StepHeader.js'\n\nimport { usePanelChildProps } from '../../composables/private/use-panel.js'\nimport useCache from '../../composables/private/use-cache.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stepperKey, emptyRenderFn } from '../../utils/private/symbols.js'\nimport { hSlot } from '../../utils/private/render.js'\n\nfunction getStepWrapper (slots) {\n  return h('div', {\n    class: 'q-stepper__step-content'\n  }, [\n    h('div', {\n      class: 'q-stepper__step-inner'\n    }, hSlot(slots.default))\n  ])\n}\n\nconst PanelWrapper = {\n  setup (_, { slots }) {\n    return () => getStepWrapper(slots)\n  }\n}\n\nexport default createComponent({\n  name: 'QStep',\n\n  props: {\n    ...usePanelChildProps,\n\n    icon: String,\n    color: String,\n    title: {\n      type: String,\n      required: true\n    },\n    caption: String,\n    prefix: [ String, Number ],\n\n    doneIcon: String,\n    doneColor: String,\n    activeIcon: String,\n    activeColor: String,\n    errorIcon: String,\n    errorColor: String,\n\n    headerNav: {\n      type: Boolean,\n      default: true\n    },\n    done: Boolean,\n    error: Boolean,\n\n    onScroll: [ Function, Array ]\n  },\n\n  setup (props, { slots, emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const $stepper = inject(stepperKey, emptyRenderFn)\n    if ($stepper === emptyRenderFn) {\n      console.error('QStep needs to be a child of QStepper')\n      return emptyRenderFn\n    }\n\n    const { getCacheWithFn } = useCache()\n\n    const rootRef = ref(null)\n\n    const isActive = computed(() => $stepper.value.modelValue === props.name)\n\n    const scrollEvent = computed(() => (\n      ($q.platform.is.ios !== true && $q.platform.is.chrome === true)\n        || isActive.value !== true\n        || $stepper.value.vertical !== true\n        ? {}\n        : {\n            onScroll (e) {\n              const { target } = e\n              if (target.scrollTop > 0) {\n                target.scrollTop = 0\n              }\n              props.onScroll !== void 0 && emit('scroll', e)\n            }\n          }\n    ))\n\n    const contentKey = computed(() => (\n      typeof props.name === 'string' || typeof props.name === 'number'\n        ? props.name\n        : String(props.name)\n    ))\n\n    function getStepContent () {\n      const vertical = $stepper.value.vertical\n\n      if (vertical === true && $stepper.value.keepAlive === true) {\n        return h(\n          KeepAlive,\n          $stepper.value.keepAliveProps.value,\n          isActive.value === true\n            ? [\n                h(\n                  $stepper.value.needsUniqueKeepAliveWrapper.value === true\n                    ? getCacheWithFn(contentKey.value, () => ({ ...PanelWrapper, name: contentKey.value }))\n                    : PanelWrapper,\n                  { key: contentKey.value },\n                  slots.default\n                )\n              ]\n            : void 0\n        )\n      }\n\n      return vertical !== true || isActive.value === true\n        ? getStepWrapper(slots)\n        : void 0\n    }\n\n    return () => h(\n      'div',\n      { ref: rootRef, class: 'q-stepper__step', role: 'tabpanel', ...scrollEvent.value },\n      $stepper.value.vertical === true\n        ? [\n            h(StepHeader, {\n              stepper: $stepper.value,\n              step: props,\n              goToPanel: $stepper.value.goToPanel\n            }),\n\n            $stepper.value.animated === true\n              ? h(QSlideTransition, getStepContent)\n              : getStepContent()\n          ]\n        : [ getStepContent() ]\n    )\n  }\n})\n",
+      "start": 1703982896592,
+      "end": 1703982896624,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896625,
+      "end": 1703982896625,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896625,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    }
+  ]
+}

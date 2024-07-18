@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/separator/QSeparator.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, getCurrentInstance } from 'vue'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nimport { createComponent } from '../../utils/private/create.js'\n\nconst insetMap = {\n  true: 'inset',\n  item: 'item-inset',\n  'item-thumbnail': 'item-thumbnail-inset'\n}\n\nexport const margins = {\n  xs: 2,\n  sm: 4,\n  md: 8,\n  lg: 16,\n  xl: 24\n}\n\nexport default createComponent({\n  name: 'QSeparator',\n\n  props: {\n    ...useDarkProps,\n\n    spaced: [ Boolean, String ],\n    inset: [ Boolean, String ],\n    vertical: Boolean,\n    color: String,\n    size: String\n  },\n\n  setup (props) {\n    const vm = getCurrentInstance()\n    const isDark = useDark(props, vm.proxy.$q)\n\n    const orientation = computed(() => (\n      props.vertical === true\n        ? 'vertical'\n        : 'horizontal'\n    ))\n\n    const orientClass = computed(() => ` q-separator--${ orientation.value }`)\n\n    const insetClass = computed(() => (\n      props.inset !== false\n        ? `${ orientClass.value }-${ insetMap[ props.inset ] }`\n        : ''\n    ))\n\n    const classes = computed(() =>\n      `q-separator${ orientClass.value }${ insetClass.value }`\n      + (props.color !== void 0 ? ` bg-${ props.color }` : '')\n      + (isDark.value === true ? ' q-separator--dark' : '')\n    )\n\n    const style = computed(() => {\n      const acc = {}\n\n      if (props.size !== void 0) {\n        acc[ props.vertical === true ? 'width' : 'height' ] = props.size\n      }\n\n      if (props.spaced !== false) {\n        const size = props.spaced === true\n          ? `${ margins.md }px`\n          : props.spaced in margins ? `${ margins[ props.spaced ] }px` : props.spaced\n\n        const dir = props.vertical === true\n          ? [ 'Left', 'Right' ]\n          : [ 'Top', 'Bottom' ]\n\n        acc[ `margin${ dir[ 0 ] }` ] = acc[ `margin${ dir[ 1 ] }` ] = size\n      }\n\n      return acc\n    })\n\n    return () => h('hr', {\n      class: classes.value,\n      style: style.value,\n      'aria-orientation': orientation.value\n    })\n  }\n})\n",
+      "start": 1703982896469,
+      "end": 1703982896548,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896548,
+      "end": 1703982896548,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896548,
+      "end": 1703982896549,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896549,
+      "end": 1703982896549,
+      "order": "normal"
+    }
+  ]
+}

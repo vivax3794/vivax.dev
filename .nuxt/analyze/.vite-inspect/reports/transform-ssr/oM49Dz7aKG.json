@@ -1,0 +1,264 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/skeleton/QSkeleton.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, getCurrentInstance } from 'vue'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot } from '../../utils/private/render.js'\n\nexport const skeletonTypes = [\n  'text', 'rect', 'circle',\n  'QBtn', 'QBadge', 'QChip', 'QToolbar',\n  'QCheckbox', 'QRadio', 'QToggle',\n  'QSlider', 'QRange', 'QInput',\n  'QAvatar'\n]\n\nexport const skeletonAnimations = [\n  'wave', 'pulse', 'pulse-x', 'pulse-y', 'fade', 'blink', 'none'\n]\n\nexport default createComponent({\n  name: 'QSkeleton',\n\n  props: {\n    ...useDarkProps,\n\n    tag: {\n      type: String,\n      default: 'div'\n    },\n\n    type: {\n      type: String,\n      validator: v => skeletonTypes.includes(v),\n      default: 'rect'\n    },\n\n    animation: {\n      type: String,\n      validator: v => skeletonAnimations.includes(v),\n      default: 'wave'\n    },\n    animationSpeed: {\n      type: [ String, Number ],\n      default: 1500\n    },\n\n    square: Boolean,\n    bordered: Boolean,\n\n    size: String,\n    width: String,\n    height: String\n  },\n\n  setup (props, { slots }) {\n    const vm = getCurrentInstance()\n    const isDark = useDark(props, vm.proxy.$q)\n\n    const style = computed(() => {\n      const size = props.size !== void 0\n        ? [ props.size, props.size ]\n        : [ props.width, props.height ]\n\n      return {\n        '--q-skeleton-speed': `${ props.animationSpeed }ms`,\n        width: size[ 0 ],\n        height: size[ 1 ]\n      }\n    })\n\n    const classes = computed(() =>\n      `q-skeleton q-skeleton--${ isDark.value === true ? 'dark' : 'light' } q-skeleton--type-${ props.type }`\n      + (props.animation !== 'none' ? ` q-skeleton--anim q-skeleton--anim-${ props.animation }` : '')\n      + (props.square === true ? ' q-skeleton--square' : '')\n      + (props.bordered === true ? ' q-skeleton--bordered' : '')\n    )\n\n    return () => h(props.tag, {\n      class: classes.value,\n      style: style.value\n    }, hSlot(slots.default))\n  }\n})\n",
+      "start": 1703982900687,
+      "end": 1703982900857,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982900857,
+      "end": 1703982900857,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982900857,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-template",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982900858,
+      "end": 1703982900858,
+      "order": "normal"
+    }
+  ]
+}

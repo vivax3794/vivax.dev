@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/table/table-column-selection.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { computed } from 'vue'\n\nimport { isNumber } from '../../utils/is.js'\n\nexport const useTableColumnSelectionProps = {\n  visibleColumns: Array\n}\n\nexport function useTableColumnSelection (props, computedPagination, hasSelectionMode) {\n  const colList = computed(() => {\n    if (props.columns !== void 0) {\n      return props.columns\n    }\n\n    // we infer columns from first row\n    const row = props.rows[ 0 ]\n\n    return row !== void 0\n      ? Object.keys(row).map(name => ({\n        name,\n        label: name.toUpperCase(),\n        field: name,\n        align: isNumber(row[ name ]) ? 'right' : 'left',\n        sortable: true\n      }))\n      : []\n  })\n\n  const computedCols = computed(() => {\n    const { sortBy, descending } = computedPagination.value\n\n    const cols = props.visibleColumns !== void 0\n      ? colList.value.filter(col => col.required === true || props.visibleColumns.includes(col.name) === true)\n      : colList.value\n\n    return cols.map(col => {\n      const align = col.align || 'right'\n      const alignClass = `text-${ align }`\n\n      return {\n        ...col,\n        align,\n        __iconClass: `q-table__sort-icon q-table__sort-icon--${ align }`,\n        __thClass: alignClass\n          + (col.headerClasses !== void 0 ? ' ' + col.headerClasses : '')\n          + (col.sortable === true ? ' sortable' : '')\n          + (col.name === sortBy ? ` sorted ${ descending === true ? 'sort-desc' : '' }` : ''),\n\n        __tdStyle: col.style !== void 0\n          ? (\n              typeof col.style !== 'function'\n                ? () => col.style\n                : col.style\n            )\n          : () => null,\n\n        __tdClass: col.classes !== void 0\n          ? (\n              typeof col.classes !== 'function'\n                ? () => alignClass + ' ' + col.classes\n                : row => alignClass + ' ' + col.classes(row)\n            )\n          : () => alignClass\n      }\n    })\n  })\n\n  const computedColsMap = computed(() => {\n    const names = {}\n    computedCols.value.forEach(col => {\n      names[ col.name ] = col\n    })\n    return names\n  })\n\n  const computedColspan = computed(() => {\n    return props.tableColspan !== void 0\n      ? props.tableColspan\n      : computedCols.value.length + (hasSelectionMode.value === true ? 1 : 0)\n  })\n\n  return {\n    colList,\n    computedCols,\n    computedColsMap,\n    computedColspan\n  }\n}\n",
+      "start": 1703982897384,
+      "end": 1703982897442,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897442,
+      "end": 1703982897442,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897443,
+      "end": 1703982897443,
+      "order": "normal"
+    }
+  ]
+}

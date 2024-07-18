@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/__quasar/entry.mjs",
+  "transforms": [
+    {
+      "name": "quasar:entry",
+      "result": "export { default as Quasar } from \"quasar/src/vue-plugin.js\"\nexport { default as QAjaxBar } from \"quasar/src/components/ajax-bar/QAjaxBar.js\"\nexport { default as QAvatar } from \"quasar/src/components/avatar/QAvatar.js\"\nexport { default as QBadge } from \"quasar/src/components/badge/QBadge.js\"\nexport { default as QBanner } from \"quasar/src/components/banner/QBanner.js\"\nexport { default as QBar } from \"quasar/src/components/bar/QBar.js\"\nexport { default as QBreadcrumbs } from \"quasar/src/components/breadcrumbs/QBreadcrumbs.js\"\nexport { default as QBreadcrumbsEl } from \"quasar/src/components/breadcrumbs/QBreadcrumbsEl.js\"\nexport { default as QBtn } from \"quasar/src/components/btn/QBtn.js\"\nexport { default as QBtnDropdown } from \"quasar/src/components/btn-dropdown/QBtnDropdown.js\"\nexport { default as QBtnGroup } from \"quasar/src/components/btn-group/QBtnGroup.js\"\nexport { default as QBtnToggle } from \"quasar/src/components/btn-toggle/QBtnToggle.js\"\nexport { default as QCard } from \"quasar/src/components/card/QCard.js\"\nexport { default as QCardActions } from \"quasar/src/components/card/QCardActions.js\"\nexport { default as QCardSection } from \"quasar/src/components/card/QCardSection.js\"\nexport { default as QCarousel } from \"quasar/src/components/carousel/QCarousel.js\"\nexport { default as QCarouselControl } from \"quasar/src/components/carousel/QCarouselControl.js\"\nexport { default as QCarouselSlide } from \"quasar/src/components/carousel/QCarouselSlide.js\"\nexport { default as QChatMessage } from \"quasar/src/components/chat/QChatMessage.js\"\nexport { default as QCheckbox } from \"quasar/src/components/checkbox/QCheckbox.js\"\nexport { default as QChip } from \"quasar/src/components/chip/QChip.js\"\nexport { default as QCircularProgress } from \"quasar/src/components/circular-progress/QCircularProgress.js\"\nexport { default as QColor } from \"quasar/src/components/color/QColor.js\"\nexport { default as QDate } from \"quasar/src/components/date/QDate.js\"\nexport { default as QDialog } from \"quasar/src/components/dialog/QDialog.js\"\nexport { default as QDrawer } from \"quasar/src/components/drawer/QDrawer.js\"\nexport { default as QEditor } from \"quasar/src/components/editor/QEditor.js\"\nexport { default as QExpansionItem } from \"quasar/src/components/expansion-item/QExpansionItem.js\"\nexport { default as QFab } from \"quasar/src/components/fab/QFab.js\"\nexport { default as QFabAction } from \"quasar/src/components/fab/QFabAction.js\"\nexport { default as QField } from \"quasar/src/components/field/QField.js\"\nexport { default as QFile } from \"quasar/src/components/file/QFile.js\"\nexport { default as QFooter } from \"quasar/src/components/footer/QFooter.js\"\nexport { default as QForm } from \"quasar/src/components/form/QForm.js\"\nexport { default as QFormChildMixin } from \"quasar/src/components/form/QFormChildMixin.js\"\nexport { default as QHeader } from \"quasar/src/components/header/QHeader.js\"\nexport { default as QIcon } from \"quasar/src/components/icon/QIcon.js\"\nexport { default as QImg } from \"quasar/src/components/img/QImg.js\"\nexport { default as QInfiniteScroll } from \"quasar/src/components/infinite-scroll/QInfiniteScroll.js\"\nexport { default as QInnerLoading } from \"quasar/src/components/inner-loading/QInnerLoading.js\"\nexport { default as QInput } from \"quasar/src/components/input/QInput.js\"\nexport { default as QIntersection } from \"quasar/src/components/intersection/QIntersection.js\"\nexport { default as QItem } from \"quasar/src/components/item/QItem.js\"\nexport { default as QItemLabel } from \"quasar/src/components/item/QItemLabel.js\"\nexport { default as QItemSection } from \"quasar/src/components/item/QItemSection.js\"\nexport { default as QList } from \"quasar/src/components/item/QList.js\"\nexport { default as QKnob } from \"quasar/src/components/knob/QKnob.js\"\nexport { default as QLayout } from \"quasar/src/components/layout/QLayout.js\"\nexport { default as QLinearProgress } from \"quasar/src/components/linear-progress/QLinearProgress.js\"\nexport { default as QMarkupTable } from \"quasar/src/components/markup-table/QMarkupTable.js\"\nexport { default as QMenu } from \"quasar/src/components/menu/QMenu.js\"\nexport { default as QNoSsr } from \"quasar/src/components/no-ssr/QNoSsr.js\"\nexport { default as QOptionGroup } from \"quasar/src/components/option-group/QOptionGroup.js\"\nexport { default as QPage } from \"quasar/src/components/page/QPage.js\"\nexport { default as QPageContainer } from \"quasar/src/components/page/QPageContainer.js\"\nexport { default as QPageScroller } from \"quasar/src/components/page-scroller/QPageScroller.js\"\nexport { default as QPageSticky } from \"quasar/src/components/page-sticky/QPageSticky.js\"\nexport { default as QPagination } from \"quasar/src/components/pagination/QPagination.js\"\nexport { default as QParallax } from \"quasar/src/components/parallax/QParallax.js\"\nexport { default as QPopupEdit } from \"quasar/src/components/popup-edit/QPopupEdit.js\"\nexport { default as QPopupProxy } from \"quasar/src/components/popup-proxy/QPopupProxy.js\"\nexport { default as QPullToRefresh } from \"quasar/src/components/pull-to-refresh/QPullToRefresh.js\"\nexport { default as QRadio } from \"quasar/src/components/radio/QRadio.js\"\nexport { default as QRange } from \"quasar/src/components/range/QRange.js\"\nexport { default as QRating } from \"quasar/src/components/rating/QRating.js\"\nexport { default as QResizeObserver } from \"quasar/src/components/resize-observer/QResizeObserver.js\"\nexport { default as QResponsive } from \"quasar/src/components/responsive/QResponsive.js\"\nexport { default as QScrollArea } from \"quasar/src/components/scroll-area/QScrollArea.js\"\nexport { default as QScrollObserver } from \"quasar/src/components/scroll-observer/QScrollObserver.js\"\nexport { default as QSelect } from \"quasar/src/components/select/QSelect.js\"\nexport { default as QSeparator } from \"quasar/src/components/separator/QSeparator.js\"\nexport { default as QSkeleton } from \"quasar/src/components/skeleton/QSkeleton.js\"\nexport { default as QSlideItem } from \"quasar/src/components/slide-item/QSlideItem.js\"\nexport { default as QSlideTransition } from \"quasar/src/components/slide-transition/QSlideTransition.js\"\nexport { default as QSlider } from \"quasar/src/components/slider/QSlider.js\"\nexport { default as QSpace } from \"quasar/src/components/space/QSpace.js\"\nexport { default as QSpinner } from \"quasar/src/components/spinner/QSpinner.js\"\nexport { default as QSpinnerAudio } from \"quasar/src/components/spinner/QSpinnerAudio.js\"\nexport { default as QSpinnerBall } from \"quasar/src/components/spinner/QSpinnerBall.js\"\nexport { default as QSpinnerBars } from \"quasar/src/components/spinner/QSpinnerBars.js\"\nexport { default as QSpinnerBox } from \"quasar/src/components/spinner/QSpinnerBox.js\"\nexport { default as QSpinnerClock } from \"quasar/src/components/spinner/QSpinnerClock.js\"\nexport { default as QSpinnerComment } from \"quasar/src/components/spinner/QSpinnerComment.js\"\nexport { default as QSpinnerCube } from \"quasar/src/components/spinner/QSpinnerCube.js\"\nexport { default as QSpinnerDots } from \"quasar/src/components/spinner/QSpinnerDots.js\"\nexport { default as QSpinnerFacebook } from \"quasar/src/components/spinner/QSpinnerFacebook.js\"\nexport { default as QSpinnerGears } from \"quasar/src/components/spinner/QSpinnerGears.js\"\nexport { default as QSpinnerGrid } from \"quasar/src/components/spinner/QSpinnerGrid.js\"\nexport { default as QSpinnerHearts } from \"quasar/src/components/spinner/QSpinnerHearts.js\"\nexport { default as QSpinnerHourglass } from \"quasar/src/components/spinner/QSpinnerHourglass.js\"\nexport { default as QSpinnerInfinity } from \"quasar/src/components/spinner/QSpinnerInfinity.js\"\nexport { default as QSpinnerIos } from \"quasar/src/components/spinner/QSpinnerIos.js\"\nexport { default as QSpinnerOrbit } from \"quasar/src/components/spinner/QSpinnerOrbit.js\"\nexport { default as QSpinnerOval } from \"quasar/src/components/spinner/QSpinnerOval.js\"\nexport { default as QSpinnerPie } from \"quasar/src/components/spinner/QSpinnerPie.js\"\nexport { default as QSpinnerPuff } from \"quasar/src/components/spinner/QSpinnerPuff.js\"\nexport { default as QSpinnerRadio } from \"quasar/src/components/spinner/QSpinnerRadio.js\"\nexport { default as QSpinnerRings } from \"quasar/src/components/spinner/QSpinnerRings.js\"\nexport { default as QSpinnerTail } from \"quasar/src/components/spinner/QSpinnerTail.js\"\nexport { default as QSplitter } from \"quasar/src/components/splitter/QSplitter.js\"\nexport { default as QStep } from \"quasar/src/components/stepper/QStep.js\"\nexport { default as QStepper } from \"quasar/src/components/stepper/QStepper.js\"\nexport { default as QStepperNavigation } from \"quasar/src/components/stepper/QStepperNavigation.js\"\nexport { default as QTabPanel } from \"quasar/src/components/tab-panels/QTabPanel.js\"\nexport { default as QTabPanels } from \"quasar/src/components/tab-panels/QTabPanels.js\"\nexport { default as QTable } from \"quasar/src/components/table/QTable.js\"\nexport { default as QTd } from \"quasar/src/components/table/QTd.js\"\nexport { default as QTh } from \"quasar/src/components/table/QTh.js\"\nexport { default as QTr } from \"quasar/src/components/table/QTr.js\"\nexport { default as QRouteTab } from \"quasar/src/components/tabs/QRouteTab.js\"\nexport { default as QTab } from \"quasar/src/components/tabs/QTab.js\"\nexport { default as QTabs } from \"quasar/src/components/tabs/QTabs.js\"\nexport { default as QTime } from \"quasar/src/components/time/QTime.js\"\nexport { default as QTimeline } from \"quasar/src/components/timeline/QTimeline.js\"\nexport { default as QTimelineEntry } from \"quasar/src/components/timeline/QTimelineEntry.js\"\nexport { default as QToggle } from \"quasar/src/components/toggle/QToggle.js\"\nexport { default as QToolbar } from \"quasar/src/components/toolbar/QToolbar.js\"\nexport { default as QToolbarTitle } from \"quasar/src/components/toolbar/QToolbarTitle.js\"\nexport { default as QTooltip } from \"quasar/src/components/tooltip/QTooltip.js\"\nexport { default as QTree } from \"quasar/src/components/tree/QTree.js\"\nexport { default as QUploader } from \"quasar/src/components/uploader/QUploader.js\"\nexport { default as QUploaderAddTrigger } from \"quasar/src/components/uploader/QUploaderAddTrigger.js\"\nexport { default as QVideo } from \"quasar/src/components/video/QVideo.js\"\nexport { default as QVirtualScroll } from \"quasar/src/components/virtual-scroll/QVirtualScroll.js\"\nexport { default as ClosePopup } from \"quasar/src/directives/ClosePopup.js\"\nexport { default as Intersection } from \"quasar/src/directives/Intersection.js\"\nexport { default as Morph } from \"quasar/src/directives/Morph.js\"\nexport { default as Mutation } from \"quasar/src/directives/Mutation.js\"\nexport { default as Ripple } from \"quasar/src/directives/Ripple.js\"\nexport { default as Scroll } from \"quasar/src/directives/Scroll.js\"\nexport { default as ScrollFire } from \"quasar/src/directives/ScrollFire.js\"\nexport { default as TouchHold } from \"quasar/src/directives/TouchHold.js\"\nexport { default as TouchPan } from \"quasar/src/directives/TouchPan.js\"\nexport { default as TouchRepeat } from \"quasar/src/directives/TouchRepeat.js\"\nexport { default as TouchSwipe } from \"quasar/src/directives/TouchSwipe.js\"\nexport { default as AddressbarColor } from \"quasar/src/plugins/AddressbarColor.js\"\nexport { default as AppFullscreen } from \"quasar/src/plugins/AppFullscreen.js\"\nexport { default as AppVisibility } from \"quasar/src/plugins/AppVisibility.js\"\nexport { default as BottomSheet } from \"quasar/src/plugins/BottomSheet.js\"\nexport { default as Cookies } from \"quasar/src/plugins/Cookies.js\"\nexport { default as Dark } from \"quasar/src/plugins/Dark.js\"\nexport { default as Dialog } from \"quasar/src/plugins/Dialog.js\"\nexport { default as Loading } from \"quasar/src/plugins/Loading.js\"\nexport { default as LoadingBar } from \"quasar/src/plugins/LoadingBar.js\"\nexport { default as LocalStorage } from \"quasar/src/plugins/LocalStorage.js\"\nexport { default as Meta } from \"quasar/src/plugins/Meta.js\"\nexport { default as Notify } from \"quasar/src/plugins/Notify.js\"\nexport { default as Platform } from \"quasar/src/plugins/Platform.js\"\nexport { default as Screen } from \"quasar/src/plugins/Screen.js\"\nexport { default as SessionStorage } from \"quasar/src/plugins/SessionStorage.js\"\nexport { default as useDialogPluginComponent } from \"quasar/src/composables/use-dialog-plugin-component.js\"\nexport { default as useFormChild } from \"quasar/src/composables/use-form-child.js\"\nexport { default as useMeta } from \"quasar/src/composables/use-meta.js\"\nexport { default as useQuasar } from \"quasar/src/composables/use-quasar.js\"\nexport { default as EventBus } from \"quasar/src/utils/EventBus.js\"\nexport { default as clone } from \"quasar/src/utils/clone.js\"\nexport { default as colors } from \"quasar/src/utils/colors.js\"\nexport { default as copyToClipboard } from \"quasar/src/utils/copy-to-clipboard.js\"\nexport { default as createMetaMixin } from \"quasar/src/utils/create-meta-mixin.js\"\nexport { default as createUploaderComponent } from \"quasar/src/utils/create-uploader-component.js\"\nexport { default as date } from \"quasar/src/utils/date.js\"\nexport { default as debounce } from \"quasar/src/utils/debounce.js\"\nexport { default as dom } from \"quasar/src/utils/dom.js\"\nexport { default as event } from \"quasar/src/utils/event.js\"\nexport { default as exportFile } from \"quasar/src/utils/export-file.js\"\nexport { default as extend } from \"quasar/src/utils/extend.js\"\nexport { default as format } from \"quasar/src/utils/format.js\"\nexport { default as frameDebounce } from \"quasar/src/utils/frame-debounce.js\"\nexport { default as getCssVar } from \"quasar/src/utils/get-css-var.js\"\nexport { default as is } from \"quasar/src/utils/is.js\"\nexport { default as morph } from \"quasar/src/utils/morph.js\"\nexport { default as openURL } from \"quasar/src/utils/open-url.js\"\nexport { default as patterns } from \"quasar/src/utils/patterns.js\"\nexport { default as preventScroll } from \"quasar/src/utils/prevent-scroll.js\"\nexport { default as runSequentialPromises } from \"quasar/src/utils/run-sequential-promises.js\"\nexport { default as scroll } from \"quasar/src/utils/scroll.js\"\nexport { default as setCssVar } from \"quasar/src/utils/set-css-var.js\"\nexport { default as throttle } from \"quasar/src/utils/throttle.js\"\nexport { default as uid } from \"quasar/src/utils/uid.js\"",
+      "start": 1703982895793,
+      "end": 1703982895793,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982895793,
+      "end": 1703982895793,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982895793,
+      "end": 1703982895793,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982895794,
+      "end": 1703982895794,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982895795,
+      "end": 1703982895795,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982895795,
+      "end": 1703982895800,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982895801,
+      "end": 1703982895801,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982895801,
+      "end": 1703982895801,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982895801,
+      "end": 1703982895801,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982895801,
+      "end": 1703982895801,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982895801,
+      "end": 1703982895801,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982895801,
+      "end": 1703982895801,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982895801,
+      "end": 1703982895801,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982895801,
+      "end": 1703982895803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982895803,
+      "end": 1703982895803,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/use-dialog-plugin-component.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { ref, getCurrentInstance } from 'vue'\n\nimport getEmitsObject from '../utils/private/get-emits-object'\n\n// To be used for the custom component\n// used on a Dialog plugin\n\nfunction useDialogPluginComponent () {\n  const { emit, proxy } = getCurrentInstance()\n\n  // we need a Vue reference to the QDialog\n  // component so we can handle it;\n  // <q-dialog ref=\"dialogRef\" ...\n  // make sure that the setup() in which this\n  // function is called returns dialogRef variable\n  const dialogRef = ref(null)\n\n  function show () { dialogRef.value.show() }\n  function hide () { dialogRef.value.hide() }\n\n  function onDialogOK (payload) {\n    emit('ok', payload)\n    hide()\n  }\n\n  function onDialogHide () { emit('hide') }\n\n  // expose public methods required by Dialog plugin\n  Object.assign(proxy, { show, hide })\n\n  return {\n    dialogRef,\n    onDialogHide,\n    onDialogOK,\n    onDialogCancel: hide\n  }\n}\n\n// Don't forget to update the types in \"ui/types/composables.d.ts\"\nconst emits = [ 'ok', 'hide' ]\n\nuseDialogPluginComponent.emits = emits\nuseDialogPluginComponent.emitsObject = getEmitsObject(emits)\n\nexport default useDialogPluginComponent\n",
+      "start": 1703982896708,
+      "end": 1703982896752,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896752,
+      "end": 1703982896752,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896753,
+      "end": 1703982896753,
+      "order": "normal"
+    }
+  ]
+}

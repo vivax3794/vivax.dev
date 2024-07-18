@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/intersection/QIntersection.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, Transition } from 'vue'\n\nimport { isRuntimeSsrPreHydration } from '../../plugins/Platform.js'\n\nimport Intersection from '../../directives/Intersection.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot, hDir } from '../../utils/private/render.js'\n\nexport default createComponent({\n  name: 'QIntersection',\n\n  props: {\n    tag: {\n      type: String,\n      default: 'div'\n    },\n\n    once: Boolean,\n    transition: String,\n    transitionDuration: {\n      type: [ String, Number ],\n      default: 300\n    },\n\n    ssrPrerender: Boolean,\n\n    margin: String,\n    threshold: [ Number, Array ],\n    root: {\n      default: null\n    },\n\n    disable: Boolean,\n\n    onVisibility: Function\n  },\n\n  setup (props, { slots, emit }) {\n    const showing = ref(isRuntimeSsrPreHydration.value === true ? props.ssrPrerender : false)\n\n    const intersectionProps = computed(() => (\n      props.root !== void 0 || props.margin !== void 0 || props.threshold !== void 0\n        ? {\n            handler: trigger,\n            cfg: {\n              root: props.root,\n              rootMargin: props.margin,\n              threshold: props.threshold\n            }\n          }\n        : trigger\n    ))\n\n    const hasDirective = computed(() =>\n      props.disable !== true\n      && (isRuntimeSsrPreHydration.value !== true || props.once !== true || props.ssrPrerender !== true)\n    )\n\n    const directives = computed(() => {\n      // if hasDirective.value === true\n      return [ [\n        Intersection,\n        intersectionProps.value,\n        void 0,\n        { once: props.once }\n      ] ]\n    })\n\n    const transitionStyle = computed(\n      () => `--q-transition-duration: ${ props.transitionDuration }ms`\n    )\n\n    function trigger (entry) {\n      if (showing.value !== entry.isIntersecting) {\n        showing.value = entry.isIntersecting\n        props.onVisibility !== void 0 && emit('visibility', showing.value)\n      }\n    }\n\n    function getContent () {\n      if (showing.value === true) {\n        return [ h('div', { key: 'content', style: transitionStyle.value }, hSlot(slots.default)) ]\n      }\n\n      if (slots.hidden !== void 0) {\n        return [ h('div', { key: 'hidden', style: transitionStyle.value }, slots.hidden()) ]\n      }\n    }\n\n    return () => {\n      const child = props.transition\n        ? [\n            h(Transition, {\n              name: 'q-transition--' + props.transition\n            }, getContent)\n          ]\n        : getContent()\n\n      return hDir(\n        props.tag,\n        { class: 'q-intersection' },\n        child,\n        'main',\n        hasDirective.value,\n        () => directives.value\n      )\n    }\n  }\n})\n",
+      "start": 1703982896285,
+      "end": 1703982896423,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896423,
+      "end": 1703982896423,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896424,
+      "end": 1703982896424,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896424,
+      "end": 1703982896425,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896425,
+      "end": 1703982896425,
+      "order": "normal"
+    }
+  ]
+}

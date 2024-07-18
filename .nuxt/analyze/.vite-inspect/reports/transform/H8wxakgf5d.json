@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/extend.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "const\n  toString = Object.prototype.toString,\n  hasOwn = Object.prototype.hasOwnProperty,\n  notPlainObject = new Set(\n    [ 'Boolean', 'Number', 'String', 'Function', 'Array', 'Date', 'RegExp' ]\n      .map(name => '[object ' + name + ']')\n  )\n\nfunction isPlainObject (obj) {\n  if (obj !== Object(obj) || notPlainObject.has(toString.call(obj)) === true) {\n    return false\n  }\n\n  if (\n    obj.constructor\n    && hasOwn.call(obj, 'constructor') === false\n    && hasOwn.call(obj.constructor.prototype, 'isPrototypeOf') === false\n  ) {\n    return false\n  }\n\n  let key\n  for (key in obj) {} // eslint-disable-line\n\n  return key === void 0 || hasOwn.call(obj, key)\n}\n\nexport default function extend () {\n  let\n    options, name, src, copy, copyIsArray, clone,\n    target = arguments[ 0 ] || {},\n    i = 1,\n    deep = false\n  const length = arguments.length\n\n  if (typeof target === 'boolean') {\n    deep = target\n    target = arguments[ 1 ] || {}\n    i = 2\n  }\n\n  if (Object(target) !== target && typeof target !== 'function') {\n    target = {}\n  }\n\n  if (length === i) {\n    target = this\n    i--\n  }\n\n  for (; i < length; i++) {\n    if ((options = arguments[ i ]) !== null) {\n      for (name in options) {\n        src = target[ name ]\n        copy = options[ name ]\n\n        if (target === copy) {\n          continue\n        }\n\n        if (\n          deep === true\n          && copy\n          && ((copyIsArray = Array.isArray(copy)) || isPlainObject(copy) === true)\n        ) {\n          if (copyIsArray === true) {\n            clone = Array.isArray(src) === true ? src : []\n          }\n          else {\n            clone = isPlainObject(src) === true ? src : {}\n          }\n\n          target[ name ] = extend(deep, clone, copy)\n        }\n        else if (copy !== void 0) {\n          target[ name ] = copy\n        }\n      }\n    }\n  }\n\n  return target\n}\n",
+      "start": 1703982896746,
+      "end": 1703982896802,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896802,
+      "end": 1703982896803,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896803,
+      "end": 1703982896803,
+      "order": "normal"
+    }
+  ]
+}

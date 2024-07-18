@@ -1,0 +1,1 @@
+import{f as o,o as s,c as a,a as t,t as n,B as r}from"./entry.gJC_TtOp.js";const l={class:"markdown-code relative-position"},c={class:"lang absolute-top-right"},_=o({__name:"ProseCode",props:{language:{}},setup(i){return(e,p)=>(s(),a("div",l,[t("div",c,n(e.language),1),r(e.$slots,"default")]))}});export{_};

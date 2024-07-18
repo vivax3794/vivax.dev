@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/create-meta-mixin.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { clientList, planClientUpdate } from '../plugins/Meta.js'\n\nexport default metaOptions => {\n  if (__QUASAR_SSR_SERVER__) {\n    return {\n      created: typeof metaOptions === 'function'\n        ? function () {\n          this.ssrContext.__qMetaList.push(\n            metaOptions.call(this) || {}\n          )\n        }\n        : function () {\n          this.ssrContext.__qMetaList.push(metaOptions)\n        }\n    }\n  }\n\n  const mixin = {\n    activated () {\n      this.__qMeta.active = true\n      planClientUpdate()\n    },\n\n    deactivated () {\n      this.__qMeta.active = false\n      planClientUpdate()\n    },\n\n    unmounted () {\n      clientList.splice(clientList.indexOf(this.__qMeta), 1)\n      planClientUpdate()\n      this.__qMeta = void 0\n    }\n  }\n\n  if (typeof metaOptions === 'function') {\n    Object.assign(mixin, {\n      computed: {\n        __qMetaOptions () {\n          return metaOptions.call(this) || {}\n        }\n      },\n\n      watch: {\n        __qMetaOptions (val) {\n          this.__qMeta.val = val\n          this.__qMeta.active === true && planClientUpdate()\n        }\n      },\n\n      created () {\n        this.__qMeta = { active: true, val: this.__qMetaOptions }\n        clientList.push(this.__qMeta)\n        planClientUpdate()\n      }\n    })\n  }\n  else {\n    mixin.created = function () {\n      this.__qMeta = { active: true, val: metaOptions }\n      clientList.push(this.__qMeta)\n      planClientUpdate()\n    }\n  }\n\n  return mixin\n}\n",
+      "start": 1703982896741,
+      "end": 1703982896794,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896794,
+      "end": 1703982896794,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { clientList, planClientUpdate } from \"../plugins/Meta.js\";\nexport default (metaOptions) => {\n  if (false) {\n    return {\n      created: typeof metaOptions === \"function\" ? function() {\n        this.ssrContext.__qMetaList.push(\n          metaOptions.call(this) || {}\n        );\n      } : function() {\n        this.ssrContext.__qMetaList.push(metaOptions);\n      }\n    };\n  }\n  const mixin = {\n    activated() {\n      this.__qMeta.active = true;\n      planClientUpdate();\n    },\n    deactivated() {\n      this.__qMeta.active = false;\n      planClientUpdate();\n    },\n    unmounted() {\n      clientList.splice(clientList.indexOf(this.__qMeta), 1);\n      planClientUpdate();\n      this.__qMeta = void 0;\n    }\n  };\n  if (typeof metaOptions === \"function\") {\n    Object.assign(mixin, {\n      computed: {\n        __qMetaOptions() {\n          return metaOptions.call(this) || {};\n        }\n      },\n      watch: {\n        __qMetaOptions(val) {\n          this.__qMeta.val = val;\n          this.__qMeta.active === true && planClientUpdate();\n        }\n      },\n      created() {\n        this.__qMeta = { active: true, val: this.__qMetaOptions };\n        clientList.push(this.__qMeta);\n        planClientUpdate();\n      }\n    });\n  } else {\n    mixin.created = function() {\n      this.__qMeta = { active: true, val: metaOptions };\n      clientList.push(this.__qMeta);\n      planClientUpdate();\n    };\n  }\n  return mixin;\n};\n",
+      "start": 1703982896794,
+      "end": 1703982896847,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896847,
+      "end": 1703982896847,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896848,
+      "end": 1703982896848,
+      "order": "normal"
+    }
+  ]
+}

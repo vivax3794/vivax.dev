@@ -1,0 +1,235 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/pages/projects.vue?macro=true",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "<template>\n    <div class=\"row justify-center\">\n        <div class=\"row q-ma-md card shadow-3\" v-for=\"project in PROJECTS\">\n            <QImg class=\"col\" :src=\"project.image\" v-if=\"project.image !== undefined\" />\n            <div class=\"col relative-position\">\n                <div class=\"text-h4 text-center full-width q-mb-sm\">{{ project.name }}</div>\n                <QSeparator></QSeparator>\n                <div class=\"q-px-md text-subtitle1 desc\">{{ project.description }}</div>\n                <div class=\"absolute-bottom\">\n                    <QSeparator></QSeparator>\n                    <div class=\"row justify-center\">\n                        <QBtn size=\"20px\" flat v-for=\"link in project.links\" :icon=\"LINK_ICONS[link.type] || FALLBACK_ICON\"\n                            :href=\"link.type === 'Blog' ? undefined : link.href\"\n                            :to=\"link.type === 'Blog' ? link.href : undefined\">\n                        </QBtn>\n                    </div>\n                </div>\n            </div>\n        </div>\n    </div>\n</template>\n\n<style scoped lang=\"scss\">\n.card {\n    width: 400px;\n    min-height: 300px;\n    background-color: rgb(47, 47, 47);\n    border-radius: 20px;\n    overflow: hidden;\n}\n</style>\n\n<script setup lang=\"ts\">\nimport { mdiWeb, mdiGamepad, mdiSourceBranch, mdiNewspaper } from \"@quasar/extras/mdi-v7\"\n\nconst LINK_ICONS = {\n    \"Itch\": mdiGamepad,\n    \"GitHub\": mdiSourceBranch,\n    \"Blog\": mdiNewspaper\n} as const;\nconst FALLBACK_ICON = mdiWeb;\n\n\ninterface Link {\n    type?: keyof typeof LINK_ICONS,\n    href: string,\n}\ninterface Project {\n    name: string,\n    description: string,\n    image?: string,\n    links: Link[]\n}\n\nconst PROJECTS: Project[] = [{\n    name: \"This page\",\n    description: \"This page which is made with nuxt and quasar.\",\n    links: [\n        { href: \"https://vivax.dev\" }\n    ]\n},\n{\n    name: \"Deepnarration\",\n    description: \"A frontend for an ai platform that I am paid to make.\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration\" },\n        { href: \"https://deepnarration.matissetec.dev/\" }\n    ]\n},\n{\n    name: \"Ai node editor\",\n    description: \"A node editor to connect together a bunch of ai apis.\",\n    image: \"/projects/Node.png\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration/tree/nuxt-rewrite\" },\n    ],\n},\n{\n    name: \"FluentWeb\",\n    description: \"A rust frontend web framework using single file componentes inspired by vue.\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/FluentWeb\" }\n    ]\n},\n{\n    name: \"Compiler\",\n    description: \"Compiler for a staticly typed language that I am writing a blog series on.\",\n    links: [\n        { type: \"Blog\", href: \"/blog\" },\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/viv_script_blog\" }\n    ]\n},\n{\n    name: \"Spinny Jumper\",\n    description: \"Small foddian game I made for a game in the course of a week\",\n    image: \"https://img.itch.zone/aW1nLzEzMDYyMDYwLnBuZw==/original/QoYYFX.png\",\n    links: [\n        { type: \"Itch\", href: \"https://vivax.itch.io/spinny-jumper\" }\n    ]\n},\n{\n    name: \"WFC\",\n    description: \"A implementation of Wave Function Collapse in the bevy game engine.\",\n    image: \"/projects/WFC.png\",\n    links: [\n        { type: \"Itch\", href: \"https://vivax.itch.io/wave-generation-demo\" },\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/wave_function_collapse\" }\n    ]\n}\n];\n</script>\n",
+      "start": 1703982896101,
+      "end": 1703982896154,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896154,
+      "end": 1703982896154,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "result": "import _sfc_main from \"/home/vivax/coding/vivax.dev/pages/projects.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/home/vivax/coding/vivax.dev/pages/projects.vue?vue&type=script&setup=true&lang.ts\";\nimport \"/home/vivax/coding/vivax.dev/pages/projects.vue?vue&type=style&index=0&scoped=a98d0707&lang.scss\";\nimport _export_sfc from \"\\0plugin-vue:export-helper\";\nexport default /* @__PURE__ */ _export_sfc(_sfc_main, [[\"__scopeId\", \"data-v-a98d0707\"]]);\n",
+      "start": 1703982896154,
+      "end": 1703982896191,
+      "order": "normal",
+      "sourcemaps": {
+        "mappings": ""
+      }
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896191,
+      "end": 1703982896191,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896191,
+      "end": 1703982896192,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896192,
+      "end": 1703982896192,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896192,
+      "end": 1703982896192,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "result": "export { default } from \"/home/vivax/coding/vivax.dev/pages/projects.vue?macro=true&vue&type=script&setup=true&lang.ts\"",
+      "start": 1703982896193,
+      "end": 1703982896193,
+      "order": "post",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          ""
+        ],
+        "names": [],
+        "mappings": "AAAA"
+      }
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896193,
+      "end": 1703982896193,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896193,
+      "end": 1703982896193,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896193,
+      "end": 1703982896193,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896193,
+      "end": 1703982896193,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896193,
+      "end": 1703982896194,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896194,
+      "end": 1703982896194,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896194,
+      "end": 1703982896194,
+      "order": "normal"
+    }
+  ]
+}

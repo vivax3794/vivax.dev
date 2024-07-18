@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/footer/QFooter.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, onBeforeUnmount, inject, getCurrentInstance } from 'vue'\n\nimport { isRuntimeSsrPreHydration } from '../../plugins/Platform.js'\n\nimport QResizeObserver from '../resize-observer/QResizeObserver.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hMergeSlot } from '../../utils/private/render.js'\nimport { layoutKey, emptyRenderFn } from '../../utils/private/symbols.js'\n\nexport default createComponent({\n  name: 'QFooter',\n\n  props: {\n    modelValue: {\n      type: Boolean,\n      default: true\n    },\n    reveal: Boolean,\n    bordered: Boolean,\n    elevated: Boolean,\n\n    heightHint: {\n      type: [ String, Number ],\n      default: 50\n    }\n  },\n\n  emits: [ 'reveal', 'focusin' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const $layout = inject(layoutKey, emptyRenderFn)\n    if ($layout === emptyRenderFn) {\n      console.error('QFooter needs to be child of QLayout')\n      return emptyRenderFn\n    }\n\n    const size = ref(parseInt(props.heightHint, 10))\n    const revealed = ref(true)\n    const windowHeight = ref(\n      isRuntimeSsrPreHydration.value === true || $layout.isContainer.value === true\n        ? 0\n        : window.innerHeight\n    )\n\n    const fixed = computed(() =>\n      props.reveal === true\n      || $layout.view.value.indexOf('F') > -1\n      || ($q.platform.is.ios && $layout.isContainer.value === true)\n    )\n\n    const containerHeight = computed(() => (\n      $layout.isContainer.value === true\n        ? $layout.containerHeight.value\n        : windowHeight.value\n    ))\n\n    const offset = computed(() => {\n      if (props.modelValue !== true) {\n        return 0\n      }\n      if (fixed.value === true) {\n        return revealed.value === true ? size.value : 0\n      }\n      const offset = $layout.scroll.value.position + containerHeight.value + size.value - $layout.height.value\n      return offset > 0 ? offset : 0\n    })\n\n    const hidden = computed(() =>\n      props.modelValue !== true || (fixed.value === true && revealed.value !== true)\n    )\n\n    const revealOnFocus = computed(() =>\n      props.modelValue === true && hidden.value === true && props.reveal === true\n    )\n\n    const classes = computed(() =>\n      'q-footer q-layout__section--marginal '\n      + (fixed.value === true ? 'fixed' : 'absolute') + '-bottom'\n      + (props.bordered === true ? ' q-footer--bordered' : '')\n      + (hidden.value === true ? ' q-footer--hidden' : '')\n      + (\n        props.modelValue !== true\n          ? ' q-layout--prevent-focus' + (fixed.value !== true ? ' hidden' : '')\n          : ''\n      )\n    )\n\n    const style = computed(() => {\n      const\n        view = $layout.rows.value.bottom,\n        css = {}\n\n      if (view[ 0 ] === 'l' && $layout.left.space === true) {\n        css[ $q.lang.rtl === true ? 'right' : 'left' ] = `${ $layout.left.size }px`\n      }\n      if (view[ 2 ] === 'r' && $layout.right.space === true) {\n        css[ $q.lang.rtl === true ? 'left' : 'right' ] = `${ $layout.right.size }px`\n      }\n\n      return css\n    })\n\n    function updateLayout (prop, val) {\n      $layout.update('footer', prop, val)\n    }\n\n    function updateLocal (prop, val) {\n      if (prop.value !== val) {\n        prop.value = val\n      }\n    }\n\n    function onResize ({ height }) {\n      updateLocal(size, height)\n      updateLayout('size', height)\n    }\n\n    function updateRevealed () {\n      if (props.reveal !== true) { return }\n\n      const { direction, position, inflectionPoint } = $layout.scroll.value\n\n      updateLocal(revealed, (\n        direction === 'up'\n        || position - inflectionPoint < 100\n        || $layout.height.value - containerHeight.value - position - size.value < 300\n      ))\n    }\n\n    function onFocusin (evt) {\n      if (revealOnFocus.value === true) {\n        updateLocal(revealed, true)\n      }\n\n      emit('focusin', evt)\n    }\n\n    watch(() => props.modelValue, val => {\n      updateLayout('space', val)\n      updateLocal(revealed, true)\n      $layout.animate()\n    })\n\n    watch(offset, val => {\n      updateLayout('offset', val)\n    })\n\n    watch(() => props.reveal, val => {\n      val === false && updateLocal(revealed, props.modelValue)\n    })\n\n    watch(revealed, val => {\n      $layout.animate()\n      emit('reveal', val)\n    })\n\n    watch([ size, $layout.scroll, $layout.height ], updateRevealed)\n\n    watch(() => $q.screen.height, val => {\n      $layout.isContainer.value !== true && updateLocal(windowHeight, val)\n    })\n\n    const instance = {}\n\n    $layout.instances.footer = instance\n    props.modelValue === true && updateLayout('size', size.value)\n    updateLayout('space', props.modelValue)\n    updateLayout('offset', offset.value)\n\n    onBeforeUnmount(() => {\n      if ($layout.instances.footer === instance) {\n        $layout.instances.footer = void 0\n        updateLayout('size', 0)\n        updateLayout('offset', 0)\n        updateLayout('space', false)\n      }\n    })\n\n    return () => {\n      const child = hMergeSlot(slots.default, [\n        h(QResizeObserver, {\n          debounce: 0,\n          onResize\n        })\n      ])\n\n      props.elevated === true && child.push(\n        h('div', {\n          class: 'q-layout__shadow absolute-full overflow-hidden no-pointer-events'\n        })\n      )\n\n      return h('footer', {\n        class: classes.value,\n        style: style.value,\n        onFocusin\n      }, child)\n    }\n  }\n})\n",
+      "start": 1703982896261,
+      "end": 1703982896348,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896348,
+      "end": 1703982896348,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896348,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    }
+  ]
+}

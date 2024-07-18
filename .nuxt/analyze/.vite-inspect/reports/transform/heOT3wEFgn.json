@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/use-meta.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { computed, watch, onActivated, onDeactivated, onUnmounted, useSSRContext } from 'vue'\n\nimport { clientList, planClientUpdate } from '../plugins/Meta.js'\n\nexport default function (metaOptions) {\n  if (__QUASAR_SSR_SERVER__) {\n    const ssrContext = useSSRContext()\n\n    ssrContext.__qMetaList.push(\n      typeof metaOptions === 'function'\n        ? metaOptions()\n        : metaOptions\n    )\n  }\n  else {\n    const meta = { active: true }\n\n    if (typeof metaOptions === 'function') {\n      const content = computed(metaOptions)\n      meta.val = content.value\n\n      watch(content, val => {\n        meta.val = val\n        meta.active === true && planClientUpdate()\n      })\n    }\n    else {\n      meta.val = metaOptions\n    }\n\n    clientList.push(meta)\n    planClientUpdate()\n\n    onActivated(() => {\n      meta.active = true\n      planClientUpdate()\n    })\n\n    onDeactivated(() => {\n      meta.active = false\n      planClientUpdate()\n    })\n\n    onUnmounted(() => {\n      clientList.splice(clientList.indexOf(meta), 1)\n      planClientUpdate()\n    })\n  }\n}\n",
+      "start": 1703982896709,
+      "end": 1703982896754,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896754,
+      "end": 1703982896754,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { computed, watch, onActivated, onDeactivated, onUnmounted, useSSRContext } from \"vue\";\nimport { clientList, planClientUpdate } from \"../plugins/Meta.js\";\nexport default function(metaOptions) {\n  if (false) {\n    const ssrContext = useSSRContext();\n    ssrContext.__qMetaList.push(\n      typeof metaOptions === \"function\" ? metaOptions() : metaOptions\n    );\n  } else {\n    const meta = { active: true };\n    if (typeof metaOptions === \"function\") {\n      const content = computed(metaOptions);\n      meta.val = content.value;\n      watch(content, (val) => {\n        meta.val = val;\n        meta.active === true && planClientUpdate();\n      });\n    } else {\n      meta.val = metaOptions;\n    }\n    clientList.push(meta);\n    planClientUpdate();\n    onActivated(() => {\n      meta.active = true;\n      planClientUpdate();\n    });\n    onDeactivated(() => {\n      meta.active = false;\n      planClientUpdate();\n    });\n    onUnmounted(() => {\n      clientList.splice(clientList.indexOf(meta), 1);\n      planClientUpdate();\n    });\n  }\n}\n",
+      "start": 1703982896754,
+      "end": 1703982896759,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    }
+  ]
+}

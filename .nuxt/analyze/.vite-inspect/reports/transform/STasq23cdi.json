@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/page-sticky/use-page-sticky.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, inject, getCurrentInstance } from 'vue'\n\nimport { hSlot } from '../../utils/private/render.js'\nimport { layoutKey, emptyRenderFn } from '../../utils/private/symbols.js'\n\nexport const usePageStickyProps = {\n  position: {\n    type: String,\n    default: 'bottom-right',\n    validator: v => [\n      'top-right', 'top-left',\n      'bottom-right', 'bottom-left',\n      'top', 'right', 'bottom', 'left'\n    ].includes(v)\n  },\n  offset: {\n    type: Array,\n    validator: v => v.length === 2\n  },\n  expand: Boolean\n}\n\nexport default function () {\n  const { props, proxy: { $q } } = getCurrentInstance()\n\n  const $layout = inject(layoutKey, emptyRenderFn)\n  if ($layout === emptyRenderFn) {\n    console.error('QPageSticky needs to be child of QLayout')\n    return emptyRenderFn\n  }\n\n  const attach = computed(() => {\n    const pos = props.position\n\n    return {\n      top: pos.indexOf('top') > -1,\n      right: pos.indexOf('right') > -1,\n      bottom: pos.indexOf('bottom') > -1,\n      left: pos.indexOf('left') > -1,\n      vertical: pos === 'top' || pos === 'bottom',\n      horizontal: pos === 'left' || pos === 'right'\n    }\n  })\n\n  const top = computed(() => $layout.header.offset)\n  const right = computed(() => $layout.right.offset)\n  const bottom = computed(() => $layout.footer.offset)\n  const left = computed(() => $layout.left.offset)\n\n  const style = computed(() => {\n    let posX = 0, posY = 0\n\n    const side = attach.value\n    const dir = $q.lang.rtl === true ? -1 : 1\n\n    if (side.top === true && top.value !== 0) {\n      posY = `${ top.value }px`\n    }\n    else if (side.bottom === true && bottom.value !== 0) {\n      posY = `${ -bottom.value }px`\n    }\n\n    if (side.left === true && left.value !== 0) {\n      posX = `${ dir * left.value }px`\n    }\n    else if (side.right === true && right.value !== 0) {\n      posX = `${ -dir * right.value }px`\n    }\n\n    const css = { transform: `translate(${ posX }, ${ posY })` }\n\n    if (props.offset) {\n      css.margin = `${ props.offset[ 1 ] }px ${ props.offset[ 0 ] }px`\n    }\n\n    if (side.vertical === true) {\n      if (left.value !== 0) {\n        css[ $q.lang.rtl === true ? 'right' : 'left' ] = `${ left.value }px`\n      }\n      if (right.value !== 0) {\n        css[ $q.lang.rtl === true ? 'left' : 'right' ] = `${ right.value }px`\n      }\n    }\n    else if (side.horizontal === true) {\n      if (top.value !== 0) {\n        css.top = `${ top.value }px`\n      }\n      if (bottom.value !== 0) {\n        css.bottom = `${ bottom.value }px`\n      }\n    }\n\n    return css\n  })\n\n  const classes = computed(() =>\n    `q-page-sticky row flex-center fixed-${ props.position }`\n    + ` q-page-sticky--${ props.expand === true ? 'expand' : 'shrink' }`\n  )\n\n  function getStickyContent (slots) {\n    const content = hSlot(slots.default)\n\n    return h('div', {\n      class: classes.value,\n      style: style.value\n    },\n    props.expand === true\n      ? content\n      : [ h('div', content) ]\n    )\n  }\n\n  return {\n    $layout,\n    getStickyContent\n  }\n}\n",
+      "start": 1703982897341,
+      "end": 1703982897409,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897409,
+      "end": 1703982897409,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897409,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897410,
+      "end": 1703982897410,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897410,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897411,
+      "end": 1703982897411,
+      "order": "normal"
+    }
+  ]
+}

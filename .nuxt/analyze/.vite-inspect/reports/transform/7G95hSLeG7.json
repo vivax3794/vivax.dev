@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/private/use-model-toggle.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { watch, nextTick, onMounted, getCurrentInstance } from 'vue'\n\nimport { vmHasRouter } from '../../utils/private/vm.js'\n\nexport const useModelToggleProps = {\n  modelValue: {\n    type: Boolean,\n    default: null\n  },\n\n  'onUpdate:modelValue': [ Function, Array ]\n}\n\nexport const useModelToggleEmits = [\n  'beforeShow', 'show', 'beforeHide', 'hide'\n]\n\n// handleShow/handleHide -> removeTick(), self (& emit show)\n\nexport default function ({\n  showing,\n  canShow, // optional\n  hideOnRouteChange, // optional\n  handleShow, // optional\n  handleHide, // optional\n  processOnMount // optional\n}) {\n  const vm = getCurrentInstance()\n  const { props, emit, proxy } = vm\n\n  let payload\n\n  function toggle (evt) {\n    if (showing.value === true) {\n      hide(evt)\n    }\n    else {\n      show(evt)\n    }\n  }\n\n  function show (evt) {\n    if (\n      props.disable === true\n      || (evt !== void 0 && evt.qAnchorHandled === true)\n      || (canShow !== void 0 && canShow(evt) !== true)\n    ) {\n      return\n    }\n\n    const listener = props[ 'onUpdate:modelValue' ] !== void 0\n\n    if (listener === true && __QUASAR_SSR_SERVER__ !== true) {\n      emit('update:modelValue', true)\n      payload = evt\n      nextTick(() => {\n        if (payload === evt) {\n          payload = void 0\n        }\n      })\n    }\n\n    if (props.modelValue === null || listener === false || __QUASAR_SSR_SERVER__) {\n      processShow(evt)\n    }\n  }\n\n  function processShow (evt) {\n    if (showing.value === true) {\n      return\n    }\n\n    showing.value = true\n\n    emit('beforeShow', evt)\n\n    if (handleShow !== void 0) {\n      handleShow(evt)\n    }\n    else {\n      emit('show', evt)\n    }\n  }\n\n  function hide (evt) {\n    if (__QUASAR_SSR_SERVER__ || props.disable === true) {\n      return\n    }\n\n    const listener = props[ 'onUpdate:modelValue' ] !== void 0\n\n    if (listener === true && __QUASAR_SSR_SERVER__ !== true) {\n      emit('update:modelValue', false)\n      payload = evt\n      nextTick(() => {\n        if (payload === evt) {\n          payload = void 0\n        }\n      })\n    }\n\n    if (props.modelValue === null || listener === false || __QUASAR_SSR_SERVER__) {\n      processHide(evt)\n    }\n  }\n\n  function processHide (evt) {\n    if (showing.value === false) {\n      return\n    }\n\n    showing.value = false\n\n    emit('beforeHide', evt)\n\n    if (handleHide !== void 0) {\n      handleHide(evt)\n    }\n    else {\n      emit('hide', evt)\n    }\n  }\n\n  function processModelChange (val) {\n    if (props.disable === true && val === true) {\n      if (props[ 'onUpdate:modelValue' ] !== void 0) {\n        emit('update:modelValue', false)\n      }\n    }\n    else if ((val === true) !== showing.value) {\n      const fn = val === true ? processShow : processHide\n      fn(payload)\n    }\n  }\n\n  watch(() => props.modelValue, processModelChange)\n\n  if (hideOnRouteChange !== void 0 && vmHasRouter(vm) === true) {\n    watch(() => proxy.$route.fullPath, () => {\n      if (hideOnRouteChange.value === true && showing.value === true) {\n        hide()\n      }\n    })\n  }\n\n  processOnMount === true && onMounted(() => {\n    processModelChange(props.modelValue)\n  })\n\n  // expose public methods\n  const publicMethods = { show, hide, toggle }\n  Object.assign(proxy, publicMethods)\n\n  return publicMethods\n}\n",
+      "start": 1703982897256,
+      "end": 1703982897330,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897330,
+      "end": 1703982897330,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897330,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { watch, nextTick, onMounted, getCurrentInstance } from \"vue\";\nimport { vmHasRouter } from \"../../utils/private/vm.js\";\nexport const useModelToggleProps = {\n  modelValue: {\n    type: Boolean,\n    default: null\n  },\n  \"onUpdate:modelValue\": [Function, Array]\n};\nexport const useModelToggleEmits = [\n  \"beforeShow\",\n  \"show\",\n  \"beforeHide\",\n  \"hide\"\n];\nexport default function({\n  showing,\n  canShow,\n  // optional\n  hideOnRouteChange,\n  // optional\n  handleShow,\n  // optional\n  handleHide,\n  // optional\n  processOnMount\n  // optional\n}) {\n  const vm = getCurrentInstance();\n  const { props, emit, proxy } = vm;\n  let payload;\n  function toggle(evt) {\n    if (showing.value === true) {\n      hide(evt);\n    } else {\n      show(evt);\n    }\n  }\n  function show(evt) {\n    if (props.disable === true || evt !== void 0 && evt.qAnchorHandled === true || canShow !== void 0 && canShow(evt) !== true) {\n      return;\n    }\n    const listener = props[\"onUpdate:modelValue\"] !== void 0;\n    if (listener === true && true) {\n      emit(\"update:modelValue\", true);\n      payload = evt;\n      nextTick(() => {\n        if (payload === evt) {\n          payload = void 0;\n        }\n      });\n    }\n    if (props.modelValue === null || listener === false || false) {\n      processShow(evt);\n    }\n  }\n  function processShow(evt) {\n    if (showing.value === true) {\n      return;\n    }\n    showing.value = true;\n    emit(\"beforeShow\", evt);\n    if (handleShow !== void 0) {\n      handleShow(evt);\n    } else {\n      emit(\"show\", evt);\n    }\n  }\n  function hide(evt) {\n    if (props.disable === true) {\n      return;\n    }\n    const listener = props[\"onUpdate:modelValue\"] !== void 0;\n    if (listener === true && true) {\n      emit(\"update:modelValue\", false);\n      payload = evt;\n      nextTick(() => {\n        if (payload === evt) {\n          payload = void 0;\n        }\n      });\n    }\n    if (props.modelValue === null || listener === false || false) {\n      processHide(evt);\n    }\n  }\n  function processHide(evt) {\n    if (showing.value === false) {\n      return;\n    }\n    showing.value = false;\n    emit(\"beforeHide\", evt);\n    if (handleHide !== void 0) {\n      handleHide(evt);\n    } else {\n      emit(\"hide\", evt);\n    }\n  }\n  function processModelChange(val) {\n    if (props.disable === true && val === true) {\n      if (props[\"onUpdate:modelValue\"] !== void 0) {\n        emit(\"update:modelValue\", false);\n      }\n    } else if (val === true !== showing.value) {\n      const fn = val === true ? processShow : processHide;\n      fn(payload);\n    }\n  }\n  watch(() => props.modelValue, processModelChange);\n  if (hideOnRouteChange !== void 0 && vmHasRouter(vm) === true) {\n    watch(() => proxy.$route.fullPath, () => {\n      if (hideOnRouteChange.value === true && showing.value === true) {\n        hide();\n      }\n    });\n  }\n  processOnMount === true && onMounted(() => {\n    processModelChange(props.modelValue);\n  });\n  const publicMethods = { show, hide, toggle };\n  Object.assign(proxy, publicMethods);\n  return publicMethods;\n}\n",
+      "start": 1703982897331,
+      "end": 1703982897338,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/editor/editor-caret.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { noop } from '../../utils/event.js'\n\nfunction getBlockElement (el, parent) {\n  if (parent && el === parent) {\n    return null\n  }\n\n  const nodeName = el.nodeName.toLowerCase()\n\n  if ([ 'div', 'li', 'ul', 'ol', 'blockquote' ].includes(nodeName) === true) {\n    return el\n  }\n\n  const\n    style = window.getComputedStyle\n      ? window.getComputedStyle(el)\n      : el.currentStyle,\n    display = style.display\n\n  if (display === 'block' || display === 'table') {\n    return el\n  }\n\n  return getBlockElement(el.parentNode)\n}\n\nfunction isChildOf (el, parent, orSame) {\n  return !el || el === document.body\n    ? false\n    : (orSame === true && el === parent) || (parent === document ? document.body : parent).contains(el.parentNode)\n}\n\nfunction createRange (node, chars, range) {\n  if (!range) {\n    range = document.createRange()\n    range.selectNode(node)\n    range.setStart(node, 0)\n  }\n\n  if (chars.count === 0) {\n    range.setEnd(node, chars.count)\n  }\n  else if (chars.count > 0) {\n    if (node.nodeType === Node.TEXT_NODE) {\n      if (node.textContent.length < chars.count) {\n        chars.count -= node.textContent.length\n      }\n      else {\n        range.setEnd(node, chars.count)\n        chars.count = 0\n      }\n    }\n    else {\n      for (let lp = 0; chars.count !== 0 && lp < node.childNodes.length; lp++) {\n        range = createRange(node.childNodes[ lp ], chars, range)\n      }\n    }\n  }\n\n  return range\n}\n\nconst urlRegex = /^https?:\\/\\//\n\nexport default class Caret {\n  constructor (el, eVm) {\n    this.el = el\n    this.eVm = eVm\n    this._range = null\n  }\n\n  get selection () {\n    if (this.el) {\n      const sel = document.getSelection()\n\n      // only when the selection in element\n      if (isChildOf(sel.anchorNode, this.el, true) && isChildOf(sel.focusNode, this.el, true)) {\n        return sel\n      }\n    }\n\n    return null\n  }\n\n  get hasSelection () {\n    return this.selection !== null\n      ? this.selection.toString().length !== 0\n      : false\n  }\n\n  get range () {\n    const sel = this.selection\n\n    if (sel !== null && sel.rangeCount) {\n      return sel.getRangeAt(0)\n    }\n\n    return this._range\n  }\n\n  get parent () {\n    const range = this.range\n\n    if (range !== null) {\n      const node = range.startContainer\n\n      return node.nodeType === document.ELEMENT_NODE\n        ? node\n        : node.parentNode\n    }\n\n    return null\n  }\n\n  get blockParent () {\n    const parent = this.parent\n\n    if (parent !== null) {\n      return getBlockElement(parent, this.el)\n    }\n\n    return null\n  }\n\n  save (range = this.range) {\n    if (range !== null) {\n      this._range = range\n    }\n  }\n\n  restore (range = this._range) {\n    const\n      r = document.createRange(),\n      sel = document.getSelection()\n\n    if (range !== null) {\n      r.setStart(range.startContainer, range.startOffset)\n      r.setEnd(range.endContainer, range.endOffset)\n      sel.removeAllRanges()\n      sel.addRange(r)\n    }\n    else {\n      sel.selectAllChildren(this.el)\n      sel.collapseToEnd()\n    }\n  }\n\n  savePosition () {\n    let charCount = -1, node\n    const\n      selection = document.getSelection(),\n      parentEl = this.el.parentNode\n\n    if (selection.focusNode && isChildOf(selection.focusNode, parentEl)) {\n      node = selection.focusNode\n      charCount = selection.focusOffset\n\n      while (node && node !== parentEl) {\n        if (node !== this.el && node.previousSibling) {\n          node = node.previousSibling\n          charCount += node.textContent.length\n        }\n        else {\n          node = node.parentNode\n        }\n      }\n    }\n\n    this.savedPos = charCount\n  }\n\n  restorePosition (length = 0) {\n    if (this.savedPos > 0 && this.savedPos < length) {\n      const\n        selection = window.getSelection(),\n        range = createRange(this.el, { count: this.savedPos })\n\n      if (range) {\n        range.collapse(false)\n        selection.removeAllRanges()\n        selection.addRange(range)\n      }\n    }\n  }\n\n  hasParent (name, spanLevel) {\n    const el = spanLevel\n      ? this.parent\n      : this.blockParent\n\n    return el !== null\n      ? el.nodeName.toLowerCase() === name.toLowerCase()\n      : false\n  }\n\n  hasParents (list, recursive, el = this.parent) {\n    if (el === null) {\n      return false\n    }\n\n    if (list.includes(el.nodeName.toLowerCase()) === true) {\n      return true\n    }\n\n    return recursive === true\n      ? this.hasParents(list, recursive, el.parentNode)\n      : false\n  }\n\n  is (cmd, param) {\n    if (this.selection === null) {\n      return false\n    }\n\n    switch (cmd) {\n      case 'formatBlock':\n        return (param === 'DIV' && this.parent === this.el)\n          || this.hasParent(param, param === 'PRE')\n      case 'link':\n        return this.hasParent('A', true)\n      case 'fontSize':\n        return document.queryCommandValue(cmd) === param\n      case 'fontName':\n        const res = document.queryCommandValue(cmd)\n        return res === `\"${ param }\"` || res === param\n      case 'fullscreen':\n        return this.eVm.inFullscreen.value\n      case 'viewsource':\n        return this.eVm.isViewingSource.value\n      case void 0:\n        return false\n      default:\n        const state = document.queryCommandState(cmd)\n        return param !== void 0 ? state === param : state\n    }\n  }\n\n  getParentAttribute (attrib) {\n    if (this.parent !== null) {\n      return this.parent.getAttribute(attrib)\n    }\n\n    return null\n  }\n\n  can (name) {\n    if (name === 'outdent') {\n      return this.hasParents([ 'blockquote', 'li' ], true)\n    }\n\n    if (name === 'indent') {\n      return this.hasParents([ 'li' ], true)\n    }\n\n    if (name === 'link') {\n      return this.selection !== null || this.is('link')\n    }\n  }\n\n  apply (cmd, param, done = noop) {\n    if (cmd === 'formatBlock') {\n      if ([ 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6' ].includes(param) && this.is(cmd, param)) {\n        cmd = 'outdent'\n        param = null\n      }\n\n      if (param === 'PRE' && this.is(cmd, 'PRE')) {\n        param = 'P'\n      }\n    }\n    else if (cmd === 'print') {\n      done()\n\n      const win = window.open()\n\n      win.document.write(`\n        <!doctype html>\n        <html>\n          <head>\n            <title>Print - ${ document.title }</title>\n          </head>\n          <body>\n            <div>${ this.el.innerHTML }</div>\n          </body>\n        </html>\n      `)\n      win.print()\n      win.close()\n\n      return\n    }\n    else if (cmd === 'link') {\n      const link = this.getParentAttribute('href')\n\n      if (link === null) {\n        const selection = this.selectWord(this.selection)\n        const url = selection ? selection.toString() : ''\n\n        if (!url.length) {\n          if (!this.range || !this.range.cloneContents().querySelector('img')) {\n            return\n          }\n        }\n\n        this.eVm.editLinkUrl.value = urlRegex.test(url) ? url : 'https://'\n        document.execCommand('createLink', false, this.eVm.editLinkUrl.value)\n\n        this.save(selection.getRangeAt(0))\n      }\n      else {\n        this.eVm.editLinkUrl.value = link\n\n        this.range.selectNodeContents(this.parent)\n        this.save()\n      }\n\n      return\n    }\n    else if (cmd === 'fullscreen') {\n      this.eVm.toggleFullscreen()\n      done()\n\n      return\n    }\n    else if (cmd === 'viewsource') {\n      this.eVm.isViewingSource.value = this.eVm.isViewingSource.value === false\n      this.eVm.setContent(this.eVm.props.modelValue)\n      done()\n\n      return\n    }\n\n    document.execCommand(cmd, false, param)\n\n    done()\n  }\n\n  selectWord (sel) {\n    if (sel === null || sel.isCollapsed !== true || /* IE 11 */ sel.modify === void 0) {\n      return sel\n    }\n\n    // Detect if selection is backwards\n    const range = document.createRange()\n    range.setStart(sel.anchorNode, sel.anchorOffset)\n    range.setEnd(sel.focusNode, sel.focusOffset)\n    const direction = range.collapsed ? [ 'backward', 'forward' ] : [ 'forward', 'backward' ]\n    range.detach()\n\n    // modify() works on the focus of the selection\n    const\n      endNode = sel.focusNode,\n      endOffset = sel.focusOffset\n    sel.collapse(sel.anchorNode, sel.anchorOffset)\n    sel.modify('move', direction[ 0 ], 'character')\n    sel.modify('move', direction[ 1 ], 'word')\n    sel.extend(endNode, endOffset)\n    sel.modify('extend', direction[ 1 ], 'character')\n    sel.modify('extend', direction[ 0 ], 'word')\n\n    return sel\n  }\n}\n",
+      "start": 1703982897304,
+      "end": 1703982897351,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897351,
+      "end": 1703982897351,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897351,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897352,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897352,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897352,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897352,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897352,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897352,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897352,
+      "end": 1703982897352,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897352,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/btn-toggle/QBtnToggle.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed } from 'vue'\n\nimport QBtn from '../btn/QBtn.js'\nimport QBtnGroup from '../btn-group/QBtnGroup.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { useFormInject, useFormProps } from '../../composables/private/use-form.js'\n\nimport { hMergeSlot } from '../../utils/private/render.js'\nimport { getBtnDesignAttr } from '../btn/use-btn.js'\n\nexport default createComponent({\n  name: 'QBtnToggle',\n\n  props: {\n    ...useFormProps,\n\n    modelValue: {\n      required: true\n    },\n\n    options: {\n      type: Array,\n      required: true,\n      validator: v => v.every(\n        opt => ('label' in opt || 'icon' in opt || 'slot' in opt) && 'value' in opt\n      )\n    },\n\n    // To avoid seeing the active raise shadow through\n    // the transparent button, give it a color (even white)\n    color: String,\n    textColor: String,\n    toggleColor: {\n      type: String,\n      default: 'primary'\n    },\n    toggleTextColor: String,\n\n    outline: Boolean,\n    flat: Boolean,\n    unelevated: Boolean,\n    rounded: Boolean,\n    push: Boolean,\n    glossy: Boolean,\n\n    size: String,\n    padding: String,\n\n    noCaps: Boolean,\n    noWrap: Boolean,\n    dense: Boolean,\n    readonly: Boolean,\n    disable: Boolean,\n\n    stack: Boolean,\n    stretch: Boolean,\n\n    spread: Boolean,\n\n    clearable: Boolean,\n\n    ripple: {\n      type: [ Boolean, Object ],\n      default: true\n    }\n  },\n\n  emits: [ 'update:modelValue', 'clear', 'click' ],\n\n  setup (props, { slots, emit }) {\n    const hasActiveValue = computed(() =>\n      props.options.find(opt => opt.value === props.modelValue) !== void 0\n    )\n\n    const formAttrs = computed(() => ({\n      type: 'hidden',\n      name: props.name,\n      value: props.modelValue\n    }))\n\n    const injectFormInput = useFormInject(formAttrs)\n\n    const btnDesignAttr = computed(() => getBtnDesignAttr(props))\n\n    const btnOptionDesign = computed(() => ({\n      rounded: props.rounded,\n      dense: props.dense,\n      ...btnDesignAttr.value\n    }))\n\n    const btnOptions = computed(() => props.options.map((item, i) => {\n      const { attrs, value, slot, ...opt } = item\n\n      return {\n        slot,\n        props: {\n          key: i,\n\n          'aria-pressed': value === props.modelValue ? 'true' : 'false',\n          ...attrs,\n          ...opt,\n          ...btnOptionDesign.value,\n\n          disable: props.disable === true || opt.disable === true,\n\n          // Options that come from the button specific options first, then from general props\n          color: value === props.modelValue\n            ? mergeOpt(opt, 'toggleColor')\n            : mergeOpt(opt, 'color'),\n          textColor: value === props.modelValue\n            ? mergeOpt(opt, 'toggleTextColor')\n            : mergeOpt(opt, 'textColor'),\n          noCaps: mergeOpt(opt, 'noCaps') === true,\n          noWrap: mergeOpt(opt, 'noWrap') === true,\n\n          size: mergeOpt(opt, 'size'),\n          padding: mergeOpt(opt, 'padding'),\n          ripple: mergeOpt(opt, 'ripple'),\n          stack: mergeOpt(opt, 'stack') === true,\n          stretch: mergeOpt(opt, 'stretch') === true,\n\n          onClick (e) { set(value, item, e) }\n        }\n      }\n    }))\n\n    function set (value, opt, e) {\n      if (props.readonly !== true) {\n        if (props.modelValue === value) {\n          if (props.clearable === true) {\n            emit('update:modelValue', null, null)\n            emit('clear')\n          }\n        }\n        else {\n          emit('update:modelValue', value, opt)\n        }\n\n        emit('click', e)\n      }\n    }\n\n    function mergeOpt (opt, key) {\n      return opt[ key ] === void 0 ? props[ key ] : opt[ key ]\n    }\n\n    function getContent () {\n      const child = btnOptions.value.map(opt => {\n        return h(QBtn, opt.props, opt.slot !== void 0 ? slots[ opt.slot ] : void 0)\n      })\n\n      if (props.name !== void 0 && props.disable !== true && hasActiveValue.value === true) {\n        injectFormInput(child, 'push')\n      }\n\n      return hMergeSlot(slots.default, child)\n    }\n\n    return () => h(QBtnGroup, {\n      class: 'q-btn-toggle',\n      ...btnDesignAttr.value,\n      rounded: props.rounded,\n      stretch: props.stretch,\n      glossy: props.glossy,\n      spread: props.spread\n    }, getContent)\n  }\n})\n",
+      "start": 1703982896160,
+      "end": 1703982896259,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896260,
+      "end": 1703982896260,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    }
+  ]
+}

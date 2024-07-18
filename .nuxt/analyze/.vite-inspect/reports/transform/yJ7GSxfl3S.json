@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/splitter/QSplitter.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, nextTick, getCurrentInstance } from 'vue'\n\nimport TouchPan from '../../directives/TouchPan.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot, hMergeSlot, hDir } from '../../utils/private/render.js'\n\nexport default createComponent({\n  name: 'QSplitter',\n\n  props: {\n    ...useDarkProps,\n\n    modelValue: {\n      type: Number,\n      required: true\n    },\n    reverse: Boolean,\n    unit: {\n      type: String,\n      default: '%',\n      validator: v => [ '%', 'px' ].includes(v)\n    },\n\n    limits: {\n      type: Array,\n      validator: v => {\n        if (v.length !== 2) return false\n        if (typeof v[ 0 ] !== 'number' || typeof v[ 1 ] !== 'number') return false\n        return v[ 0 ] >= 0 && v[ 0 ] <= v[ 1 ]\n      }\n    },\n\n    emitImmediately: Boolean,\n\n    horizontal: Boolean,\n    disable: Boolean,\n\n    beforeClass: [ Array, String, Object ],\n    afterClass: [ Array, String, Object ],\n\n    separatorClass: [ Array, String, Object ],\n    separatorStyle: [ Array, String, Object ]\n  },\n\n  emits: [ 'update:modelValue' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n    const isDark = useDark(props, $q)\n\n    const rootRef = ref(null)\n    const sideRefs = {\n      before: ref(null),\n      after: ref(null)\n    }\n\n    const classes = computed(() =>\n      'q-splitter no-wrap '\n      + `${ props.horizontal === true ? 'q-splitter--horizontal column' : 'q-splitter--vertical row' }`\n      + ` q-splitter--${ props.disable === true ? 'disabled' : 'workable' }`\n      + (isDark.value === true ? ' q-splitter--dark' : '')\n    )\n\n    const propName = computed(() => (props.horizontal === true ? 'height' : 'width'))\n    const side = computed(() => (props.reverse !== true ? 'before' : 'after'))\n\n    const computedLimits = computed(() => (\n      props.limits !== void 0\n        ? props.limits\n        : (props.unit === '%' ? [ 10, 90 ] : [ 50, Infinity ])\n    ))\n\n    function getCSSValue (value) {\n      return (props.unit === '%' ? value : Math.round(value)) + props.unit\n    }\n\n    const styles = computed(() => ({\n      [ side.value ]: {\n        [ propName.value ]: getCSSValue(props.modelValue)\n      }\n    }))\n\n    let __dir, __maxValue, __value, __multiplier, __normalized\n\n    function pan (evt) {\n      if (evt.isFirst === true) {\n        const size = rootRef.value.getBoundingClientRect()[ propName.value ]\n\n        __dir = props.horizontal === true ? 'up' : 'left'\n        __maxValue = props.unit === '%' ? 100 : size\n        __value = Math.min(__maxValue, computedLimits.value[ 1 ], Math.max(computedLimits.value[ 0 ], props.modelValue))\n        __multiplier = (props.reverse !== true ? 1 : -1)\n          * (props.horizontal === true ? 1 : ($q.lang.rtl === true ? -1 : 1))\n          * (props.unit === '%' ? (size === 0 ? 0 : 100 / size) : 1)\n\n        rootRef.value.classList.add('q-splitter--active')\n        return\n      }\n\n      if (evt.isFinal === true) {\n        if (__normalized !== props.modelValue) {\n          emit('update:modelValue', __normalized)\n        }\n\n        rootRef.value.classList.remove('q-splitter--active')\n        return\n      }\n\n      const val = __value\n        + __multiplier\n        * (evt.direction === __dir ? -1 : 1)\n        * evt.distance[ props.horizontal === true ? 'y' : 'x' ]\n\n      __normalized = Math.min(__maxValue, computedLimits.value[ 1 ], Math.max(computedLimits.value[ 0 ], val))\n\n      sideRefs[ side.value ].value.style[ propName.value ] = getCSSValue(__normalized)\n\n      if (props.emitImmediately === true && props.modelValue !== __normalized) {\n        emit('update:modelValue', __normalized)\n      }\n    }\n\n    const sepDirective = computed(() => {\n      // if props.disable !== true\n      return [ [\n        TouchPan,\n        pan,\n        void 0,\n        {\n          [ props.horizontal === true ? 'vertical' : 'horizontal' ]: true,\n          prevent: true,\n          stop: true,\n          mouse: true,\n          mouseAllDir: true\n        }\n      ] ]\n    })\n\n    function normalize (val, limits) {\n      if (val < limits[ 0 ]) {\n        emit('update:modelValue', limits[ 0 ])\n      }\n      else if (val > limits[ 1 ]) {\n        emit('update:modelValue', limits[ 1 ])\n      }\n    }\n\n    watch(() => props.modelValue, v => {\n      normalize(v, computedLimits.value)\n    })\n\n    watch(() => props.limits, () => {\n      nextTick(() => {\n        normalize(props.modelValue, computedLimits.value)\n      })\n    })\n\n    return () => {\n      const child = [\n        h('div', {\n          ref: sideRefs.before,\n          class: [\n            'q-splitter__panel q-splitter__before' + (props.reverse === true ? ' col' : ''),\n            props.beforeClass\n          ],\n          style: styles.value.before\n        }, hSlot(slots.before)),\n\n        h('div', {\n          class: [\n            'q-splitter__separator',\n            props.separatorClass\n          ],\n          style: props.separatorStyle,\n          'aria-disabled': props.disable === true ? 'true' : void 0\n        }, [\n          hDir(\n            'div',\n            { class: 'q-splitter__separator-area absolute-full' },\n            hSlot(slots.separator),\n            'sep',\n            props.disable !== true,\n            () => sepDirective.value\n          )\n        ]),\n\n        h('div', {\n          ref: sideRefs.after,\n          class: [\n            'q-splitter__panel q-splitter__after' + (props.reverse === true ? '' : ' col'),\n            props.afterClass\n          ],\n          style: styles.value.after\n        }, hSlot(slots.after))\n      ]\n\n      return h('div', {\n        class: classes.value,\n        ref: rootRef\n      }, hMergeSlot(slots.default, child))\n    }\n  }\n})\n",
+      "start": 1703982896591,
+      "end": 1703982896623,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896623,
+      "end": 1703982896623,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896623,
+      "end": 1703982896624,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896624,
+      "end": 1703982896624,
+      "order": "normal"
+    }
+  ]
+}

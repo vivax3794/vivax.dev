@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/fab/QFab.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, provide, getCurrentInstance } from 'vue'\n\nimport QBtn from '../btn/QBtn.js'\nimport QIcon from '../icon/QIcon.js'\n\nimport useFab, { useFabProps } from './use-fab.js'\nimport useModelToggle, { useModelToggleProps, useModelToggleEmits } from '../../composables/private/use-model-toggle.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot, hMergeSlot } from '../../utils/private/render.js'\nimport { fabKey } from '../../utils/private/symbols.js'\nimport uid from '../../utils/uid.js'\n\nconst directions = [ 'up', 'right', 'down', 'left' ]\nconst alignValues = [ 'left', 'center', 'right' ]\n\nexport default createComponent({\n  name: 'QFab',\n\n  props: {\n    ...useFabProps,\n    ...useModelToggleProps,\n\n    icon: String,\n    activeIcon: String,\n\n    hideIcon: Boolean,\n    hideLabel: {\n      default: null\n    },\n\n    direction: {\n      type: String,\n      default: 'right',\n      validator: v => directions.includes(v)\n    },\n\n    persistent: Boolean,\n\n    verticalActionsAlign: {\n      type: String,\n      default: 'center',\n      validator: v => alignValues.includes(v)\n    }\n  },\n\n  emits: useModelToggleEmits,\n\n  setup (props, { slots }) {\n    const triggerRef = ref(null)\n    const showing = ref(props.modelValue === true)\n    const targetUid = uid()\n\n    const { proxy: { $q } } = getCurrentInstance()\n    const { formClass, labelProps } = useFab(props, showing)\n\n    const hideOnRouteChange = computed(() => props.persistent !== true)\n\n    const { hide, toggle } = useModelToggle({\n      showing,\n      hideOnRouteChange\n    })\n\n    const slotScope = computed(() => ({ opened: showing.value }))\n\n    const classes = computed(() =>\n      'q-fab z-fab row inline justify-center'\n      + ` q-fab--align-${ props.verticalActionsAlign } ${ formClass.value }`\n      + (showing.value === true ? ' q-fab--opened' : ' q-fab--closed')\n    )\n\n    const actionClass = computed(() =>\n      'q-fab__actions flex no-wrap inline'\n      + ` q-fab__actions--${ props.direction }`\n      + ` q-fab__actions--${ showing.value === true ? 'opened' : 'closed' }`\n    )\n\n    const actionAttrs = computed(() => {\n      const attrs = {\n        id: targetUid,\n        role: 'menu'\n      }\n\n      if (showing.value !== true) {\n        attrs[ 'aria-hidden' ] = 'true'\n      }\n\n      return attrs\n    })\n\n    const iconHolderClass = computed(() =>\n      'q-fab__icon-holder '\n      + ` q-fab__icon-holder--${ showing.value === true ? 'opened' : 'closed' }`\n    )\n\n    function getIcon (kebab, camel) {\n      const slotFn = slots[ kebab ]\n      const classes = `q-fab__${ kebab } absolute-full`\n\n      return slotFn === void 0\n        ? h(QIcon, { class: classes, name: props[ camel ] || $q.iconSet.fab[ camel ] })\n        : h('div', { class: classes }, slotFn(slotScope.value))\n    }\n\n    function getTriggerContent () {\n      const child = []\n\n      props.hideIcon !== true && child.push(\n        h('div', { class: iconHolderClass.value }, [\n          getIcon('icon', 'icon'),\n          getIcon('active-icon', 'activeIcon')\n        ])\n      )\n\n      if (props.label !== '' || slots.label !== void 0) {\n        child[ labelProps.value.action ](\n          h('div', labelProps.value.data, slots.label !== void 0 ? slots.label(slotScope.value) : [ props.label ])\n        )\n      }\n\n      return hMergeSlot(slots.tooltip, child)\n    }\n\n    provide(fabKey, {\n      showing,\n\n      onChildClick (evt) {\n        hide(evt)\n\n        if (triggerRef.value !== null) {\n          triggerRef.value.$el.focus()\n        }\n      }\n    })\n\n    return () => h('div', {\n      class: classes.value\n    }, [\n      h(QBtn, {\n        ref: triggerRef,\n        class: formClass.value,\n        ...props,\n        noWrap: true,\n        stack: props.stacked,\n        align: void 0,\n        icon: void 0,\n        label: void 0,\n        noCaps: true,\n        fab: true,\n        'aria-expanded': showing.value === true ? 'true' : 'false',\n        'aria-haspopup': 'true',\n        'aria-controls': targetUid,\n        onClick: toggle\n      }, getTriggerContent),\n\n      h('div', { class: actionClass.value, ...actionAttrs.value }, hSlot(slots.default))\n    ])\n  }\n})\n",
+      "start": 1703982896256,
+      "end": 1703982896346,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896346,
+      "end": 1703982896346,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896346,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/stepper/QStepper.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, provide, getCurrentInstance } from 'vue'\n\nimport StepHeader from './StepHeader.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport usePanel, { usePanelProps, usePanelEmits } from '../../composables/private/use-panel.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stepperKey } from '../../utils/private/symbols.js'\nimport { hSlot, hMergeSlot, hDir } from '../../utils/private/render.js'\n\nconst camelRE = /(-\\w)/g\n\nfunction camelizeProps (props) {\n  const acc = {}\n  for (const key in props) {\n    const newKey = key.replace(camelRE, m => m[ 1 ].toUpperCase())\n    acc[ newKey ] = props[ key ]\n  }\n  return acc\n}\n\nexport default createComponent({\n  name: 'QStepper',\n\n  props: {\n    ...useDarkProps,\n    ...usePanelProps,\n\n    flat: Boolean,\n    bordered: Boolean,\n    alternativeLabels: Boolean,\n    headerNav: Boolean,\n    contracted: Boolean,\n    headerClass: String,\n\n    inactiveColor: String,\n    inactiveIcon: String,\n    doneIcon: String,\n    doneColor: String,\n    activeIcon: String,\n    activeColor: String,\n    errorIcon: String,\n    errorColor: String\n  },\n\n  emits: usePanelEmits,\n\n  setup (props, { slots }) {\n    const vm = getCurrentInstance()\n    const isDark = useDark(props, vm.proxy.$q)\n\n    const {\n      updatePanelsList, isValidPanelName,\n      updatePanelIndex, getPanelContent,\n      getPanels, panelDirectives, goToPanel,\n      keepAliveProps, needsUniqueKeepAliveWrapper\n    } = usePanel()\n\n    provide(stepperKey, computed(() => ({\n      goToPanel,\n      keepAliveProps,\n      needsUniqueKeepAliveWrapper,\n      ...props\n    })))\n\n    const classes = computed(() =>\n      `q-stepper q-stepper--${ props.vertical === true ? 'vertical' : 'horizontal' }`\n      + (props.flat === true ? ' q-stepper--flat' : '')\n      + (props.bordered === true ? ' q-stepper--bordered' : '')\n      + (isDark.value === true ? ' q-stepper--dark q-dark' : '')\n    )\n\n    const headerClasses = computed(() =>\n      'q-stepper__header row items-stretch justify-between'\n      + ` q-stepper__header--${ props.alternativeLabels === true ? 'alternative' : 'standard' }-labels`\n      + (props.flat === false || props.bordered === true ? ' q-stepper__header--border' : '')\n      + (props.contracted === true ? ' q-stepper__header--contracted' : '')\n      + (props.headerClass !== void 0 ? ` ${ props.headerClass }` : '')\n    )\n\n    function getContent () {\n      const top = hSlot(slots.message, [])\n\n      if (props.vertical === true) {\n        isValidPanelName(props.modelValue) && updatePanelIndex()\n\n        const content = h('div', {\n          class: 'q-stepper__content'\n        }, hSlot(slots.default))\n\n        return top === void 0\n          ? [ content ]\n          : top.concat(content)\n      }\n\n      return [\n        h(\n          'div',\n          { class: headerClasses.value },\n          getPanels().map(panel => {\n            const step = camelizeProps(panel.props)\n\n            return h(StepHeader, {\n              key: step.name,\n              stepper: props,\n              step,\n              goToPanel\n            })\n          })\n        ),\n\n        top,\n\n        hDir(\n          'div',\n          { class: 'q-stepper__content q-panel-parent' },\n          getPanelContent(),\n          'cont',\n          props.swipeable,\n          () => panelDirectives.value\n        )\n      ]\n    }\n\n    return () => {\n      updatePanelsList(slots)\n\n      return h('div', {\n        class: classes.value\n      }, hMergeSlot(slots.navigation, getContent()))\n    }\n  }\n})\n",
+      "start": 1703982896593,
+      "end": 1703982896626,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896626,
+      "end": 1703982896626,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896627,
+      "end": 1703982896627,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896627,
+      "end": 1703982896627,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896627,
+      "end": 1703982896627,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896627,
+      "end": 1703982896627,
+      "order": "normal"
+    }
+  ]
+}

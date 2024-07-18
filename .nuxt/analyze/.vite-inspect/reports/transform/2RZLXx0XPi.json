@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/directives/TouchPan.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { client } from '../plugins/Platform.js'\n\nimport { createDirective } from '../utils/private/create.js'\nimport { getModifierDirections, shouldStart } from '../utils/private/touch.js'\nimport { addEvt, cleanEvt, position, leftClick, prevent, stop, stopAndPrevent, preventDraggable, noop } from '../utils/event.js'\nimport { clearSelection } from '../utils/private/selection.js'\nimport getSSRProps from '../utils/private/noop-ssr-directive-transform.js'\n\nfunction getChanges (evt, ctx, isFinal) {\n  const pos = position(evt)\n  let\n    dir,\n    distX = pos.left - ctx.event.x,\n    distY = pos.top - ctx.event.y,\n    absX = Math.abs(distX),\n    absY = Math.abs(distY)\n\n  const direction = ctx.direction\n\n  if (direction.horizontal === true && direction.vertical !== true) {\n    dir = distX < 0 ? 'left' : 'right'\n  }\n  else if (direction.horizontal !== true && direction.vertical === true) {\n    dir = distY < 0 ? 'up' : 'down'\n  }\n  else if (direction.up === true && distY < 0) {\n    dir = 'up'\n    if (absX > absY) {\n      if (direction.left === true && distX < 0) {\n        dir = 'left'\n      }\n      else if (direction.right === true && distX > 0) {\n        dir = 'right'\n      }\n    }\n  }\n  else if (direction.down === true && distY > 0) {\n    dir = 'down'\n    if (absX > absY) {\n      if (direction.left === true && distX < 0) {\n        dir = 'left'\n      }\n      else if (direction.right === true && distX > 0) {\n        dir = 'right'\n      }\n    }\n  }\n  else if (direction.left === true && distX < 0) {\n    dir = 'left'\n    if (absX < absY) {\n      if (direction.up === true && distY < 0) {\n        dir = 'up'\n      }\n      else if (direction.down === true && distY > 0) {\n        dir = 'down'\n      }\n    }\n  }\n  else if (direction.right === true && distX > 0) {\n    dir = 'right'\n    if (absX < absY) {\n      if (direction.up === true && distY < 0) {\n        dir = 'up'\n      }\n      else if (direction.down === true && distY > 0) {\n        dir = 'down'\n      }\n    }\n  }\n\n  let synthetic = false\n\n  if (dir === void 0 && isFinal === false) {\n    if (ctx.event.isFirst === true || ctx.event.lastDir === void 0) {\n      return {}\n    }\n\n    dir = ctx.event.lastDir\n    synthetic = true\n\n    if (dir === 'left' || dir === 'right') {\n      pos.left -= distX\n      absX = 0\n      distX = 0\n    }\n    else {\n      pos.top -= distY\n      absY = 0\n      distY = 0\n    }\n  }\n\n  return {\n    synthetic,\n    payload: {\n      evt,\n      touch: ctx.event.mouse !== true,\n      mouse: ctx.event.mouse === true,\n      position: pos,\n      direction: dir,\n      isFirst: ctx.event.isFirst,\n      isFinal: isFinal === true,\n      duration: Date.now() - ctx.event.time,\n      distance: {\n        x: absX,\n        y: absY\n      },\n      offset: {\n        x: distX,\n        y: distY\n      },\n      delta: {\n        x: pos.left - ctx.event.lastX,\n        y: pos.top - ctx.event.lastY\n      }\n    }\n  }\n}\n\nlet uid = 0\n\nexport default createDirective(__QUASAR_SSR_SERVER__\n  ? { name: 'touch-pan', getSSRProps }\n  : {\n      name: 'touch-pan',\n\n      beforeMount (el, { value, modifiers }) {\n        // early return, we don't need to do anything\n        if (modifiers.mouse !== true && client.has.touch !== true) {\n          return\n        }\n\n        function handleEvent (evt, mouseEvent) {\n          if (modifiers.mouse === true && mouseEvent === true) {\n            stopAndPrevent(evt)\n          }\n          else {\n            modifiers.stop === true && stop(evt)\n            modifiers.prevent === true && prevent(evt)\n          }\n        }\n\n        const ctx = {\n          uid: 'qvtp_' + (uid++),\n          handler: value,\n          modifiers,\n          direction: getModifierDirections(modifiers),\n\n          noop,\n\n          mouseStart (evt) {\n            if (shouldStart(evt, ctx) && leftClick(evt)) {\n              addEvt(ctx, 'temp', [\n                [ document, 'mousemove', 'move', 'notPassiveCapture' ],\n                [ document, 'mouseup', 'end', 'passiveCapture' ]\n              ])\n\n              ctx.start(evt, true)\n            }\n          },\n\n          touchStart (evt) {\n            if (shouldStart(evt, ctx)) {\n              const target = evt.target\n\n              addEvt(ctx, 'temp', [\n                [ target, 'touchmove', 'move', 'notPassiveCapture' ],\n                [ target, 'touchcancel', 'end', 'passiveCapture' ],\n                [ target, 'touchend', 'end', 'passiveCapture' ]\n              ])\n\n              ctx.start(evt)\n            }\n          },\n\n          start (evt, mouseEvent) {\n            client.is.firefox === true && preventDraggable(el, true)\n            ctx.lastEvt = evt\n\n            /*\n            * Stop propagation so possible upper v-touch-pan don't catch this as well;\n            * If we're not the target (based on modifiers), we'll re-emit the event later\n            */\n            if (mouseEvent === true || modifiers.stop === true) {\n              /*\n              * are we directly switching to detected state?\n              * clone event only otherwise\n              */\n              if (\n                ctx.direction.all !== true\n                // account for UMD too where modifiers will be lowercased to work\n                && (mouseEvent !== true || (ctx.modifiers.mouseAllDir !== true && ctx.modifiers.mousealldir !== true))\n              ) {\n                const clone = evt.type.indexOf('mouse') > -1\n                  ? new MouseEvent(evt.type, evt)\n                  : new TouchEvent(evt.type, evt)\n\n                evt.defaultPrevented === true && prevent(clone)\n                evt.cancelBubble === true && stop(clone)\n\n                Object.assign(clone, {\n                  qKeyEvent: evt.qKeyEvent,\n                  qClickOutside: evt.qClickOutside,\n                  qAnchorHandled: evt.qAnchorHandled,\n                  qClonedBy: evt.qClonedBy === void 0\n                    ? [ ctx.uid ]\n                    : evt.qClonedBy.concat(ctx.uid)\n                })\n\n                ctx.initialEvent = {\n                  target: evt.target,\n                  event: clone\n                }\n              }\n\n              stop(evt)\n            }\n\n            const { left, top } = position(evt)\n\n            ctx.event = {\n              x: left,\n              y: top,\n              time: Date.now(),\n              mouse: mouseEvent === true,\n              detected: false,\n              isFirst: true,\n              isFinal: false,\n              lastX: left,\n              lastY: top\n            }\n          },\n\n          move (evt) {\n            if (ctx.event === void 0) {\n              return\n            }\n\n            const\n              pos = position(evt),\n              distX = pos.left - ctx.event.x,\n              distY = pos.top - ctx.event.y\n\n            // prevent buggy browser behavior (like Blink-based engine ones on Windows)\n            // where the mousemove event occurs even if there's no movement after mousedown\n            // https://bugs.chromium.org/p/chromium/issues/detail?id=161464\n            // https://bugs.chromium.org/p/chromium/issues/detail?id=721341\n            // https://github.com/quasarframework/quasar/issues/10721\n            if (distX === 0 && distY === 0) {\n              return\n            }\n\n            ctx.lastEvt = evt\n\n            const isMouseEvt = ctx.event.mouse === true\n            const start = () => {\n              handleEvent(evt, isMouseEvt)\n\n              let cursor\n              if (modifiers.preserveCursor !== true && modifiers.preservecursor !== true) {\n                cursor = document.documentElement.style.cursor || ''\n                document.documentElement.style.cursor = 'grabbing'\n              }\n\n              isMouseEvt === true && document.body.classList.add('no-pointer-events--children')\n              document.body.classList.add('non-selectable')\n              clearSelection()\n\n              ctx.styleCleanup = withDelayedFn => {\n                ctx.styleCleanup = void 0\n\n                if (cursor !== void 0) {\n                  document.documentElement.style.cursor = cursor\n                }\n\n                document.body.classList.remove('non-selectable')\n\n                if (isMouseEvt === true) {\n                  const remove = () => {\n                    document.body.classList.remove('no-pointer-events--children')\n                  }\n\n                  if (withDelayedFn !== void 0) {\n                    setTimeout(() => {\n                      remove()\n                      withDelayedFn()\n                    }, 50)\n                  }\n                  else { remove() }\n                }\n                else if (withDelayedFn !== void 0) {\n                  withDelayedFn()\n                }\n              }\n            }\n\n            if (ctx.event.detected === true) {\n              ctx.event.isFirst !== true && handleEvent(evt, ctx.event.mouse)\n\n              const { payload, synthetic } = getChanges(evt, ctx, false)\n\n              if (payload !== void 0) {\n                if (ctx.handler(payload) === false) {\n                  ctx.end(evt)\n                }\n                else {\n                  if (ctx.styleCleanup === void 0 && ctx.event.isFirst === true) {\n                    start()\n                  }\n\n                  ctx.event.lastX = payload.position.left\n                  ctx.event.lastY = payload.position.top\n                  ctx.event.lastDir = synthetic === true ? void 0 : payload.direction\n                  ctx.event.isFirst = false\n                }\n              }\n\n              return\n            }\n\n            if (\n              ctx.direction.all === true\n              // account for UMD too where modifiers will be lowercased to work\n              || (isMouseEvt === true && (ctx.modifiers.mouseAllDir === true || ctx.modifiers.mousealldir === true))\n            ) {\n              start()\n              ctx.event.detected = true\n              ctx.move(evt)\n              return\n            }\n\n            const\n              absX = Math.abs(distX),\n              absY = Math.abs(distY)\n\n            if (absX !== absY) {\n              if (\n                (ctx.direction.horizontal === true && absX > absY)\n                || (ctx.direction.vertical === true && absX < absY)\n                || (ctx.direction.up === true && absX < absY && distY < 0)\n                || (ctx.direction.down === true && absX < absY && distY > 0)\n                || (ctx.direction.left === true && absX > absY && distX < 0)\n                || (ctx.direction.right === true && absX > absY && distX > 0)\n              ) {\n                ctx.event.detected = true\n                ctx.move(evt)\n              }\n              else {\n                ctx.end(evt, true)\n              }\n            }\n          },\n\n          end (evt, abort) {\n            if (ctx.event === void 0) {\n              return\n            }\n\n            cleanEvt(ctx, 'temp')\n            client.is.firefox === true && preventDraggable(el, false)\n\n            if (abort === true) {\n              ctx.styleCleanup !== void 0 && ctx.styleCleanup()\n\n              if (ctx.event.detected !== true && ctx.initialEvent !== void 0) {\n                ctx.initialEvent.target.dispatchEvent(ctx.initialEvent.event)\n              }\n            }\n            else if (ctx.event.detected === true) {\n              ctx.event.isFirst === true && ctx.handler(getChanges(evt === void 0 ? ctx.lastEvt : evt, ctx).payload)\n\n              const { payload } = getChanges(evt === void 0 ? ctx.lastEvt : evt, ctx, true)\n              const fn = () => { ctx.handler(payload) }\n\n              if (ctx.styleCleanup !== void 0) {\n                ctx.styleCleanup(fn)\n              }\n              else {\n                fn()\n              }\n            }\n\n            ctx.event = void 0\n            ctx.initialEvent = void 0\n            ctx.lastEvt = void 0\n          }\n        }\n\n        el.__qtouchpan = ctx\n\n        if (modifiers.mouse === true) {\n          // account for UMD too where modifiers will be lowercased to work\n          const capture = modifiers.mouseCapture === true || modifiers.mousecapture === true\n            ? 'Capture'\n            : ''\n\n          addEvt(ctx, 'main', [\n            [ el, 'mousedown', 'mouseStart', `passive${ capture }` ]\n          ])\n        }\n\n        client.has.touch === true && addEvt(ctx, 'main', [\n          [ el, 'touchstart', 'touchStart', `passive${ modifiers.capture === true ? 'Capture' : '' }` ],\n          [ el, 'touchmove', 'noop', 'notPassiveCapture' ] // cannot be passive (ex: iOS scroll)\n        ])\n      },\n\n      updated (el, bindings) {\n        const ctx = el.__qtouchpan\n\n        if (ctx !== void 0) {\n          if (bindings.oldValue !== bindings.value) {\n            typeof value !== 'function' && ctx.end()\n            ctx.handler = bindings.value\n          }\n\n          ctx.direction = getModifierDirections(bindings.modifiers)\n        }\n      },\n\n      beforeUnmount (el) {\n        const ctx = el.__qtouchpan\n\n        if (ctx !== void 0) {\n          // emit the end event when the directive is destroyed while active\n          // this is only needed in TouchPan because the rest of the touch directives do not emit an end event\n          // the condition is also checked in the start of function but we avoid the call\n          ctx.event !== void 0 && ctx.end()\n\n          cleanEvt(ctx, 'main')\n          cleanEvt(ctx, 'temp')\n\n          client.is.firefox === true && preventDraggable(el, false)\n          ctx.styleCleanup !== void 0 && ctx.styleCleanup()\n\n          delete el.__qtouchpan\n        }\n      }\n    }\n)\n",
+      "start": 1703982896648,
+      "end": 1703982896709,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896709,
+      "end": 1703982896709,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { client } from \"../plugins/Platform.js\";\nimport { createDirective } from \"../utils/private/create.js\";\nimport { getModifierDirections, shouldStart } from \"../utils/private/touch.js\";\nimport { addEvt, cleanEvt, position, leftClick, prevent, stop, stopAndPrevent, preventDraggable, noop } from \"../utils/event.js\";\nimport { clearSelection } from \"../utils/private/selection.js\";\nimport getSSRProps from \"../utils/private/noop-ssr-directive-transform.js\";\nfunction getChanges(evt, ctx, isFinal) {\n  const pos = position(evt);\n  let dir, distX = pos.left - ctx.event.x, distY = pos.top - ctx.event.y, absX = Math.abs(distX), absY = Math.abs(distY);\n  const direction = ctx.direction;\n  if (direction.horizontal === true && direction.vertical !== true) {\n    dir = distX < 0 ? \"left\" : \"right\";\n  } else if (direction.horizontal !== true && direction.vertical === true) {\n    dir = distY < 0 ? \"up\" : \"down\";\n  } else if (direction.up === true && distY < 0) {\n    dir = \"up\";\n    if (absX > absY) {\n      if (direction.left === true && distX < 0) {\n        dir = \"left\";\n      } else if (direction.right === true && distX > 0) {\n        dir = \"right\";\n      }\n    }\n  } else if (direction.down === true && distY > 0) {\n    dir = \"down\";\n    if (absX > absY) {\n      if (direction.left === true && distX < 0) {\n        dir = \"left\";\n      } else if (direction.right === true && distX > 0) {\n        dir = \"right\";\n      }\n    }\n  } else if (direction.left === true && distX < 0) {\n    dir = \"left\";\n    if (absX < absY) {\n      if (direction.up === true && distY < 0) {\n        dir = \"up\";\n      } else if (direction.down === true && distY > 0) {\n        dir = \"down\";\n      }\n    }\n  } else if (direction.right === true && distX > 0) {\n    dir = \"right\";\n    if (absX < absY) {\n      if (direction.up === true && distY < 0) {\n        dir = \"up\";\n      } else if (direction.down === true && distY > 0) {\n        dir = \"down\";\n      }\n    }\n  }\n  let synthetic = false;\n  if (dir === void 0 && isFinal === false) {\n    if (ctx.event.isFirst === true || ctx.event.lastDir === void 0) {\n      return {};\n    }\n    dir = ctx.event.lastDir;\n    synthetic = true;\n    if (dir === \"left\" || dir === \"right\") {\n      pos.left -= distX;\n      absX = 0;\n      distX = 0;\n    } else {\n      pos.top -= distY;\n      absY = 0;\n      distY = 0;\n    }\n  }\n  return {\n    synthetic,\n    payload: {\n      evt,\n      touch: ctx.event.mouse !== true,\n      mouse: ctx.event.mouse === true,\n      position: pos,\n      direction: dir,\n      isFirst: ctx.event.isFirst,\n      isFinal: isFinal === true,\n      duration: Date.now() - ctx.event.time,\n      distance: {\n        x: absX,\n        y: absY\n      },\n      offset: {\n        x: distX,\n        y: distY\n      },\n      delta: {\n        x: pos.left - ctx.event.lastX,\n        y: pos.top - ctx.event.lastY\n      }\n    }\n  };\n}\nlet uid = 0;\nexport default createDirective(\n  false ? { name: \"touch-pan\", getSSRProps } : {\n    name: \"touch-pan\",\n    beforeMount(el, { value: value2, modifiers }) {\n      if (modifiers.mouse !== true && client.has.touch !== true) {\n        return;\n      }\n      function handleEvent(evt, mouseEvent) {\n        if (modifiers.mouse === true && mouseEvent === true) {\n          stopAndPrevent(evt);\n        } else {\n          modifiers.stop === true && stop(evt);\n          modifiers.prevent === true && prevent(evt);\n        }\n      }\n      const ctx = {\n        uid: \"qvtp_\" + uid++,\n        handler: value2,\n        modifiers,\n        direction: getModifierDirections(modifiers),\n        noop,\n        mouseStart(evt) {\n          if (shouldStart(evt, ctx) && leftClick(evt)) {\n            addEvt(ctx, \"temp\", [\n              [document, \"mousemove\", \"move\", \"notPassiveCapture\"],\n              [document, \"mouseup\", \"end\", \"passiveCapture\"]\n            ]);\n            ctx.start(evt, true);\n          }\n        },\n        touchStart(evt) {\n          if (shouldStart(evt, ctx)) {\n            const target = evt.target;\n            addEvt(ctx, \"temp\", [\n              [target, \"touchmove\", \"move\", \"notPassiveCapture\"],\n              [target, \"touchcancel\", \"end\", \"passiveCapture\"],\n              [target, \"touchend\", \"end\", \"passiveCapture\"]\n            ]);\n            ctx.start(evt);\n          }\n        },\n        start(evt, mouseEvent) {\n          client.is.firefox === true && preventDraggable(el, true);\n          ctx.lastEvt = evt;\n          if (mouseEvent === true || modifiers.stop === true) {\n            if (ctx.direction.all !== true && (mouseEvent !== true || ctx.modifiers.mouseAllDir !== true && ctx.modifiers.mousealldir !== true)) {\n              const clone = evt.type.indexOf(\"mouse\") > -1 ? new MouseEvent(evt.type, evt) : new TouchEvent(evt.type, evt);\n              evt.defaultPrevented === true && prevent(clone);\n              evt.cancelBubble === true && stop(clone);\n              Object.assign(clone, {\n                qKeyEvent: evt.qKeyEvent,\n                qClickOutside: evt.qClickOutside,\n                qAnchorHandled: evt.qAnchorHandled,\n                qClonedBy: evt.qClonedBy === void 0 ? [ctx.uid] : evt.qClonedBy.concat(ctx.uid)\n              });\n              ctx.initialEvent = {\n                target: evt.target,\n                event: clone\n              };\n            }\n            stop(evt);\n          }\n          const { left, top } = position(evt);\n          ctx.event = {\n            x: left,\n            y: top,\n            time: Date.now(),\n            mouse: mouseEvent === true,\n            detected: false,\n            isFirst: true,\n            isFinal: false,\n            lastX: left,\n            lastY: top\n          };\n        },\n        move(evt) {\n          if (ctx.event === void 0) {\n            return;\n          }\n          const pos = position(evt), distX = pos.left - ctx.event.x, distY = pos.top - ctx.event.y;\n          if (distX === 0 && distY === 0) {\n            return;\n          }\n          ctx.lastEvt = evt;\n          const isMouseEvt = ctx.event.mouse === true;\n          const start = () => {\n            handleEvent(evt, isMouseEvt);\n            let cursor;\n            if (modifiers.preserveCursor !== true && modifiers.preservecursor !== true) {\n              cursor = document.documentElement.style.cursor || \"\";\n              document.documentElement.style.cursor = \"grabbing\";\n            }\n            isMouseEvt === true && document.body.classList.add(\"no-pointer-events--children\");\n            document.body.classList.add(\"non-selectable\");\n            clearSelection();\n            ctx.styleCleanup = (withDelayedFn) => {\n              ctx.styleCleanup = void 0;\n              if (cursor !== void 0) {\n                document.documentElement.style.cursor = cursor;\n              }\n              document.body.classList.remove(\"non-selectable\");\n              if (isMouseEvt === true) {\n                const remove = () => {\n                  document.body.classList.remove(\"no-pointer-events--children\");\n                };\n                if (withDelayedFn !== void 0) {\n                  setTimeout(() => {\n                    remove();\n                    withDelayedFn();\n                  }, 50);\n                } else {\n                  remove();\n                }\n              } else if (withDelayedFn !== void 0) {\n                withDelayedFn();\n              }\n            };\n          };\n          if (ctx.event.detected === true) {\n            ctx.event.isFirst !== true && handleEvent(evt, ctx.event.mouse);\n            const { payload, synthetic } = getChanges(evt, ctx, false);\n            if (payload !== void 0) {\n              if (ctx.handler(payload) === false) {\n                ctx.end(evt);\n              } else {\n                if (ctx.styleCleanup === void 0 && ctx.event.isFirst === true) {\n                  start();\n                }\n                ctx.event.lastX = payload.position.left;\n                ctx.event.lastY = payload.position.top;\n                ctx.event.lastDir = synthetic === true ? void 0 : payload.direction;\n                ctx.event.isFirst = false;\n              }\n            }\n            return;\n          }\n          if (ctx.direction.all === true || isMouseEvt === true && (ctx.modifiers.mouseAllDir === true || ctx.modifiers.mousealldir === true)) {\n            start();\n            ctx.event.detected = true;\n            ctx.move(evt);\n            return;\n          }\n          const absX = Math.abs(distX), absY = Math.abs(distY);\n          if (absX !== absY) {\n            if (ctx.direction.horizontal === true && absX > absY || ctx.direction.vertical === true && absX < absY || ctx.direction.up === true && absX < absY && distY < 0 || ctx.direction.down === true && absX < absY && distY > 0 || ctx.direction.left === true && absX > absY && distX < 0 || ctx.direction.right === true && absX > absY && distX > 0) {\n              ctx.event.detected = true;\n              ctx.move(evt);\n            } else {\n              ctx.end(evt, true);\n            }\n          }\n        },\n        end(evt, abort) {\n          if (ctx.event === void 0) {\n            return;\n          }\n          cleanEvt(ctx, \"temp\");\n          client.is.firefox === true && preventDraggable(el, false);\n          if (abort === true) {\n            ctx.styleCleanup !== void 0 && ctx.styleCleanup();\n            if (ctx.event.detected !== true && ctx.initialEvent !== void 0) {\n              ctx.initialEvent.target.dispatchEvent(ctx.initialEvent.event);\n            }\n          } else if (ctx.event.detected === true) {\n            ctx.event.isFirst === true && ctx.handler(getChanges(evt === void 0 ? ctx.lastEvt : evt, ctx).payload);\n            const { payload } = getChanges(evt === void 0 ? ctx.lastEvt : evt, ctx, true);\n            const fn = () => {\n              ctx.handler(payload);\n            };\n            if (ctx.styleCleanup !== void 0) {\n              ctx.styleCleanup(fn);\n            } else {\n              fn();\n            }\n          }\n          ctx.event = void 0;\n          ctx.initialEvent = void 0;\n          ctx.lastEvt = void 0;\n        }\n      };\n      el.__qtouchpan = ctx;\n      if (modifiers.mouse === true) {\n        const capture = modifiers.mouseCapture === true || modifiers.mousecapture === true ? \"Capture\" : \"\";\n        addEvt(ctx, \"main\", [\n          [el, \"mousedown\", \"mouseStart\", `passive${capture}`]\n        ]);\n      }\n      client.has.touch === true && addEvt(ctx, \"main\", [\n        [el, \"touchstart\", \"touchStart\", `passive${modifiers.capture === true ? \"Capture\" : \"\"}`],\n        [el, \"touchmove\", \"noop\", \"notPassiveCapture\"]\n        // cannot be passive (ex: iOS scroll)\n      ]);\n    },\n    updated(el, bindings) {\n      const ctx = el.__qtouchpan;\n      if (ctx !== void 0) {\n        if (bindings.oldValue !== bindings.value) {\n          typeof value !== \"function\" && ctx.end();\n          ctx.handler = bindings.value;\n        }\n        ctx.direction = getModifierDirections(bindings.modifiers);\n      }\n    },\n    beforeUnmount(el) {\n      const ctx = el.__qtouchpan;\n      if (ctx !== void 0) {\n        ctx.event !== void 0 && ctx.end();\n        cleanEvt(ctx, \"main\");\n        cleanEvt(ctx, \"temp\");\n        client.is.firefox === true && preventDraggable(el, false);\n        ctx.styleCleanup !== void 0 && ctx.styleCleanup();\n        delete el.__qtouchpan;\n      }\n    }\n  }\n);\n",
+      "start": 1703982896709,
+      "end": 1703982896715,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896716,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896721,
+      "end": 1703982896721,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896721,
+      "end": 1703982896721,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896721,
+      "end": 1703982896721,
+      "order": "normal"
+    }
+  ]
+}

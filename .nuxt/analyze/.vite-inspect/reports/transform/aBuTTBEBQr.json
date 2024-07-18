@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/pagination/QPagination.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, watch, computed, getCurrentInstance } from 'vue'\n\nimport QBtn from '../btn/QBtn.js'\nimport QInput from '../input/QInput.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport { btnDesignOptions, btnPadding, getBtnDesign } from '../btn/use-btn.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { between } from '../../utils/format.js'\nimport { isKeyCode } from '../../utils/private/key-composition.js'\n\nfunction getBool (val, otherwise) {\n  return [ true, false ].includes(val)\n    ? val\n    : otherwise\n}\n\nexport default createComponent({\n  name: 'QPagination',\n\n  props: {\n    ...useDarkProps,\n\n    modelValue: {\n      type: Number,\n      required: true\n    },\n    min: {\n      type: [ Number, String ],\n      default: 1\n    },\n    max: {\n      type: [ Number, String ],\n      required: true\n    },\n    maxPages: {\n      type: [ Number, String ],\n      default: 0,\n      validator: v => (\n        (typeof v === 'string' ? parseInt(v, 10) : v) >= 0\n      )\n    },\n\n    inputStyle: [ Array, String, Object ],\n    inputClass: [ Array, String, Object ],\n\n    size: String,\n\n    disable: Boolean,\n\n    input: Boolean,\n\n    iconPrev: String,\n    iconNext: String,\n    iconFirst: String,\n    iconLast: String,\n\n    toFn: Function,\n\n    boundaryLinks: {\n      type: Boolean,\n      default: null\n    },\n    boundaryNumbers: {\n      type: Boolean,\n      default: null\n    },\n    directionLinks: {\n      type: Boolean,\n      default: null\n    },\n    ellipses: {\n      type: Boolean,\n      default: null\n    },\n\n    ripple: {\n      type: [ Boolean, Object ],\n      default: null\n    },\n\n    round: Boolean,\n    rounded: Boolean,\n\n    flat: Boolean,\n    outline: Boolean,\n    unelevated: Boolean,\n    push: Boolean,\n    glossy: Boolean,\n\n    color: {\n      type: String,\n      default: 'primary'\n    },\n    textColor: String,\n\n    activeDesign: {\n      type: String,\n      default: '',\n      values: v => v === '' || btnDesignOptions.includes(v)\n    },\n    activeColor: String,\n    activeTextColor: String,\n\n    gutter: String,\n    padding: {\n      type: String,\n      default: '3px 2px'\n    }\n  },\n\n  emits: [ 'update:modelValue' ],\n\n  setup (props, { emit }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const isDark = useDark(props, $q)\n\n    const minProp = computed(() => parseInt(props.min, 10))\n    const maxProp = computed(() => parseInt(props.max, 10))\n    const maxPagesProp = computed(() => parseInt(props.maxPages, 10))\n\n    const inputPlaceholder = computed(() => model.value + ' / ' + maxProp.value)\n    const boundaryLinksProp = computed(() => getBool(props.boundaryLinks, props.input))\n    const boundaryNumbersProp = computed(() => getBool(props.boundaryNumbers, !props.input))\n    const directionLinksProp = computed(() => getBool(props.directionLinks, props.input))\n    const ellipsesProp = computed(() => getBool(props.ellipses, !props.input))\n\n    const newPage = ref(null)\n    const model = computed({\n      get: () => props.modelValue,\n      set: val => {\n        val = parseInt(val, 10)\n        if (props.disable || isNaN(val)) {\n          return\n        }\n        const value = between(val, minProp.value, maxProp.value)\n        if (props.modelValue !== value) {\n          emit('update:modelValue', value)\n        }\n      }\n    })\n\n    watch(() => `${ minProp.value }|${ maxProp.value }`, () => {\n      model.value = props.modelValue\n    })\n\n    const classes = computed(() =>\n      'q-pagination row no-wrap items-center'\n      + (props.disable === true ? ' disabled' : '')\n    )\n\n    const gutterProp = computed(() => (\n      props.gutter in btnPadding\n        ? `${ btnPadding[ props.gutter ] }px`\n        : props.gutter || null\n    ))\n    const gutterStyle = computed(() => (\n      gutterProp.value !== null\n        ? `--q-pagination-gutter-parent:-${ gutterProp.value };--q-pagination-gutter-child:${ gutterProp.value }`\n        : null\n    ))\n\n    const icons = computed(() => {\n      const ico = [\n        props.iconFirst || $q.iconSet.pagination.first,\n        props.iconPrev || $q.iconSet.pagination.prev,\n        props.iconNext || $q.iconSet.pagination.next,\n        props.iconLast || $q.iconSet.pagination.last\n      ]\n      return $q.lang.rtl === true ? ico.reverse() : ico\n    })\n\n    const attrs = computed(() => ({\n      'aria-disabled': props.disable === true ? 'true' : 'false',\n      role: 'navigation'\n    }))\n\n    const btnDesignProp = computed(() => getBtnDesign(props, 'flat'))\n    const btnProps = computed(() => ({\n      [ btnDesignProp.value ]: true,\n\n      round: props.round,\n      rounded: props.rounded,\n\n      padding: props.padding,\n\n      color: props.color,\n      textColor: props.textColor,\n\n      size: props.size,\n      ripple: props.ripple !== null\n        ? props.ripple\n        : true\n    }))\n\n    const btnActiveDesignProp = computed(() => {\n      // we also reset non-active design\n      const acc = { [ btnDesignProp.value ]: false }\n      if (props.activeDesign !== '') {\n        acc[ props.activeDesign ] = true\n      }\n      return acc\n    })\n    const activeBtnProps = computed(() => ({\n      ...btnActiveDesignProp.value,\n      color: props.activeColor || props.color,\n      textColor: props.activeTextColor || props.textColor\n    }))\n\n    const btnConfig = computed(() => {\n      let maxPages = Math.max(\n        maxPagesProp.value,\n        1 + (ellipsesProp.value ? 2 : 0) + (boundaryNumbersProp.value ? 2 : 0)\n      )\n\n      const acc = {\n        pgFrom: minProp.value,\n        pgTo: maxProp.value,\n        ellipsesStart: false,\n        ellipsesEnd: false,\n        boundaryStart: false,\n        boundaryEnd: false,\n        marginalStyle: {\n          minWidth: `${ Math.max(2, String(maxProp.value).length) }em`\n        }\n      }\n\n      if (maxPagesProp.value && maxPages < (maxProp.value - minProp.value + 1)) {\n        maxPages = 1 + Math.floor(maxPages / 2) * 2\n        acc.pgFrom = Math.max(minProp.value, Math.min(maxProp.value - maxPages + 1, props.modelValue - Math.floor(maxPages / 2)))\n        acc.pgTo = Math.min(maxProp.value, acc.pgFrom + maxPages - 1)\n\n        if (boundaryNumbersProp.value) {\n          acc.boundaryStart = true\n          acc.pgFrom++\n        }\n\n        if (ellipsesProp.value && acc.pgFrom > (minProp.value + (boundaryNumbersProp.value ? 1 : 0))) {\n          acc.ellipsesStart = true\n          acc.pgFrom++\n        }\n\n        if (boundaryNumbersProp.value) {\n          acc.boundaryEnd = true\n          acc.pgTo--\n        }\n\n        if (ellipsesProp.value && acc.pgTo < (maxProp.value - (boundaryNumbersProp.value ? 1 : 0))) {\n          acc.ellipsesEnd = true\n          acc.pgTo--\n        }\n      }\n\n      return acc\n    })\n\n    function set (value) {\n      model.value = value\n    }\n\n    function setByOffset (offset) {\n      model.value = model.value + offset\n    }\n\n    const inputEvents = computed(() => {\n      function updateModel () {\n        model.value = newPage.value\n        newPage.value = null\n      }\n\n      return {\n        'onUpdate:modelValue': val => { newPage.value = val },\n        onKeyup: e => { isKeyCode(e, 13) === true && updateModel() },\n        onBlur: updateModel\n      }\n    })\n\n    function getBtn (cfg, page, active) {\n      const data = {\n        'aria-label': page,\n        'aria-current': 'false',\n        ...btnProps.value,\n        ...cfg\n      }\n\n      if (active === true) {\n        Object.assign(data, {\n          'aria-current': 'true',\n          ...activeBtnProps.value\n        })\n      }\n\n      if (page !== void 0) {\n        if (props.toFn !== void 0) {\n          data.to = props.toFn(page)\n        }\n        else {\n          data.onClick = () => { set(page) }\n        }\n      }\n\n      return h(QBtn, data)\n    }\n\n    // expose public methods\n    Object.assign(proxy, { set, setByOffset })\n\n    return () => {\n      const contentStart = []\n      const contentEnd = []\n      let contentMiddle\n\n      if (boundaryLinksProp.value === true) {\n        contentStart.push(\n          getBtn({\n            key: 'bls',\n            disable: props.disable || props.modelValue <= minProp.value,\n            icon: icons.value[ 0 ]\n          }, minProp.value)\n        )\n\n        contentEnd.unshift(\n          getBtn({\n            key: 'ble',\n            disable: props.disable || props.modelValue >= maxProp.value,\n            icon: icons.value[ 3 ]\n          }, maxProp.value)\n        )\n      }\n\n      if (directionLinksProp.value === true) {\n        contentStart.push(\n          getBtn({\n            key: 'bdp',\n            disable: props.disable || props.modelValue <= minProp.value,\n            icon: icons.value[ 1 ]\n          }, props.modelValue - 1)\n        )\n\n        contentEnd.unshift(\n          getBtn({\n            key: 'bdn',\n            disable: props.disable || props.modelValue >= maxProp.value,\n            icon: icons.value[ 2 ]\n          }, props.modelValue + 1)\n        )\n      }\n\n      if (props.input !== true) { // has buttons instead of inputbox\n        contentMiddle = []\n        const { pgFrom, pgTo, marginalStyle: style } = btnConfig.value\n\n        if (btnConfig.value.boundaryStart === true) {\n          const active = minProp.value === props.modelValue\n          contentStart.push(\n            getBtn({\n              key: 'bns',\n              style,\n              disable: props.disable,\n              label: minProp.value\n            }, minProp.value, active)\n          )\n        }\n\n        if (btnConfig.value.boundaryEnd === true) {\n          const active = maxProp.value === props.modelValue\n          contentEnd.unshift(\n            getBtn({\n              key: 'bne',\n              style,\n              disable: props.disable,\n              label: maxProp.value\n            }, maxProp.value, active)\n          )\n        }\n\n        if (btnConfig.value.ellipsesStart === true) {\n          contentStart.push(\n            getBtn({\n              key: 'bes',\n              style,\n              disable: props.disable,\n              label: '…',\n              ripple: false\n            }, pgFrom - 1)\n          )\n        }\n\n        if (btnConfig.value.ellipsesEnd === true) {\n          contentEnd.unshift(\n            getBtn({\n              key: 'bee',\n              style,\n              disable: props.disable,\n              label: '…',\n              ripple: false\n            }, pgTo + 1)\n          )\n        }\n\n        for (let i = pgFrom; i <= pgTo; i++) {\n          contentMiddle.push(\n            getBtn({\n              key: `bpg${ i }`,\n              style,\n              disable: props.disable,\n              label: i\n            }, i, i === props.modelValue)\n          )\n        }\n      }\n\n      return h('div', {\n        class: classes.value,\n        ...attrs.value\n      }, [\n        h('div', {\n          class: 'q-pagination__content row no-wrap items-center',\n          style: gutterStyle.value\n        }, [\n          ...contentStart,\n\n          props.input === true\n            ? h(QInput, {\n              class: 'inline',\n              style: { width: `${ inputPlaceholder.value.length / 1.5 }em` },\n              type: 'number',\n              dense: true,\n              value: newPage.value,\n              disable: props.disable,\n              dark: isDark.value,\n              borderless: true,\n              inputClass: props.inputClass,\n              inputStyle: props.inputStyle,\n              placeholder: inputPlaceholder.value,\n              min: minProp.value,\n              max: maxProp.value,\n              ...inputEvents.value\n            })\n            : h('div', {\n              class: 'q-pagination__middle row justify-center'\n            }, contentMiddle),\n\n          ...contentEnd\n        ])\n      ])\n    }\n  }\n})\n",
+      "start": 1703982896416,
+      "end": 1703982896500,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896500,
+      "end": 1703982896500,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896500,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896501,
+      "end": 1703982896501,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896501,
+      "end": 1703982896502,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "normal"
+    }
+  ]
+}

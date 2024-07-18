@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/expansion-item/QExpansionItem.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, shallowReactive, ref, computed, watch, withDirectives, getCurrentInstance, vShow, onBeforeUnmount } from 'vue'\n\nimport QItem from '../item/QItem.js'\nimport QItemSection from '../item/QItemSection.js'\nimport QItemLabel from '../item/QItemLabel.js'\nimport QIcon from '../icon/QIcon.js'\nimport QSlideTransition from '../slide-transition/QSlideTransition.js'\nimport QSeparator from '../separator/QSeparator.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport { useRouterLinkProps } from '../../composables/private/use-router-link.js'\nimport useModelToggle, { useModelToggleProps, useModelToggleEmits } from '../../composables/private/use-model-toggle.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stopAndPrevent } from '../../utils/event.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport uid from '../../utils/uid.js'\n\nconst itemGroups = shallowReactive({})\nconst LINK_PROPS = Object.keys(useRouterLinkProps)\n\nexport default createComponent({\n  name: 'QExpansionItem',\n\n  props: {\n    ...useRouterLinkProps,\n    ...useModelToggleProps,\n    ...useDarkProps,\n\n    icon: String,\n\n    label: String,\n    labelLines: [ Number, String ],\n\n    caption: String,\n    captionLines: [ Number, String ],\n\n    dense: Boolean,\n\n    toggleAriaLabel: String,\n    expandIcon: String,\n    expandedIcon: String,\n    expandIconClass: [ Array, String, Object ],\n    duration: Number,\n\n    headerInsetLevel: Number,\n    contentInsetLevel: Number,\n\n    expandSeparator: Boolean,\n    defaultOpened: Boolean,\n    hideExpandIcon: Boolean,\n    expandIconToggle: Boolean,\n    switchToggleSide: Boolean,\n    denseToggle: Boolean,\n    group: String,\n    popup: Boolean,\n\n    headerStyle: [ Array, String, Object ],\n    headerClass: [ Array, String, Object ]\n  },\n\n  emits: [\n    ...useModelToggleEmits,\n    'click', 'afterShow', 'afterHide'\n  ],\n\n  setup (props, { slots, emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n    const isDark = useDark(props, $q)\n\n    const showing = ref(\n      props.modelValue !== null\n        ? props.modelValue\n        : props.defaultOpened\n    )\n\n    const blurTargetRef = ref(null)\n    const targetUid = uid()\n\n    const { show, hide, toggle } = useModelToggle({ showing })\n\n    let uniqueId, exitGroup\n\n    const classes = computed(() =>\n      'q-expansion-item q-item-type'\n      + ` q-expansion-item--${ showing.value === true ? 'expanded' : 'collapsed' }`\n      + ` q-expansion-item--${ props.popup === true ? 'popup' : 'standard' }`\n    )\n\n    const contentStyle = computed(() => {\n      if (props.contentInsetLevel === void 0) {\n        return null\n      }\n\n      const dir = $q.lang.rtl === true ? 'Right' : 'Left'\n      return {\n        [ 'padding' + dir ]: (props.contentInsetLevel * 56) + 'px'\n      }\n    })\n\n    const hasLink = computed(() =>\n      props.disable !== true && (\n        props.href !== void 0\n        || (props.to !== void 0 && props.to !== null && props.to !== '')\n      )\n    )\n\n    const linkProps = computed(() => {\n      const acc = {}\n      LINK_PROPS.forEach(key => {\n        acc[ key ] = props[ key ]\n      })\n      return acc\n    })\n\n    const isClickable = computed(() =>\n      hasLink.value === true || props.expandIconToggle !== true\n    )\n\n    const expansionIcon = computed(() => (\n      props.expandedIcon !== void 0 && showing.value === true\n        ? props.expandedIcon\n        : props.expandIcon || $q.iconSet.expansionItem[ props.denseToggle === true ? 'denseIcon' : 'icon' ]\n    ))\n\n    const activeToggleIcon = computed(() =>\n      props.disable !== true && (hasLink.value === true || props.expandIconToggle === true)\n    )\n\n    const headerSlotScope = computed(() => ({\n      expanded: showing.value === true,\n      detailsId: props.targetUid,\n      toggle,\n      show,\n      hide\n    }))\n\n    const toggleAriaAttrs = computed(() => {\n      const toggleAriaLabel = props.toggleAriaLabel !== void 0\n        ? props.toggleAriaLabel\n        : $q.lang.label[ showing.value === true ? 'collapse' : 'expand' ](props.label)\n\n      return {\n        role: 'button',\n        'aria-expanded': showing.value === true ? 'true' : 'false',\n        'aria-controls': targetUid,\n        'aria-label': toggleAriaLabel\n      }\n    })\n\n    watch(() => props.group, name => {\n      exitGroup !== void 0 && exitGroup()\n      name !== void 0 && enterGroup()\n    })\n\n    function onHeaderClick (e) {\n      hasLink.value !== true && toggle(e)\n      emit('click', e)\n    }\n\n    function toggleIconKeyboard (e) {\n      e.keyCode === 13 && toggleIcon(e, true)\n    }\n\n    function toggleIcon (e, keyboard) {\n      keyboard !== true && blurTargetRef.value !== null && blurTargetRef.value.focus()\n      toggle(e)\n      stopAndPrevent(e)\n    }\n\n    function onShow () {\n      emit('afterShow')\n    }\n\n    function onHide () {\n      emit('afterHide')\n    }\n\n    function enterGroup () {\n      if (uniqueId === void 0) {\n        uniqueId = uid()\n      }\n\n      if (showing.value === true) {\n        itemGroups[ props.group ] = uniqueId\n      }\n\n      const show = watch(showing, val => {\n        if (val === true) {\n          itemGroups[ props.group ] = uniqueId\n        }\n        else if (itemGroups[ props.group ] === uniqueId) {\n          delete itemGroups[ props.group ]\n        }\n      })\n\n      const group = watch(\n        () => itemGroups[ props.group ],\n        (val, oldVal) => {\n          if (oldVal === uniqueId && val !== void 0 && val !== uniqueId) {\n            hide()\n          }\n        }\n      )\n\n      exitGroup = () => {\n        show()\n        group()\n\n        if (itemGroups[ props.group ] === uniqueId) {\n          delete itemGroups[ props.group ]\n        }\n\n        exitGroup = void 0\n      }\n    }\n\n    function getToggleIcon () {\n      const data = {\n        class: [\n          'q-focusable relative-position cursor-pointer'\n            + `${ props.denseToggle === true && props.switchToggleSide === true ? ' items-end' : '' }`,\n          props.expandIconClass\n        ],\n        side: props.switchToggleSide !== true,\n        avatar: props.switchToggleSide\n      }\n\n      const child = [\n        h(QIcon, {\n          class: 'q-expansion-item__toggle-icon'\n            + (props.expandedIcon === void 0 && showing.value === true\n              ? ' q-expansion-item__toggle-icon--rotated'\n              : ''),\n          name: expansionIcon.value\n        })\n      ]\n\n      if (activeToggleIcon.value === true) {\n        Object.assign(data, {\n          tabindex: 0,\n          ...toggleAriaAttrs.value,\n          onClick: toggleIcon,\n          onKeyup: toggleIconKeyboard\n        })\n\n        child.unshift(\n          h('div', {\n            ref: blurTargetRef,\n            class: 'q-expansion-item__toggle-focus q-icon q-focus-helper q-focus-helper--rounded',\n            tabindex: -1\n          })\n        )\n      }\n\n      return h(QItemSection, data, () => child)\n    }\n\n    function getHeaderChild () {\n      let child\n\n      if (slots.header !== void 0) {\n        child = [].concat(slots.header(headerSlotScope.value))\n      }\n      else {\n        child = [\n          h(QItemSection, () => [\n            h(QItemLabel, { lines: props.labelLines }, () => props.label || ''),\n\n            props.caption\n              ? h(QItemLabel, { lines: props.captionLines, caption: true }, () => props.caption)\n              : null\n          ])\n        ]\n\n        props.icon && child[ props.switchToggleSide === true ? 'push' : 'unshift' ](\n          h(QItemSection, {\n            side: props.switchToggleSide === true,\n            avatar: props.switchToggleSide !== true\n          }, () => h(QIcon, { name: props.icon }))\n        )\n      }\n\n      if (props.disable !== true && props.hideExpandIcon !== true) {\n        child[ props.switchToggleSide === true ? 'unshift' : 'push' ](\n          getToggleIcon()\n        )\n      }\n\n      return child\n    }\n\n    function getHeader () {\n      const data = {\n        ref: 'item',\n        style: props.headerStyle,\n        class: props.headerClass,\n        dark: isDark.value,\n        disable: props.disable,\n        dense: props.dense,\n        insetLevel: props.headerInsetLevel\n      }\n\n      if (isClickable.value === true) {\n        data.clickable = true\n        data.onClick = onHeaderClick\n\n        Object.assign(\n          data,\n          hasLink.value === true ? linkProps.value : toggleAriaAttrs.value\n        )\n      }\n\n      return h(QItem, data, getHeaderChild)\n    }\n\n    function getTransitionChild () {\n      return withDirectives(\n        h('div', {\n          key: 'e-content',\n          class: 'q-expansion-item__content relative-position',\n          style: contentStyle.value,\n          id: targetUid\n        }, hSlot(slots.default)),\n        [ [\n          vShow,\n          showing.value\n        ] ]\n      )\n    }\n\n    function getContent () {\n      const node = [\n        getHeader(),\n\n        h(QSlideTransition, {\n          duration: props.duration,\n          onShow,\n          onHide\n        }, getTransitionChild)\n      ]\n\n      if (props.expandSeparator === true) {\n        node.push(\n          h(QSeparator, {\n            class: 'q-expansion-item__border q-expansion-item__border--top absolute-top',\n            dark: isDark.value\n          }),\n          h(QSeparator, {\n            class: 'q-expansion-item__border q-expansion-item__border--bottom absolute-bottom',\n            dark: isDark.value\n          })\n        )\n      }\n\n      return node\n    }\n\n    props.group !== void 0 && enterGroup()\n\n    onBeforeUnmount(() => {\n      exitGroup !== void 0 && exitGroup()\n    })\n\n    return () => h('div', { class: classes.value }, [\n      h('div', { class: 'q-expansion-item__container relative-position' }, getContent())\n    ])\n  }\n})\n",
+      "start": 1703982896254,
+      "end": 1703982896342,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896342,
+      "end": 1703982896342,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896342,
+      "end": 1703982896342,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896342,
+      "end": 1703982896342,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896342,
+      "end": 1703982896342,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896342,
+      "end": 1703982896342,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896342,
+      "end": 1703982896342,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896343,
+      "end": 1703982896343,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896343,
+      "end": 1703982896344,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896344,
+      "end": 1703982896344,
+      "order": "normal"
+    }
+  ]
+}

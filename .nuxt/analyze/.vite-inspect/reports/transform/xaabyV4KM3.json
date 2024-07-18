@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/infinite-scroll/QInfiniteScroll.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, onMounted, onActivated, onDeactivated, onBeforeUnmount, nextTick, getCurrentInstance } from 'vue'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport debounce from '../../utils/debounce.js'\nimport { height } from '../../utils/dom.js'\nimport { getScrollTarget, getScrollHeight, getVerticalScrollPosition, setVerticalScrollPosition } from '../../utils/scroll.js'\nimport { listenOpts } from '../../utils/event.js'\nimport { hSlot, hUniqueSlot } from '../../utils/private/render.js'\n\nconst { passive } = listenOpts\n\nexport default createComponent({\n  name: 'QInfiniteScroll',\n\n  props: {\n    offset: {\n      type: Number,\n      default: 500\n    },\n\n    debounce: {\n      type: [ String, Number ],\n      default: 100\n    },\n\n    scrollTarget: {\n      default: void 0\n    },\n\n    initialIndex: Number,\n\n    disable: Boolean,\n    reverse: Boolean\n  },\n\n  emits: [ 'load' ],\n\n  setup (props, { slots, emit }) {\n    const isFetching = ref(false)\n    const isWorking = ref(true)\n    const rootRef = ref(null)\n    const loadingRef = ref(null)\n\n    let index = props.initialIndex || 0\n    let localScrollTarget, poll\n\n    const classes = computed(() =>\n      'q-infinite-scroll__loading'\n      + (isFetching.value === true ? '' : ' invisible')\n    )\n\n    function immediatePoll () {\n      if (props.disable === true || isFetching.value === true || isWorking.value === false) {\n        return\n      }\n\n      const\n        scrollHeight = getScrollHeight(localScrollTarget),\n        scrollPosition = getVerticalScrollPosition(localScrollTarget),\n        containerHeight = height(localScrollTarget)\n\n      if (props.reverse === false) {\n        if (Math.round(scrollPosition + containerHeight + props.offset) >= Math.round(scrollHeight)) {\n          trigger()\n        }\n      }\n      else if (Math.round(scrollPosition) <= props.offset) {\n        trigger()\n      }\n    }\n\n    function trigger () {\n      if (props.disable === true || isFetching.value === true || isWorking.value === false) {\n        return\n      }\n\n      index++\n      isFetching.value = true\n\n      const heightBefore = getScrollHeight(localScrollTarget)\n\n      emit('load', index, isDone => {\n        if (isWorking.value === true) {\n          isFetching.value = false\n          nextTick(() => {\n            if (props.reverse === true) {\n              const\n                heightAfter = getScrollHeight(localScrollTarget),\n                scrollPosition = getVerticalScrollPosition(localScrollTarget),\n                heightDifference = heightAfter - heightBefore\n\n              setVerticalScrollPosition(localScrollTarget, scrollPosition + heightDifference)\n            }\n\n            if (isDone === true) {\n              stop()\n            }\n            else if (rootRef.value) {\n              rootRef.value.closest('body') && poll()\n            }\n          })\n        }\n      })\n    }\n\n    function reset () {\n      index = 0\n    }\n\n    function resume () {\n      if (isWorking.value === false) {\n        isWorking.value = true\n        localScrollTarget.addEventListener('scroll', poll, passive)\n      }\n\n      immediatePoll()\n    }\n\n    function stop () {\n      if (isWorking.value === true) {\n        isWorking.value = false\n        isFetching.value = false\n        localScrollTarget.removeEventListener('scroll', poll, passive)\n        if (poll !== void 0 && poll.cancel !== void 0) {\n          poll.cancel()\n        }\n      }\n    }\n\n    function updateScrollTarget () {\n      if (localScrollTarget && isWorking.value === true) {\n        localScrollTarget.removeEventListener('scroll', poll, passive)\n      }\n\n      localScrollTarget = getScrollTarget(rootRef.value, props.scrollTarget)\n\n      if (isWorking.value === true) {\n        localScrollTarget.addEventListener('scroll', poll, passive)\n\n        if (props.reverse === true) {\n          const\n            scrollHeight = getScrollHeight(localScrollTarget),\n            containerHeight = height(localScrollTarget)\n\n          setVerticalScrollPosition(localScrollTarget, scrollHeight - containerHeight)\n        }\n\n        immediatePoll()\n      }\n    }\n\n    function setIndex (newIndex) {\n      index = newIndex\n    }\n\n    function setDebounce (val) {\n      val = parseInt(val, 10)\n\n      const oldPoll = poll\n\n      poll = val <= 0\n        ? immediatePoll\n        : debounce(immediatePoll, isNaN(val) === true ? 100 : val)\n\n      if (localScrollTarget && isWorking.value === true) {\n        if (oldPoll !== void 0) {\n          localScrollTarget.removeEventListener('scroll', oldPoll, passive)\n        }\n\n        localScrollTarget.addEventListener('scroll', poll, passive)\n      }\n    }\n\n    function updateSvgAnimations (isRetry) {\n      if (renderLoadingSlot.value === true) {\n        if (loadingRef.value === null) {\n          isRetry !== true && nextTick(() => { updateSvgAnimations(true) })\n          return\n        }\n\n        // we need to pause svg animations (if any) when hiding\n        // otherwise the browser will keep on recalculating the style\n        const action = `${ isFetching.value === true ? 'un' : '' }pauseAnimations`\n        Array.from(loadingRef.value.getElementsByTagName('svg')).forEach(el => {\n          el[ action ]()\n        })\n      }\n    }\n\n    const renderLoadingSlot = computed(() => props.disable !== true && isWorking.value === true)\n\n    watch([ isFetching, renderLoadingSlot ], () => { updateSvgAnimations() })\n\n    watch(() => props.disable, val => {\n      if (val === true) { stop() }\n      else { resume() }\n    })\n\n    watch(() => props.reverse, () => {\n      if (isFetching.value === false && isWorking.value === true) {\n        immediatePoll()\n      }\n    })\n\n    watch(() => props.scrollTarget, updateScrollTarget)\n    watch(() => props.debounce, setDebounce)\n\n    let scrollPos = false\n\n    onActivated(() => {\n      if (scrollPos !== false && localScrollTarget) {\n        setVerticalScrollPosition(localScrollTarget, scrollPos)\n      }\n    })\n\n    onDeactivated(() => {\n      scrollPos = localScrollTarget\n        ? getVerticalScrollPosition(localScrollTarget)\n        : false\n    })\n\n    onBeforeUnmount(() => {\n      if (isWorking.value === true) {\n        localScrollTarget.removeEventListener('scroll', poll, passive)\n      }\n    })\n\n    onMounted(() => {\n      setDebounce(props.debounce)\n      updateScrollTarget()\n\n      isFetching.value === false && updateSvgAnimations()\n    })\n\n    // expose public methods\n    const vm = getCurrentInstance()\n    Object.assign(vm.proxy, {\n      poll: () => { poll !== void 0 && poll() },\n      trigger, stop, reset, resume, setIndex\n    })\n\n    return () => {\n      const child = hUniqueSlot(slots.default, [])\n\n      if (renderLoadingSlot.value === true) {\n        child[ props.reverse === false ? 'push' : 'unshift' ](\n          h('div', { ref: loadingRef, class: classes.value }, hSlot(slots.loading))\n        )\n      }\n\n      return h('div', {\n        class: 'q-infinite-scroll',\n        ref: rootRef\n      }, child)\n    }\n  }\n})\n",
+      "start": 1703982896282,
+      "end": 1703982896416,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896417,
+      "end": 1703982896417,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896417,
+      "end": 1703982896418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896418,
+      "end": 1703982896419,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896419,
+      "end": 1703982896419,
+      "order": "normal"
+    }
+  ]
+}

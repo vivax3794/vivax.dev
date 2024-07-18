@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/private/use-portal.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, onUnmounted, Teleport } from 'vue'\n\nimport { noop } from '../../utils/event.js'\nimport { addFocusWaitFlag, removeFocusWaitFlag } from '../../utils/private/focus-manager.js'\nimport { createGlobalNode, removeGlobalNode } from '../../utils/private/global-nodes.js'\nimport { portalProxyList } from '../../utils/private/portal.js'\nimport { injectProp } from '../../utils/private/inject-obj-prop.js'\n\nfunction isOnGlobalDialog (vm) {\n  vm = vm.parent\n\n  while (vm !== void 0 && vm !== null) {\n    if (vm.type.name === 'QGlobalDialog') {\n      return true\n    }\n    if (vm.type.name === 'QDialog' || vm.type.name === 'QMenu') {\n      return false\n    }\n\n    vm = vm.parent\n  }\n\n  return false\n}\n\n// Warning!\n// You MUST specify \"inheritAttrs: false\" in your component\n\nexport default function (vm, innerRef, renderPortalContent, type) {\n  // showing, including while in show/hide transition\n  const portalIsActive = ref(false)\n\n  // showing & not in any show/hide transition\n  const portalIsAccessible = ref(false)\n\n  if (__QUASAR_SSR_SERVER__) {\n    return {\n      portalIsActive,\n      portalIsAccessible,\n\n      showPortal: noop,\n      hidePortal: noop,\n      renderPortal: noop\n    }\n  }\n\n  let portalEl = null\n  const focusObj = {}\n  const onGlobalDialog = type === 'dialog' && isOnGlobalDialog(vm)\n\n  function showPortal (isReady) {\n    if (isReady === true) {\n      removeFocusWaitFlag(focusObj)\n      portalIsAccessible.value = true\n      return\n    }\n\n    portalIsAccessible.value = false\n\n    if (portalIsActive.value === false) {\n      if (onGlobalDialog === false && portalEl === null) {\n        portalEl = createGlobalNode(false, type)\n      }\n\n      portalIsActive.value = true\n\n      // register portal\n      portalProxyList.push(vm.proxy)\n\n      addFocusWaitFlag(focusObj)\n    }\n  }\n\n  function hidePortal (isReady) {\n    portalIsAccessible.value = false\n\n    if (isReady !== true) { return }\n\n    removeFocusWaitFlag(focusObj)\n    portalIsActive.value = false\n\n    // unregister portal\n    const index = portalProxyList.indexOf(vm.proxy)\n    if (index !== -1) {\n      portalProxyList.splice(index, 1)\n    }\n\n    if (portalEl !== null) {\n      removeGlobalNode(portalEl)\n      portalEl = null\n    }\n  }\n\n  onUnmounted(() => { hidePortal(true) })\n\n  // needed for portal vm detection\n  vm.proxy.__qPortal = true\n\n  // public way of accessing the rendered content\n  injectProp(vm.proxy, 'contentEl', () => innerRef.value)\n\n  return {\n    showPortal,\n    hidePortal,\n\n    portalIsActive,\n    portalIsAccessible,\n\n    renderPortal: () => (\n      onGlobalDialog === true\n        ? renderPortalContent()\n        : (\n            portalIsActive.value === true\n              ? [ h(Teleport, { to: portalEl }, renderPortalContent()) ]\n              : void 0\n          )\n    )\n  }\n}\n",
+      "start": 1703982897257,
+      "end": 1703982897331,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897331,
+      "end": 1703982897331,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897332,
+      "end": 1703982897332,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897332,
+      "end": 1703982897332,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, ref, onUnmounted, Teleport } from \"vue\";\nimport { noop } from \"../../utils/event.js\";\nimport { addFocusWaitFlag, removeFocusWaitFlag } from \"../../utils/private/focus-manager.js\";\nimport { createGlobalNode, removeGlobalNode } from \"../../utils/private/global-nodes.js\";\nimport { portalProxyList } from \"../../utils/private/portal.js\";\nimport { injectProp } from \"../../utils/private/inject-obj-prop.js\";\nfunction isOnGlobalDialog(vm) {\n  vm = vm.parent;\n  while (vm !== void 0 && vm !== null) {\n    if (vm.type.name === \"QGlobalDialog\") {\n      return true;\n    }\n    if (vm.type.name === \"QDialog\" || vm.type.name === \"QMenu\") {\n      return false;\n    }\n    vm = vm.parent;\n  }\n  return false;\n}\nexport default function(vm, innerRef, renderPortalContent, type) {\n  const portalIsActive = ref(false);\n  const portalIsAccessible = ref(false);\n  if (false) {\n    return {\n      portalIsActive,\n      portalIsAccessible,\n      showPortal: noop,\n      hidePortal: noop,\n      renderPortal: noop\n    };\n  }\n  let portalEl = null;\n  const focusObj = {};\n  const onGlobalDialog = type === \"dialog\" && isOnGlobalDialog(vm);\n  function showPortal(isReady) {\n    if (isReady === true) {\n      removeFocusWaitFlag(focusObj);\n      portalIsAccessible.value = true;\n      return;\n    }\n    portalIsAccessible.value = false;\n    if (portalIsActive.value === false) {\n      if (onGlobalDialog === false && portalEl === null) {\n        portalEl = createGlobalNode(false, type);\n      }\n      portalIsActive.value = true;\n      portalProxyList.push(vm.proxy);\n      addFocusWaitFlag(focusObj);\n    }\n  }\n  function hidePortal(isReady) {\n    portalIsAccessible.value = false;\n    if (isReady !== true) {\n      return;\n    }\n    removeFocusWaitFlag(focusObj);\n    portalIsActive.value = false;\n    const index = portalProxyList.indexOf(vm.proxy);\n    if (index !== -1) {\n      portalProxyList.splice(index, 1);\n    }\n    if (portalEl !== null) {\n      removeGlobalNode(portalEl);\n      portalEl = null;\n    }\n  }\n  onUnmounted(() => {\n    hidePortal(true);\n  });\n  vm.proxy.__qPortal = true;\n  injectProp(vm.proxy, \"contentEl\", () => innerRef.value);\n  return {\n    showPortal,\n    hidePortal,\n    portalIsActive,\n    portalIsAccessible,\n    renderPortal: () => onGlobalDialog === true ? renderPortalContent() : portalIsActive.value === true ? [h(Teleport, { to: portalEl }, renderPortalContent())] : void 0\n  };\n}\n",
+      "start": 1703982897332,
+      "end": 1703982897338,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897338,
+      "end": 1703982897338,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897339,
+      "end": 1703982897339,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897339,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897340,
+      "end": 1703982897340,
+      "order": "normal"
+    }
+  ]
+}

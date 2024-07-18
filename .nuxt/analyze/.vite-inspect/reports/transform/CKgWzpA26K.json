@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/Notify.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, markRaw, TransitionGroup } from 'vue'\n\nimport QAvatar from '../components/avatar/QAvatar.js'\nimport QIcon from '../components/icon/QIcon.js'\nimport QBtn from '../components/btn/QBtn.js'\nimport QSpinner from '../components/spinner/QSpinner.js'\n\nimport { createComponent } from '../utils/private/create.js'\nimport { noop } from '../utils/event.js'\nimport { createGlobalNode } from '../utils/private/global-nodes.js'\nimport { createChildApp } from '../install-quasar.js'\nimport { isObject } from '../utils/is.js'\n\nlet uid = 0\n\nconst defaults = {}\nconst groups = {}\nconst notificationsList = {}\nconst positionClass = {}\nconst emptyRE = /^\\s*$/\nconst notifRefs = []\nconst invalidTimeoutValues = [ void 0, null, true, false, '' ]\n\nconst positionList = [\n  'top-left', 'top-right',\n  'bottom-left', 'bottom-right',\n  'top', 'bottom', 'left', 'right', 'center'\n]\n\nconst badgePositions = [\n  'top-left', 'top-right',\n  'bottom-left', 'bottom-right'\n]\n\nconst notifTypes = {\n  positive: {\n    icon: $q => $q.iconSet.type.positive,\n    color: 'positive'\n  },\n\n  negative: {\n    icon: $q => $q.iconSet.type.negative,\n    color: 'negative'\n  },\n\n  warning: {\n    icon: $q => $q.iconSet.type.warning,\n    color: 'warning',\n    textColor: 'dark'\n  },\n\n  info: {\n    icon: $q => $q.iconSet.type.info,\n    color: 'info'\n  },\n\n  ongoing: {\n    group: false,\n    timeout: 0,\n    spinner: true,\n    color: 'grey-8'\n  }\n}\n\nfunction addNotification (config, $q, originalApi) {\n  if (!config) {\n    return logError('parameter required')\n  }\n\n  let Api\n  const notif = { textColor: 'white' }\n\n  if (config.ignoreDefaults !== true) {\n    Object.assign(notif, defaults)\n  }\n\n  if (isObject(config) === false) {\n    if (notif.type) {\n      Object.assign(notif, notifTypes[ notif.type ])\n    }\n\n    config = { message: config }\n  }\n\n  Object.assign(notif, notifTypes[ config.type || notif.type ], config)\n\n  if (typeof notif.icon === 'function') {\n    notif.icon = notif.icon($q)\n  }\n\n  if (!notif.spinner) {\n    notif.spinner = false\n  }\n  else {\n    if (notif.spinner === true) {\n      notif.spinner = QSpinner\n    }\n\n    notif.spinner = markRaw(notif.spinner)\n  }\n\n  notif.meta = {\n    hasMedia: Boolean(notif.spinner !== false || notif.icon || notif.avatar),\n    hasText: hasContent(notif.message) || hasContent(notif.caption)\n  }\n\n  if (notif.position) {\n    if (positionList.includes(notif.position) === false) {\n      return logError('wrong position', config)\n    }\n  }\n  else {\n    notif.position = 'bottom'\n  }\n\n  if (invalidTimeoutValues.includes(notif.timeout) === true) {\n    notif.timeout = 5000\n  }\n  else {\n    const t = Number(notif.timeout) // we catch exponential notation too with Number() casting\n    if (isNaN(t) || t < 0) {\n      return logError('wrong timeout', config)\n    }\n    notif.timeout = Number.isFinite(t) ? t : 0\n  }\n\n  if (notif.timeout === 0) {\n    notif.progress = false\n  }\n  else if (notif.progress === true) {\n    notif.meta.progressClass = 'q-notification__progress' + (\n      notif.progressClass\n        ? ` ${ notif.progressClass }`\n        : ''\n    )\n\n    notif.meta.progressStyle = {\n      animationDuration: `${ notif.timeout + 1000 }ms`\n    }\n  }\n\n  const actions = (\n    Array.isArray(config.actions) === true\n      ? config.actions\n      : []\n  ).concat(\n    config.ignoreDefaults !== true && Array.isArray(defaults.actions) === true\n      ? defaults.actions\n      : []\n  ).concat(\n    notifTypes[ config.type ] !== void 0 && Array.isArray(notifTypes[ config.type ].actions) === true\n      ? notifTypes[ config.type ].actions\n      : []\n  )\n\n  const { closeBtn } = notif\n  closeBtn && actions.push({\n    label: typeof closeBtn === 'string'\n      ? closeBtn\n      : $q.lang.label.close\n  })\n\n  notif.actions = actions.map(({ handler, noDismiss, ...item }) => ({\n    flat: true,\n    ...item,\n    onClick: typeof handler === 'function'\n      ? () => {\n          handler()\n          noDismiss !== true && dismiss()\n        }\n      : () => { dismiss() }\n  }))\n\n  if (notif.multiLine === void 0) {\n    notif.multiLine = notif.actions.length > 1\n  }\n\n  Object.assign(notif.meta, {\n    class: 'q-notification row items-stretch'\n      + ` q-notification--${ notif.multiLine === true ? 'multi-line' : 'standard' }`\n      + (notif.color !== void 0 ? ` bg-${ notif.color }` : '')\n      + (notif.textColor !== void 0 ? ` text-${ notif.textColor }` : '')\n      + (notif.classes !== void 0 ? ` ${ notif.classes }` : ''),\n\n    wrapperClass: 'q-notification__wrapper col relative-position border-radius-inherit '\n      + (notif.multiLine === true ? 'column no-wrap justify-center' : 'row items-center'),\n\n    contentClass: 'q-notification__content row items-center'\n      + (notif.multiLine === true ? '' : ' col'),\n\n    leftClass: notif.meta.hasText === true ? 'additional' : 'single',\n\n    attrs: {\n      role: 'alert',\n      ...notif.attrs\n    }\n  })\n\n  if (notif.group === false) {\n    notif.group = void 0\n    notif.meta.group = void 0\n  }\n  else {\n    if (notif.group === void 0 || notif.group === true) {\n      // do not replace notifications with different buttons\n      notif.group = [\n        notif.message,\n        notif.caption,\n        notif.multiline\n      ].concat(\n        notif.actions.map(props => `${ props.label }*${ props.icon }`)\n      ).join('|')\n    }\n\n    notif.meta.group = notif.group + '|' + notif.position\n  }\n\n  if (notif.actions.length === 0) {\n    notif.actions = void 0\n  }\n  else {\n    notif.meta.actionsClass = 'q-notification__actions row items-center '\n      + (notif.multiLine === true ? 'justify-end' : 'col-auto')\n      + (notif.meta.hasMedia === true ? ' q-notification__actions--with-media' : '')\n  }\n\n  if (originalApi !== void 0) {\n    // reset timeout if any\n    if (originalApi.notif.meta.timer) {\n      clearTimeout(originalApi.notif.meta.timer)\n      originalApi.notif.meta.timer = void 0\n    }\n\n    // retain uid\n    notif.meta.uid = originalApi.notif.meta.uid\n\n    // replace notif\n    const index = notificationsList[ notif.position ].value.indexOf(originalApi.notif)\n    notificationsList[ notif.position ].value[ index ] = notif\n  }\n  else {\n    const original = groups[ notif.meta.group ]\n\n    // woohoo, it's a new notification\n    if (original === void 0) {\n      notif.meta.uid = uid++\n      notif.meta.badge = 1\n\n      if ([ 'left', 'right', 'center' ].indexOf(notif.position) !== -1) {\n        notificationsList[ notif.position ].value.splice(\n          Math.floor(notificationsList[ notif.position ].value.length / 2),\n          0,\n          notif\n        )\n      }\n      else {\n        const action = notif.position.indexOf('top') > -1 ? 'unshift' : 'push'\n        notificationsList[ notif.position ].value[ action ](notif)\n      }\n\n      if (notif.group !== void 0) {\n        groups[ notif.meta.group ] = notif\n      }\n    }\n    // ok, so it's NOT a new one\n    else {\n      // reset timeout if any\n      if (original.meta.timer) {\n        clearTimeout(original.meta.timer)\n        original.meta.timer = void 0\n      }\n\n      if (notif.badgePosition !== void 0) {\n        if (badgePositions.includes(notif.badgePosition) === false) {\n          return logError('wrong badgePosition', config)\n        }\n      }\n      else {\n        notif.badgePosition = `top-${ notif.position.indexOf('left') > -1 ? 'right' : 'left' }`\n      }\n\n      notif.meta.uid = original.meta.uid\n      notif.meta.badge = original.meta.badge + 1\n      notif.meta.badgeClass = `q-notification__badge q-notification__badge--${ notif.badgePosition }`\n        + (notif.badgeColor !== void 0 ? ` bg-${ notif.badgeColor }` : '')\n        + (notif.badgeTextColor !== void 0 ? ` text-${ notif.badgeTextColor }` : '')\n        + (notif.badgeClass ? ` ${ notif.badgeClass }` : '')\n\n      const index = notificationsList[ notif.position ].value.indexOf(original)\n      notificationsList[ notif.position ].value[ index ] = groups[ notif.meta.group ] = notif\n    }\n  }\n\n  const dismiss = () => {\n    removeNotification(notif)\n    Api = void 0\n  }\n\n  if (notif.timeout > 0) {\n    notif.meta.timer = setTimeout(() => {\n      notif.meta.timer = void 0\n      dismiss()\n    }, notif.timeout + /* show duration */ 1000)\n  }\n\n  // only non-groupable can be updated\n  if (notif.group !== void 0) {\n    return props => {\n      if (props !== void 0) {\n        logError('trying to update a grouped one which is forbidden', config)\n      }\n      else {\n        dismiss()\n      }\n    }\n  }\n\n  Api = {\n    dismiss,\n    config,\n    notif\n  }\n\n  if (originalApi !== void 0) {\n    Object.assign(originalApi, Api)\n    return\n  }\n\n  return props => {\n    // if notification wasn't previously dismissed\n    if (Api !== void 0) {\n      // if no params, then we must dismiss the notification\n      if (props === void 0) {\n        Api.dismiss()\n      }\n      // otherwise we're updating it\n      else {\n        const newNotif = Object.assign({}, Api.config, props, {\n          group: false,\n          position: notif.position\n        })\n\n        addNotification(newNotif, $q, Api)\n      }\n    }\n  }\n}\n\nfunction removeNotification (notif) {\n  if (notif.meta.timer) {\n    clearTimeout(notif.meta.timer)\n    notif.meta.timer = void 0\n  }\n\n  const index = notificationsList[ notif.position ].value.indexOf(notif)\n  if (index !== -1) {\n    if (notif.group !== void 0) {\n      delete groups[ notif.meta.group ]\n    }\n\n    const el = notifRefs[ '' + notif.meta.uid ]\n\n    if (el) {\n      const { width, height } = getComputedStyle(el)\n\n      el.style.left = `${ el.offsetLeft }px`\n      el.style.width = width\n      el.style.height = height\n    }\n\n    notificationsList[ notif.position ].value.splice(index, 1)\n\n    if (typeof notif.onDismiss === 'function') {\n      notif.onDismiss()\n    }\n  }\n}\n\nfunction hasContent (str) {\n  return str !== void 0\n    && str !== null\n    && emptyRE.test(str) !== true\n}\n\nfunction logError (error, config) {\n  console.error(`Notify: ${ error }`, config)\n  return false\n}\n\nfunction getComponent () {\n  return createComponent({\n    name: 'QNotifications',\n\n    // hide App from Vue devtools\n    devtools: { hide: true },\n\n    setup () {\n      return () => h('div', { class: 'q-notifications' }, positionList.map(pos => {\n        return h(TransitionGroup, {\n          key: pos,\n          class: positionClass[ pos ],\n          tag: 'div',\n          name: `q-notification--${ pos }`\n        }, () => notificationsList[ pos ].value.map(notif => {\n          const meta = notif.meta\n          const mainChild = []\n\n          if (meta.hasMedia === true) {\n            if (notif.spinner !== false) {\n              mainChild.push(\n                h(notif.spinner, {\n                  class: 'q-notification__spinner q-notification__spinner--' + meta.leftClass,\n                  color: notif.spinnerColor,\n                  size: notif.spinnerSize\n                })\n              )\n            }\n            else if (notif.icon) {\n              mainChild.push(\n                h(QIcon, {\n                  class: 'q-notification__icon q-notification__icon--' + meta.leftClass,\n                  name: notif.icon,\n                  color: notif.iconColor,\n                  size: notif.iconSize,\n                  role: 'img'\n                })\n              )\n            }\n            else if (notif.avatar) {\n              mainChild.push(\n                h(QAvatar, {\n                  class: 'q-notification__avatar q-notification__avatar--' + meta.leftClass\n                }, () => h('img', { src: notif.avatar, 'aria-hidden': 'true' }))\n              )\n            }\n          }\n\n          if (meta.hasText === true) {\n            let msgChild\n            const msgData = { class: 'q-notification__message col' }\n\n            if (notif.html === true) {\n              msgData.innerHTML = notif.caption\n                ? `<div>${ notif.message }</div><div class=\"q-notification__caption\">${ notif.caption }</div>`\n                : notif.message\n            }\n            else {\n              const msgNode = [ notif.message ]\n              msgChild = notif.caption\n                ? [\n                    h('div', msgNode),\n                    h('div', { class: 'q-notification__caption' }, [ notif.caption ])\n                  ]\n                : msgNode\n            }\n\n            mainChild.push(\n              h('div', msgData, msgChild)\n            )\n          }\n\n          const child = [\n            h('div', { class: meta.contentClass }, mainChild)\n          ]\n\n          notif.progress === true && child.push(\n            h('div', {\n              key: `${ meta.uid }|p|${ meta.badge }`,\n              class: meta.progressClass,\n              style: meta.progressStyle\n            })\n          )\n\n          notif.actions !== void 0 && child.push(\n            h('div', {\n              class: meta.actionsClass\n            }, notif.actions.map(props => h(QBtn, props)))\n          )\n\n          meta.badge > 1 && child.push(\n            h('div', {\n              key: `${ meta.uid }|${ meta.badge }`,\n              class: notif.meta.badgeClass,\n              style: notif.badgeStyle\n            }, [ meta.badge ])\n          )\n\n          return h('div', {\n            ref: el => { notifRefs[ '' + meta.uid ] = el },\n            key: meta.uid,\n            class: meta.class,\n            ...meta.attrs\n          }, [\n            h('div', { class: meta.wrapperClass }, child)\n          ])\n        }))\n      }))\n    }\n  })\n}\n\nexport default {\n  setDefaults (opts) {\n    if (__QUASAR_SSR_SERVER__ !== true) {\n      isObject(opts) === true && Object.assign(defaults, opts)\n    }\n  },\n\n  registerType (typeName, typeOpts) {\n    if (__QUASAR_SSR_SERVER__ !== true && isObject(typeOpts) === true) {\n      notifTypes[ typeName ] = typeOpts\n    }\n  },\n\n  install ({ $q, parentApp }) {\n    $q.notify = this.create = __QUASAR_SSR_SERVER__\n      ? noop\n      : opts => addNotification(opts, $q)\n\n    $q.notify.setDefaults = this.setDefaults\n    $q.notify.registerType = this.registerType\n\n    if ($q.config.notify !== void 0) {\n      this.setDefaults($q.config.notify)\n    }\n\n    if (__QUASAR_SSR_SERVER__ !== true && this.__installed !== true) {\n      positionList.forEach(pos => {\n        notificationsList[ pos ] = ref([])\n\n        const\n          vert = [ 'left', 'center', 'right' ].includes(pos) === true ? 'center' : (pos.indexOf('top') > -1 ? 'top' : 'bottom'),\n          align = pos.indexOf('left') > -1 ? 'start' : (pos.indexOf('right') > -1 ? 'end' : 'center'),\n          classes = [ 'left', 'right' ].includes(pos) ? `items-${ pos === 'left' ? 'start' : 'end' } justify-center` : (pos === 'center' ? 'flex-center' : `items-${ align }`)\n\n        positionClass[ pos ] = `q-notifications__list q-notifications__list--${ vert } fixed column no-wrap ${ classes }`\n      })\n\n      const el = createGlobalNode('q-notify')\n      createChildApp(getComponent(), parentApp).mount(el)\n    }\n  }\n}\n",
+      "start": 1703982896692,
+      "end": 1703982896746,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896746,
+      "end": 1703982896746,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, ref, markRaw, TransitionGroup } from \"vue\";\nimport QAvatar from \"../components/avatar/QAvatar.js\";\nimport QIcon from \"../components/icon/QIcon.js\";\nimport QBtn from \"../components/btn/QBtn.js\";\nimport QSpinner from \"../components/spinner/QSpinner.js\";\nimport { createComponent } from \"../utils/private/create.js\";\nimport { noop } from \"../utils/event.js\";\nimport { createGlobalNode } from \"../utils/private/global-nodes.js\";\nimport { createChildApp } from \"../install-quasar.js\";\nimport { isObject } from \"../utils/is.js\";\nlet uid = 0;\nconst defaults = {};\nconst groups = {};\nconst notificationsList = {};\nconst positionClass = {};\nconst emptyRE = /^\\s*$/;\nconst notifRefs = [];\nconst invalidTimeoutValues = [void 0, null, true, false, \"\"];\nconst positionList = [\n  \"top-left\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-right\",\n  \"top\",\n  \"bottom\",\n  \"left\",\n  \"right\",\n  \"center\"\n];\nconst badgePositions = [\n  \"top-left\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-right\"\n];\nconst notifTypes = {\n  positive: {\n    icon: ($q) => $q.iconSet.type.positive,\n    color: \"positive\"\n  },\n  negative: {\n    icon: ($q) => $q.iconSet.type.negative,\n    color: \"negative\"\n  },\n  warning: {\n    icon: ($q) => $q.iconSet.type.warning,\n    color: \"warning\",\n    textColor: \"dark\"\n  },\n  info: {\n    icon: ($q) => $q.iconSet.type.info,\n    color: \"info\"\n  },\n  ongoing: {\n    group: false,\n    timeout: 0,\n    spinner: true,\n    color: \"grey-8\"\n  }\n};\nfunction addNotification(config, $q, originalApi) {\n  if (!config) {\n    return logError(\"parameter required\");\n  }\n  let Api;\n  const notif = { textColor: \"white\" };\n  if (config.ignoreDefaults !== true) {\n    Object.assign(notif, defaults);\n  }\n  if (isObject(config) === false) {\n    if (notif.type) {\n      Object.assign(notif, notifTypes[notif.type]);\n    }\n    config = { message: config };\n  }\n  Object.assign(notif, notifTypes[config.type || notif.type], config);\n  if (typeof notif.icon === \"function\") {\n    notif.icon = notif.icon($q);\n  }\n  if (!notif.spinner) {\n    notif.spinner = false;\n  } else {\n    if (notif.spinner === true) {\n      notif.spinner = QSpinner;\n    }\n    notif.spinner = markRaw(notif.spinner);\n  }\n  notif.meta = {\n    hasMedia: Boolean(notif.spinner !== false || notif.icon || notif.avatar),\n    hasText: hasContent(notif.message) || hasContent(notif.caption)\n  };\n  if (notif.position) {\n    if (positionList.includes(notif.position) === false) {\n      return logError(\"wrong position\", config);\n    }\n  } else {\n    notif.position = \"bottom\";\n  }\n  if (invalidTimeoutValues.includes(notif.timeout) === true) {\n    notif.timeout = 5e3;\n  } else {\n    const t = Number(notif.timeout);\n    if (isNaN(t) || t < 0) {\n      return logError(\"wrong timeout\", config);\n    }\n    notif.timeout = Number.isFinite(t) ? t : 0;\n  }\n  if (notif.timeout === 0) {\n    notif.progress = false;\n  } else if (notif.progress === true) {\n    notif.meta.progressClass = \"q-notification__progress\" + (notif.progressClass ? ` ${notif.progressClass}` : \"\");\n    notif.meta.progressStyle = {\n      animationDuration: `${notif.timeout + 1e3}ms`\n    };\n  }\n  const actions = (Array.isArray(config.actions) === true ? config.actions : []).concat(\n    config.ignoreDefaults !== true && Array.isArray(defaults.actions) === true ? defaults.actions : []\n  ).concat(\n    notifTypes[config.type] !== void 0 && Array.isArray(notifTypes[config.type].actions) === true ? notifTypes[config.type].actions : []\n  );\n  const { closeBtn } = notif;\n  closeBtn && actions.push({\n    label: typeof closeBtn === \"string\" ? closeBtn : $q.lang.label.close\n  });\n  notif.actions = actions.map(({ handler, noDismiss, ...item }) => ({\n    flat: true,\n    ...item,\n    onClick: typeof handler === \"function\" ? () => {\n      handler();\n      noDismiss !== true && dismiss();\n    } : () => {\n      dismiss();\n    }\n  }));\n  if (notif.multiLine === void 0) {\n    notif.multiLine = notif.actions.length > 1;\n  }\n  Object.assign(notif.meta, {\n    class: `q-notification row items-stretch q-notification--${notif.multiLine === true ? \"multi-line\" : \"standard\"}` + (notif.color !== void 0 ? ` bg-${notif.color}` : \"\") + (notif.textColor !== void 0 ? ` text-${notif.textColor}` : \"\") + (notif.classes !== void 0 ? ` ${notif.classes}` : \"\"),\n    wrapperClass: \"q-notification__wrapper col relative-position border-radius-inherit \" + (notif.multiLine === true ? \"column no-wrap justify-center\" : \"row items-center\"),\n    contentClass: \"q-notification__content row items-center\" + (notif.multiLine === true ? \"\" : \" col\"),\n    leftClass: notif.meta.hasText === true ? \"additional\" : \"single\",\n    attrs: {\n      role: \"alert\",\n      ...notif.attrs\n    }\n  });\n  if (notif.group === false) {\n    notif.group = void 0;\n    notif.meta.group = void 0;\n  } else {\n    if (notif.group === void 0 || notif.group === true) {\n      notif.group = [\n        notif.message,\n        notif.caption,\n        notif.multiline\n      ].concat(\n        notif.actions.map((props) => `${props.label}*${props.icon}`)\n      ).join(\"|\");\n    }\n    notif.meta.group = notif.group + \"|\" + notif.position;\n  }\n  if (notif.actions.length === 0) {\n    notif.actions = void 0;\n  } else {\n    notif.meta.actionsClass = \"q-notification__actions row items-center \" + (notif.multiLine === true ? \"justify-end\" : \"col-auto\") + (notif.meta.hasMedia === true ? \" q-notification__actions--with-media\" : \"\");\n  }\n  if (originalApi !== void 0) {\n    if (originalApi.notif.meta.timer) {\n      clearTimeout(originalApi.notif.meta.timer);\n      originalApi.notif.meta.timer = void 0;\n    }\n    notif.meta.uid = originalApi.notif.meta.uid;\n    const index = notificationsList[notif.position].value.indexOf(originalApi.notif);\n    notificationsList[notif.position].value[index] = notif;\n  } else {\n    const original = groups[notif.meta.group];\n    if (original === void 0) {\n      notif.meta.uid = uid++;\n      notif.meta.badge = 1;\n      if ([\"left\", \"right\", \"center\"].indexOf(notif.position) !== -1) {\n        notificationsList[notif.position].value.splice(\n          Math.floor(notificationsList[notif.position].value.length / 2),\n          0,\n          notif\n        );\n      } else {\n        const action = notif.position.indexOf(\"top\") > -1 ? \"unshift\" : \"push\";\n        notificationsList[notif.position].value[action](notif);\n      }\n      if (notif.group !== void 0) {\n        groups[notif.meta.group] = notif;\n      }\n    } else {\n      if (original.meta.timer) {\n        clearTimeout(original.meta.timer);\n        original.meta.timer = void 0;\n      }\n      if (notif.badgePosition !== void 0) {\n        if (badgePositions.includes(notif.badgePosition) === false) {\n          return logError(\"wrong badgePosition\", config);\n        }\n      } else {\n        notif.badgePosition = `top-${notif.position.indexOf(\"left\") > -1 ? \"right\" : \"left\"}`;\n      }\n      notif.meta.uid = original.meta.uid;\n      notif.meta.badge = original.meta.badge + 1;\n      notif.meta.badgeClass = `q-notification__badge q-notification__badge--${notif.badgePosition}` + (notif.badgeColor !== void 0 ? ` bg-${notif.badgeColor}` : \"\") + (notif.badgeTextColor !== void 0 ? ` text-${notif.badgeTextColor}` : \"\") + (notif.badgeClass ? ` ${notif.badgeClass}` : \"\");\n      const index = notificationsList[notif.position].value.indexOf(original);\n      notificationsList[notif.position].value[index] = groups[notif.meta.group] = notif;\n    }\n  }\n  const dismiss = () => {\n    removeNotification(notif);\n    Api = void 0;\n  };\n  if (notif.timeout > 0) {\n    notif.meta.timer = setTimeout(() => {\n      notif.meta.timer = void 0;\n      dismiss();\n    }, notif.timeout + /* show duration */\n    1e3);\n  }\n  if (notif.group !== void 0) {\n    return (props) => {\n      if (props !== void 0) {\n        logError(\"trying to update a grouped one which is forbidden\", config);\n      } else {\n        dismiss();\n      }\n    };\n  }\n  Api = {\n    dismiss,\n    config,\n    notif\n  };\n  if (originalApi !== void 0) {\n    Object.assign(originalApi, Api);\n    return;\n  }\n  return (props) => {\n    if (Api !== void 0) {\n      if (props === void 0) {\n        Api.dismiss();\n      } else {\n        const newNotif = Object.assign({}, Api.config, props, {\n          group: false,\n          position: notif.position\n        });\n        addNotification(newNotif, $q, Api);\n      }\n    }\n  };\n}\nfunction removeNotification(notif) {\n  if (notif.meta.timer) {\n    clearTimeout(notif.meta.timer);\n    notif.meta.timer = void 0;\n  }\n  const index = notificationsList[notif.position].value.indexOf(notif);\n  if (index !== -1) {\n    if (notif.group !== void 0) {\n      delete groups[notif.meta.group];\n    }\n    const el = notifRefs[\"\" + notif.meta.uid];\n    if (el) {\n      const { width, height } = getComputedStyle(el);\n      el.style.left = `${el.offsetLeft}px`;\n      el.style.width = width;\n      el.style.height = height;\n    }\n    notificationsList[notif.position].value.splice(index, 1);\n    if (typeof notif.onDismiss === \"function\") {\n      notif.onDismiss();\n    }\n  }\n}\nfunction hasContent(str) {\n  return str !== void 0 && str !== null && emptyRE.test(str) !== true;\n}\nfunction logError(error, config) {\n  console.error(`Notify: ${error}`, config);\n  return false;\n}\nfunction getComponent() {\n  return createComponent({\n    name: \"QNotifications\",\n    // hide App from Vue devtools\n    devtools: { hide: true },\n    setup() {\n      return () => h(\"div\", { class: \"q-notifications\" }, positionList.map((pos) => {\n        return h(TransitionGroup, {\n          key: pos,\n          class: positionClass[pos],\n          tag: \"div\",\n          name: `q-notification--${pos}`\n        }, () => notificationsList[pos].value.map((notif) => {\n          const meta = notif.meta;\n          const mainChild = [];\n          if (meta.hasMedia === true) {\n            if (notif.spinner !== false) {\n              mainChild.push(\n                h(notif.spinner, {\n                  class: \"q-notification__spinner q-notification__spinner--\" + meta.leftClass,\n                  color: notif.spinnerColor,\n                  size: notif.spinnerSize\n                })\n              );\n            } else if (notif.icon) {\n              mainChild.push(\n                h(QIcon, {\n                  class: \"q-notification__icon q-notification__icon--\" + meta.leftClass,\n                  name: notif.icon,\n                  color: notif.iconColor,\n                  size: notif.iconSize,\n                  role: \"img\"\n                })\n              );\n            } else if (notif.avatar) {\n              mainChild.push(\n                h(QAvatar, {\n                  class: \"q-notification__avatar q-notification__avatar--\" + meta.leftClass\n                }, () => h(\"img\", { src: notif.avatar, \"aria-hidden\": \"true\" }))\n              );\n            }\n          }\n          if (meta.hasText === true) {\n            let msgChild;\n            const msgData = { class: \"q-notification__message col\" };\n            if (notif.html === true) {\n              msgData.innerHTML = notif.caption ? `<div>${notif.message}</div><div class=\"q-notification__caption\">${notif.caption}</div>` : notif.message;\n            } else {\n              const msgNode = [notif.message];\n              msgChild = notif.caption ? [\n                h(\"div\", msgNode),\n                h(\"div\", { class: \"q-notification__caption\" }, [notif.caption])\n              ] : msgNode;\n            }\n            mainChild.push(\n              h(\"div\", msgData, msgChild)\n            );\n          }\n          const child = [\n            h(\"div\", { class: meta.contentClass }, mainChild)\n          ];\n          notif.progress === true && child.push(\n            h(\"div\", {\n              key: `${meta.uid}|p|${meta.badge}`,\n              class: meta.progressClass,\n              style: meta.progressStyle\n            })\n          );\n          notif.actions !== void 0 && child.push(\n            h(\"div\", {\n              class: meta.actionsClass\n            }, notif.actions.map((props) => h(QBtn, props)))\n          );\n          meta.badge > 1 && child.push(\n            h(\"div\", {\n              key: `${meta.uid}|${meta.badge}`,\n              class: notif.meta.badgeClass,\n              style: notif.badgeStyle\n            }, [meta.badge])\n          );\n          return h(\"div\", {\n            ref: (el) => {\n              notifRefs[\"\" + meta.uid] = el;\n            },\n            key: meta.uid,\n            class: meta.class,\n            ...meta.attrs\n          }, [\n            h(\"div\", { class: meta.wrapperClass }, child)\n          ]);\n        }));\n      }));\n    }\n  });\n}\nexport default {\n  setDefaults(opts) {\n    if (true) {\n      isObject(opts) === true && Object.assign(defaults, opts);\n    }\n  },\n  registerType(typeName, typeOpts) {\n    if (isObject(typeOpts) === true) {\n      notifTypes[typeName] = typeOpts;\n    }\n  },\n  install({ $q, parentApp }) {\n    $q.notify = this.create = false ? noop : (opts) => addNotification(opts, $q);\n    $q.notify.setDefaults = this.setDefaults;\n    $q.notify.registerType = this.registerType;\n    if ($q.config.notify !== void 0) {\n      this.setDefaults($q.config.notify);\n    }\n    if (this.__installed !== true) {\n      positionList.forEach((pos) => {\n        notificationsList[pos] = ref([]);\n        const vert = [\"left\", \"center\", \"right\"].includes(pos) === true ? \"center\" : pos.indexOf(\"top\") > -1 ? \"top\" : \"bottom\", align = pos.indexOf(\"left\") > -1 ? \"start\" : pos.indexOf(\"right\") > -1 ? \"end\" : \"center\", classes = [\"left\", \"right\"].includes(pos) ? `items-${pos === \"left\" ? \"start\" : \"end\"} justify-center` : pos === \"center\" ? \"flex-center\" : `items-${align}`;\n        positionClass[pos] = `q-notifications__list q-notifications__list--${vert} fixed column no-wrap ${classes}`;\n      });\n      const el = createGlobalNode(\"q-notify\");\n      createChildApp(getComponent(), parentApp).mount(el);\n    }\n  }\n};\n",
+      "start": 1703982896747,
+      "end": 1703982896759,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896759,
+      "end": 1703982896759,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896760,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896763,
+      "end": 1703982896763,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896763,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896764,
+      "end": 1703982896764,
+      "order": "normal"
+    }
+  ]
+}

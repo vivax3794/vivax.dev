@@ -1,0 +1,234 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/pages/projects.vue?vue&type=script&setup=true&lang.ts",
+  "transforms": [
+    {
+      "name": "vite:vue",
+      "result": "import { defineComponent as _defineComponent } from 'vue'\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createBlock as _createBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, unref as _unref, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\"\n\nconst _withScopeId = n => (_pushScopeId(\"data-v-a98d0707\"),n=n(),_popScopeId(),n)\nconst _hoisted_1 = { class: \"row justify-center\" }\nconst _hoisted_2 = { class: \"row q-ma-md card shadow-3\" }\nconst _hoisted_3 = { class: \"col relative-position\" }\nconst _hoisted_4 = { class: \"text-h4 text-center full-width q-mb-sm\" }\nconst _hoisted_5 = { class: \"q-px-md text-subtitle1 desc\" }\nconst _hoisted_6 = { class: \"absolute-bottom\" }\nconst _hoisted_7 = { class: \"row justify-center\" }\n\nimport { mdiWeb, mdiGamepad, mdiSourceBranch, mdiNewspaper } from \"@quasar/extras/mdi-v7\"\n\ninterface Link {\n    type?: keyof typeof LINK_ICONS,\n    href: string,\n}\ninterface Project {\n    name: string,\n    description: string,\n    image?: string,\n    links: Link[]\n}\n\n\nexport default /*#__PURE__*/_defineComponent({\n  __name: 'projects',\n  setup(__props) {\n\nconst LINK_ICONS = {\n    \"Itch\": mdiGamepad,\n    \"GitHub\": mdiSourceBranch,\n    \"Blog\": mdiNewspaper\n} as const;\nconst FALLBACK_ICON = mdiWeb;\n\n\nconst PROJECTS: Project[] = [{\n    name: \"This page\",\n    description: \"This page which is made with nuxt and quasar.\",\n    links: [\n        { href: \"https://vivax.dev\" }\n    ]\n},\n{\n    name: \"Deepnarration\",\n    description: \"A frontend for an ai platform that I am paid to make.\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration\" },\n        { href: \"https://deepnarration.matissetec.dev/\" }\n    ]\n},\n{\n    name: \"Ai node editor\",\n    description: \"A node editor to connect together a bunch of ai apis.\",\n    image: \"/projects/Node.png\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration/tree/nuxt-rewrite\" },\n    ],\n},\n{\n    name: \"FluentWeb\",\n    description: \"A rust frontend web framework using single file componentes inspired by vue.\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/FluentWeb\" }\n    ]\n},\n{\n    name: \"Compiler\",\n    description: \"Compiler for a staticly typed language that I am writing a blog series on.\",\n    links: [\n        { type: \"Blog\", href: \"/blog\" },\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/viv_script_blog\" }\n    ]\n},\n{\n    name: \"Spinny Jumper\",\n    description: \"Small foddian game I made for a game in the course of a week\",\n    image: \"https://img.itch.zone/aW1nLzEzMDYyMDYwLnBuZw==/original/QoYYFX.png\",\n    links: [\n        { type: \"Itch\", href: \"https://vivax.itch.io/spinny-jumper\" }\n    ]\n},\n{\n    name: \"WFC\",\n    description: \"A implementation of Wave Function Collapse in the bevy game engine.\",\n    image: \"/projects/WFC.png\",\n    links: [\n        { type: \"Itch\", href: \"https://vivax.itch.io/wave-generation-demo\" },\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/wave_function_collapse\" }\n    ]\n}\n];\n\nreturn (_ctx: any,_cache: any) => {\n  const _component_QImg = _resolveComponent(\"QImg\")!\n  const _component_QSeparator = _resolveComponent(\"QSeparator\")!\n  const _component_QBtn = _resolveComponent(\"QBtn\")!\n\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(PROJECTS, (project) => {\n      return _createElementVNode(\"div\", _hoisted_2, [\n        (project.image !== undefined)\n          ? (_openBlock(), _createBlock(_component_QImg, {\n              key: 0,\n              class: \"col\",\n              src: project.image\n            }, null, 8, [\"src\"]))\n          : _createCommentVNode(\"\", true),\n        _createElementVNode(\"div\", _hoisted_3, [\n          _createElementVNode(\"div\", _hoisted_4, _toDisplayString(project.name), 1),\n          _createVNode(_component_QSeparator),\n          _createElementVNode(\"div\", _hoisted_5, _toDisplayString(project.description), 1),\n          _createElementVNode(\"div\", _hoisted_6, [\n            _createVNode(_component_QSeparator),\n            _createElementVNode(\"div\", _hoisted_7, [\n              (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(project.links, (link) => {\n                return (_openBlock(), _createBlock(_component_QBtn, {\n                  size: \"20px\",\n                  flat: \"\",\n                  icon: LINK_ICONS[link.type] || _unref(FALLBACK_ICON),\n                  href: link.type === 'Blog' ? undefined : link.href,\n                  to: link.type === 'Blog' ? link.href : undefined\n                }, null, 8, [\"icon\", \"href\", \"to\"]))\n              }), 256))\n            ])\n          ])\n        ])\n      ])\n    }), 64))\n  ]))\n}\n}\n\n})",
+      "start": 1703982896954,
+      "end": 1703982896954
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896954,
+      "end": 1703982896954,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896954,
+      "end": 1703982896954,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896954,
+      "end": 1703982896954,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896954,
+      "end": 1703982896954,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896954,
+      "end": 1703982896954,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "import { defineComponent as _defineComponent } from \"vue\";\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createBlock as _createBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, unref as _unref, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\";\nconst _withScopeId = (n) => (_pushScopeId(\"data-v-a98d0707\"), n = n(), _popScopeId(), n);\nconst _hoisted_1 = { class: \"row justify-center\" };\nconst _hoisted_2 = { class: \"row q-ma-md card shadow-3\" };\nconst _hoisted_3 = { class: \"col relative-position\" };\nconst _hoisted_4 = { class: \"text-h4 text-center full-width q-mb-sm\" };\nconst _hoisted_5 = { class: \"q-px-md text-subtitle1 desc\" };\nconst _hoisted_6 = { class: \"absolute-bottom\" };\nconst _hoisted_7 = { class: \"row justify-center\" };\nimport { mdiWeb, mdiGamepad, mdiSourceBranch, mdiNewspaper } from \"@quasar/extras/mdi-v7\";\nexport default /* @__PURE__ */ _defineComponent({\n  __name: \"projects\",\n  setup(__props) {\n    const LINK_ICONS = {\n      \"Itch\": mdiGamepad,\n      \"GitHub\": mdiSourceBranch,\n      \"Blog\": mdiNewspaper\n    };\n    const FALLBACK_ICON = mdiWeb;\n    const PROJECTS = [\n      {\n        name: \"This page\",\n        description: \"This page which is made with nuxt and quasar.\",\n        links: [\n          { href: \"https://vivax.dev\" }\n        ]\n      },\n      {\n        name: \"Deepnarration\",\n        description: \"A frontend for an ai platform that I am paid to make.\",\n        links: [\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration\" },\n          { href: \"https://deepnarration.matissetec.dev/\" }\n        ]\n      },\n      {\n        name: \"Ai node editor\",\n        description: \"A node editor to connect together a bunch of ai apis.\",\n        image: \"/projects/Node.png\",\n        links: [\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration/tree/nuxt-rewrite\" }\n        ]\n      },\n      {\n        name: \"FluentWeb\",\n        description: \"A rust frontend web framework using single file componentes inspired by vue.\",\n        links: [\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/FluentWeb\" }\n        ]\n      },\n      {\n        name: \"Compiler\",\n        description: \"Compiler for a staticly typed language that I am writing a blog series on.\",\n        links: [\n          { type: \"Blog\", href: \"/blog\" },\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/viv_script_blog\" }\n        ]\n      },\n      {\n        name: \"Spinny Jumper\",\n        description: \"Small foddian game I made for a game in the course of a week\",\n        image: \"https://img.itch.zone/aW1nLzEzMDYyMDYwLnBuZw==/original/QoYYFX.png\",\n        links: [\n          { type: \"Itch\", href: \"https://vivax.itch.io/spinny-jumper\" }\n        ]\n      },\n      {\n        name: \"WFC\",\n        description: \"A implementation of Wave Function Collapse in the bevy game engine.\",\n        image: \"/projects/WFC.png\",\n        links: [\n          { type: \"Itch\", href: \"https://vivax.itch.io/wave-generation-demo\" },\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/wave_function_collapse\" }\n        ]\n      }\n    ];\n    return (_ctx, _cache) => {\n      const _component_QImg = _resolveComponent(\"QImg\");\n      const _component_QSeparator = _resolveComponent(\"QSeparator\");\n      const _component_QBtn = _resolveComponent(\"QBtn\");\n      return _openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n        (_openBlock(), _createElementBlock(_Fragment, null, _renderList(PROJECTS, (project) => {\n          return _createElementVNode(\"div\", _hoisted_2, [\n            project.image !== void 0 ? (_openBlock(), _createBlock(_component_QImg, {\n              key: 0,\n              class: \"col\",\n              src: project.image\n            }, null, 8, [\"src\"])) : _createCommentVNode(\"\", true),\n            _createElementVNode(\"div\", _hoisted_3, [\n              _createElementVNode(\"div\", _hoisted_4, _toDisplayString(project.name), 1),\n              _createVNode(_component_QSeparator),\n              _createElementVNode(\"div\", _hoisted_5, _toDisplayString(project.description), 1),\n              _createElementVNode(\"div\", _hoisted_6, [\n                _createVNode(_component_QSeparator),\n                _createElementVNode(\"div\", _hoisted_7, [\n                  (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(project.links, (link) => {\n                    return _openBlock(), _createBlock(_component_QBtn, {\n                      size: \"20px\",\n                      flat: \"\",\n                      icon: LINK_ICONS[link.type] || _unref(FALLBACK_ICON),\n                      href: link.type === \"Blog\" ? void 0 : link.href,\n                      to: link.type === \"Blog\" ? link.href : void 0\n                    }, null, 8, [\"icon\", \"href\", \"to\"]);\n                  }), 256))\n                ])\n              ])\n            ])\n          ]);\n        }), 64))\n      ]);\n    };\n  }\n});\n",
+      "start": 1703982896955,
+      "end": 1703982897035,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "/home/vivax/coding/vivax.dev/pages/projects.vue?vue&type=script&setup=true&lang.ts"
+        ],
+        "sourcesContent": [
+          "import { defineComponent as _defineComponent } from 'vue'\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createBlock as _createBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, unref as _unref, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\"\n\nconst _withScopeId = n => (_pushScopeId(\"data-v-a98d0707\"),n=n(),_popScopeId(),n)\nconst _hoisted_1 = { class: \"row justify-center\" }\nconst _hoisted_2 = { class: \"row q-ma-md card shadow-3\" }\nconst _hoisted_3 = { class: \"col relative-position\" }\nconst _hoisted_4 = { class: \"text-h4 text-center full-width q-mb-sm\" }\nconst _hoisted_5 = { class: \"q-px-md text-subtitle1 desc\" }\nconst _hoisted_6 = { class: \"absolute-bottom\" }\nconst _hoisted_7 = { class: \"row justify-center\" }\n\nimport { mdiWeb, mdiGamepad, mdiSourceBranch, mdiNewspaper } from \"@quasar/extras/mdi-v7\"\n\ninterface Link {\n    type?: keyof typeof LINK_ICONS,\n    href: string,\n}\ninterface Project {\n    name: string,\n    description: string,\n    image?: string,\n    links: Link[]\n}\n\n\nexport default /*#__PURE__*/_defineComponent({\n  __name: 'projects',\n  setup(__props) {\n\nconst LINK_ICONS = {\n    \"Itch\": mdiGamepad,\n    \"GitHub\": mdiSourceBranch,\n    \"Blog\": mdiNewspaper\n} as const;\nconst FALLBACK_ICON = mdiWeb;\n\n\nconst PROJECTS: Project[] = [{\n    name: \"This page\",\n    description: \"This page which is made with nuxt and quasar.\",\n    links: [\n        { href: \"https://vivax.dev\" }\n    ]\n},\n{\n    name: \"Deepnarration\",\n    description: \"A frontend for an ai platform that I am paid to make.\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration\" },\n        { href: \"https://deepnarration.matissetec.dev/\" }\n    ]\n},\n{\n    name: \"Ai node editor\",\n    description: \"A node editor to connect together a bunch of ai apis.\",\n    image: \"/projects/Node.png\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration/tree/nuxt-rewrite\" },\n    ],\n},\n{\n    name: \"FluentWeb\",\n    description: \"A rust frontend web framework using single file componentes inspired by vue.\",\n    links: [\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/FluentWeb\" }\n    ]\n},\n{\n    name: \"Compiler\",\n    description: \"Compiler for a staticly typed language that I am writing a blog series on.\",\n    links: [\n        { type: \"Blog\", href: \"/blog\" },\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/viv_script_blog\" }\n    ]\n},\n{\n    name: \"Spinny Jumper\",\n    description: \"Small foddian game I made for a game in the course of a week\",\n    image: \"https://img.itch.zone/aW1nLzEzMDYyMDYwLnBuZw==/original/QoYYFX.png\",\n    links: [\n        { type: \"Itch\", href: \"https://vivax.itch.io/spinny-jumper\" }\n    ]\n},\n{\n    name: \"WFC\",\n    description: \"A implementation of Wave Function Collapse in the bevy game engine.\",\n    image: \"/projects/WFC.png\",\n    links: [\n        { type: \"Itch\", href: \"https://vivax.itch.io/wave-generation-demo\" },\n        { type: \"GitHub\", href: \"https://github.com/vivax3794/wave_function_collapse\" }\n    ]\n}\n];\n\nreturn (_ctx: any,_cache: any) => {\n  const _component_QImg = _resolveComponent(\"QImg\")!\n  const _component_QSeparator = _resolveComponent(\"QSeparator\")!\n  const _component_QBtn = _resolveComponent(\"QBtn\")!\n\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(PROJECTS, (project) => {\n      return _createElementVNode(\"div\", _hoisted_2, [\n        (project.image !== undefined)\n          ? (_openBlock(), _createBlock(_component_QImg, {\n              key: 0,\n              class: \"col\",\n              src: project.image\n            }, null, 8, [\"src\"]))\n          : _createCommentVNode(\"\", true),\n        _createElementVNode(\"div\", _hoisted_3, [\n          _createElementVNode(\"div\", _hoisted_4, _toDisplayString(project.name), 1),\n          _createVNode(_component_QSeparator),\n          _createElementVNode(\"div\", _hoisted_5, _toDisplayString(project.description), 1),\n          _createElementVNode(\"div\", _hoisted_6, [\n            _createVNode(_component_QSeparator),\n            _createElementVNode(\"div\", _hoisted_7, [\n              (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(project.links, (link) => {\n                return (_openBlock(), _createBlock(_component_QBtn, {\n                  size: \"20px\",\n                  flat: \"\",\n                  icon: LINK_ICONS[link.type] || _unref(FALLBACK_ICON),\n                  href: link.type === 'Blog' ? undefined : link.href,\n                  to: link.type === 'Blog' ? link.href : undefined\n                }, null, 8, [\"icon\", \"href\", \"to\"]))\n              }), 256))\n            ])\n          ])\n        ])\n      ])\n    }), 64))\n  ]))\n}\n}\n\n})"
+        ],
+        "mappings": "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",
+        "names": []
+      }
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897036,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897037,
+      "end": 1703982897038,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897038,
+      "end": 1703982897043,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897044,
+      "end": 1703982897044,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897046,
+      "end": 1703982897046,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897046,
+      "end": 1703982897046,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897047,
+      "end": 1703982897047,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897047,
+      "end": 1703982897047,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "result": "import { default as __nuxt_component_0 } from \"/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/img/QImg.js\";\nimport { default as __nuxt_component_1 } from \"/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/separator/QSeparator.js\";\nimport { default as __nuxt_component_2 } from \"/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/btn/QBtn.js\";\nimport { defineComponent as _defineComponent } from \"vue\";\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createBlock as _createBlock, createCommentVNode as _createCommentVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, unref as _unref, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\";\nconst _withScopeId = (n) => (_pushScopeId(\"data-v-a98d0707\"), n = n(), _popScopeId(), n);\nconst _hoisted_1 = { class: \"row justify-center\" };\nconst _hoisted_2 = { class: \"row q-ma-md card shadow-3\" };\nconst _hoisted_3 = { class: \"col relative-position\" };\nconst _hoisted_4 = { class: \"text-h4 text-center full-width q-mb-sm\" };\nconst _hoisted_5 = { class: \"q-px-md text-subtitle1 desc\" };\nconst _hoisted_6 = { class: \"absolute-bottom\" };\nconst _hoisted_7 = { class: \"row justify-center\" };\nimport { mdiWeb, mdiGamepad, mdiSourceBranch, mdiNewspaper } from \"@quasar/extras/mdi-v7\";\nexport default /* @__PURE__ */ _defineComponent({\n  __name: \"projects\",\n  setup(__props) {\n    const LINK_ICONS = {\n      \"Itch\": mdiGamepad,\n      \"GitHub\": mdiSourceBranch,\n      \"Blog\": mdiNewspaper\n    };\n    const FALLBACK_ICON = mdiWeb;\n    const PROJECTS = [\n      {\n        name: \"This page\",\n        description: \"This page which is made with nuxt and quasar.\",\n        links: [\n          { href: \"https://vivax.dev\" }\n        ]\n      },\n      {\n        name: \"Deepnarration\",\n        description: \"A frontend for an ai platform that I am paid to make.\",\n        links: [\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration\" },\n          { href: \"https://deepnarration.matissetec.dev/\" }\n        ]\n      },\n      {\n        name: \"Ai node editor\",\n        description: \"A node editor to connect together a bunch of ai apis.\",\n        image: \"/projects/Node.png\",\n        links: [\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/deepnarration/tree/nuxt-rewrite\" }\n        ]\n      },\n      {\n        name: \"FluentWeb\",\n        description: \"A rust frontend web framework using single file componentes inspired by vue.\",\n        links: [\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/FluentWeb\" }\n        ]\n      },\n      {\n        name: \"Compiler\",\n        description: \"Compiler for a staticly typed language that I am writing a blog series on.\",\n        links: [\n          { type: \"Blog\", href: \"/blog\" },\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/viv_script_blog\" }\n        ]\n      },\n      {\n        name: \"Spinny Jumper\",\n        description: \"Small foddian game I made for a game in the course of a week\",\n        image: \"https://img.itch.zone/aW1nLzEzMDYyMDYwLnBuZw==/original/QoYYFX.png\",\n        links: [\n          { type: \"Itch\", href: \"https://vivax.itch.io/spinny-jumper\" }\n        ]\n      },\n      {\n        name: \"WFC\",\n        description: \"A implementation of Wave Function Collapse in the bevy game engine.\",\n        image: \"/projects/WFC.png\",\n        links: [\n          { type: \"Itch\", href: \"https://vivax.itch.io/wave-generation-demo\" },\n          { type: \"GitHub\", href: \"https://github.com/vivax3794/wave_function_collapse\" }\n        ]\n      }\n    ];\n    return (_ctx, _cache) => {\n      const _component_QImg = __nuxt_component_0;\n      const _component_QSeparator = __nuxt_component_1;\n      const _component_QBtn = __nuxt_component_2;\n      return _openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n        (_openBlock(), _createElementBlock(_Fragment, null, _renderList(PROJECTS, (project) => {\n          return _createElementVNode(\"div\", _hoisted_2, [\n            project.image !== void 0 ? (_openBlock(), _createBlock(_component_QImg, {\n              key: 0,\n              class: \"col\",\n              src: project.image\n            }, null, 8, [\"src\"])) : _createCommentVNode(\"\", true),\n            _createElementVNode(\"div\", _hoisted_3, [\n              _createElementVNode(\"div\", _hoisted_4, _toDisplayString(project.name), 1),\n              _createVNode(_component_QSeparator),\n              _createElementVNode(\"div\", _hoisted_5, _toDisplayString(project.description), 1),\n              _createElementVNode(\"div\", _hoisted_6, [\n                _createVNode(_component_QSeparator),\n                _createElementVNode(\"div\", _hoisted_7, [\n                  (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(project.links, (link) => {\n                    return _openBlock(), _createBlock(_component_QBtn, {\n                      size: \"20px\",\n                      flat: \"\",\n                      icon: LINK_ICONS[link.type] || _unref(FALLBACK_ICON),\n                      href: link.type === \"Blog\" ? void 0 : link.href,\n                      to: link.type === \"Blog\" ? link.href : void 0\n                    }, null, 8, [\"icon\", \"href\", \"to\"]);\n                  }), 256))\n                ])\n              ])\n            ])\n          ]);\n        }), 64))\n      ]);\n    };\n  }\n});\n",
+      "start": 1703982897049,
+      "end": 1703982897050,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897050,
+      "end": 1703982897050,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897050,
+      "end": 1703982897050,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897050,
+      "end": 1703982897050,
+      "order": "normal"
+    }
+  ]
+}

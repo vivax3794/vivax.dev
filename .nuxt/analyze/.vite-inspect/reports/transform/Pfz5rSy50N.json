@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/time/QTime.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, withDirectives, Transition, nextTick, getCurrentInstance } from 'vue'\n\nimport QBtn from '../btn/QBtn.js'\nimport TouchPan from '../../directives/TouchPan.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport { useFormProps, useFormAttrs, useFormInject } from '../../composables/private/use-form.js'\nimport useDatetime, { useDatetimeProps, useDatetimeEmits, getDayHash } from '../date/use-datetime.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { formatDate, __splitDate } from '../../utils/date.js'\nimport { position } from '../../utils/event.js'\nimport { pad } from '../../utils/format.js'\nimport { vmIsDestroyed } from '../../utils/private/vm.js'\n\nfunction getViewByModel (model, withSeconds) {\n  if (model.hour !== null) {\n    if (model.minute === null) {\n      return 'minute'\n    }\n    else if (withSeconds === true && model.second === null) {\n      return 'second'\n    }\n  }\n\n  return 'hour'\n}\n\nfunction getCurrentTime () {\n  const d = new Date()\n\n  return {\n    hour: d.getHours(),\n    minute: d.getMinutes(),\n    second: d.getSeconds(),\n    millisecond: d.getMilliseconds()\n  }\n}\n\nexport default createComponent({\n  name: 'QTime',\n\n  props: {\n    ...useDarkProps,\n    ...useFormProps,\n    ...useDatetimeProps,\n\n    mask: {\n      default: null\n    },\n\n    format24h: {\n      type: Boolean,\n      default: null\n    },\n\n    defaultDate: {\n      type: String,\n      validator: v => /^-?[\\d]+\\/[0-1]\\d\\/[0-3]\\d$/.test(v)\n    },\n\n    options: Function,\n    hourOptions: Array,\n    minuteOptions: Array,\n    secondOptions: Array,\n\n    withSeconds: Boolean,\n    nowBtn: Boolean\n  },\n\n  emits: useDatetimeEmits,\n\n  setup (props, { slots, emit }) {\n    const vm = getCurrentInstance()\n    const { $q } = vm.proxy\n\n    const isDark = useDark(props, $q)\n    const { tabindex, headerClass, getLocale, getCurrentDate } = useDatetime(props, $q)\n\n    const formAttrs = useFormAttrs(props)\n    const injectFormInput = useFormInject(formAttrs)\n\n    let draggingClockRect, dragCache\n\n    const clockRef = ref(null)\n\n    const mask = computed(() => getMask())\n    const locale = computed(() => getLocale())\n\n    const defaultDateModel = computed(() => getDefaultDateModel())\n\n    const model = __splitDate(\n      props.modelValue,\n      mask.value, // initial mask\n      locale.value, // initial locale\n      props.calendar,\n      defaultDateModel.value\n    )\n\n    const view = ref(getViewByModel(model))\n    const innerModel = ref(model)\n    const isAM = ref(model.hour === null || model.hour < 12)\n\n    const classes = computed(() =>\n      `q-time q-time--${ props.landscape === true ? 'landscape' : 'portrait' }`\n      + (isDark.value === true ? ' q-time--dark q-dark' : '')\n      + (props.disable === true ? ' disabled' : (props.readonly === true ? ' q-time--readonly' : ''))\n      + (props.bordered === true ? ' q-time--bordered' : '')\n      + (props.square === true ? ' q-time--square no-border-radius' : '')\n      + (props.flat === true ? ' q-time--flat no-shadow' : '')\n    )\n\n    const stringModel = computed(() => {\n      const time = innerModel.value\n\n      return {\n        hour: time.hour === null\n          ? '--'\n          : (\n              computedFormat24h.value === true\n                ? pad(time.hour)\n                : String(\n                  isAM.value === true\n                    ? (time.hour === 0 ? 12 : time.hour)\n                    : (time.hour > 12 ? time.hour - 12 : time.hour)\n                )\n            ),\n        minute: time.minute === null\n          ? '--'\n          : pad(time.minute),\n        second: time.second === null\n          ? '--'\n          : pad(time.second)\n      }\n    })\n\n    const computedFormat24h = computed(() => (\n      props.format24h !== null\n        ? props.format24h\n        : $q.lang.date.format24h\n    ))\n\n    const pointerStyle = computed(() => {\n      const\n        forHour = view.value === 'hour',\n        divider = forHour === true ? 12 : 60,\n        amount = innerModel.value[ view.value ],\n        degrees = Math.round(amount * (360 / divider)) - 180\n\n      let transform = `rotate(${ degrees }deg) translateX(-50%)`\n\n      if (\n        forHour === true\n        && computedFormat24h.value === true\n        && innerModel.value.hour >= 12\n      ) {\n        transform += ' scale(.7)'\n      }\n\n      return { transform }\n    })\n\n    const minLink = computed(() => innerModel.value.hour !== null)\n    const secLink = computed(() => minLink.value === true && innerModel.value.minute !== null)\n\n    const hourInSelection = computed(() => (\n      props.hourOptions !== void 0\n        ? val => props.hourOptions.includes(val)\n        : (\n            props.options !== void 0\n              ? val => props.options(val, null, null)\n              : null\n          )\n    ))\n\n    const minuteInSelection = computed(() => (\n      props.minuteOptions !== void 0\n        ? val => props.minuteOptions.includes(val)\n        : (\n            props.options !== void 0\n              ? val => props.options(innerModel.value.hour, val, null)\n              : null\n          )\n    ))\n\n    const secondInSelection = computed(() => (\n      props.secondOptions !== void 0\n        ? val => props.secondOptions.includes(val)\n        : (\n            props.options !== void 0\n              ? val => props.options(innerModel.value.hour, innerModel.value.minute, val)\n              : null\n          )\n    ))\n\n    const validHours = computed(() => {\n      if (hourInSelection.value === null) {\n        return null\n      }\n\n      const am = getValidValues(0, 11, hourInSelection.value)\n      const pm = getValidValues(12, 11, hourInSelection.value)\n      return { am, pm, values: am.values.concat(pm.values) }\n    })\n\n    const validMinutes = computed(() => (\n      minuteInSelection.value !== null\n        ? getValidValues(0, 59, minuteInSelection.value)\n        : null\n    ))\n\n    const validSeconds = computed(() => (\n      secondInSelection.value !== null\n        ? getValidValues(0, 59, secondInSelection.value)\n        : null\n    ))\n\n    const viewValidOptions = computed(() => {\n      switch (view.value) {\n        case 'hour':\n          return validHours.value\n        case 'minute':\n          return validMinutes.value\n        case 'second':\n          return validSeconds.value\n      }\n    })\n\n    const positions = computed(() => {\n      let start, end, offset = 0, step = 1\n      const values = viewValidOptions.value !== null\n        ? viewValidOptions.value.values\n        : void 0\n\n      if (view.value === 'hour') {\n        if (computedFormat24h.value === true) {\n          start = 0\n          end = 23\n        }\n        else {\n          start = 0\n          end = 11\n\n          if (isAM.value === false) {\n            offset = 12\n          }\n        }\n      }\n      else {\n        start = 0\n        end = 55\n        step = 5\n      }\n\n      const pos = []\n\n      for (let val = start, index = start; val <= end; val += step, index++) {\n        const\n          actualVal = val + offset,\n          disable = values !== void 0 && values.includes(actualVal) === false,\n          label = view.value === 'hour' && val === 0\n            ? (computedFormat24h.value === true ? '00' : '12')\n            : val\n\n        pos.push({ val: actualVal, index, disable, label })\n      }\n\n      return pos\n    })\n\n    const clockDirectives = computed(() => {\n      return [ [\n        TouchPan,\n        onPan,\n        void 0,\n        {\n          stop: true,\n          prevent: true,\n          mouse: true\n        }\n      ] ]\n    })\n\n    watch(() => props.modelValue, v => {\n      const model = __splitDate(\n        v,\n        mask.value,\n        locale.value,\n        props.calendar,\n        defaultDateModel.value\n      )\n\n      if (\n        model.dateHash !== innerModel.value.dateHash\n        || model.timeHash !== innerModel.value.timeHash\n      ) {\n        innerModel.value = model\n\n        if (model.hour === null) {\n          view.value = 'hour'\n        }\n        else {\n          isAM.value = model.hour < 12\n        }\n      }\n    })\n\n    watch([ mask, locale ], () => {\n      nextTick(() => {\n        updateValue()\n      })\n    })\n\n    function setNow () {\n      const date = {\n        ...getCurrentDate(),\n        ...getCurrentTime()\n      }\n\n      updateValue(date)\n      Object.assign(innerModel.value, date) // reset any pending changes to innerModel\n\n      view.value = 'hour'\n    }\n\n    function getValidValues (start, count, testFn) {\n      const values = Array.apply(null, { length: count + 1 })\n        .map((_, index) => {\n          const i = index + start\n          return {\n            index: i,\n            val: testFn(i) === true // force boolean\n          }\n        })\n        .filter(v => v.val === true)\n        .map(v => v.index)\n\n      return {\n        min: values[ 0 ],\n        max: values[ values.length - 1 ],\n        values,\n        threshold: count + 1\n      }\n    }\n\n    function getWheelDist (a, b, threshold) {\n      const diff = Math.abs(a - b)\n      return Math.min(diff, threshold - diff)\n    }\n\n    function getNormalizedClockValue (val, { min, max, values, threshold }) {\n      if (val === min) {\n        return min\n      }\n\n      if (val < min || val > max) {\n        return getWheelDist(val, min, threshold) <= getWheelDist(val, max, threshold)\n          ? min\n          : max\n      }\n\n      const\n        index = values.findIndex(v => val <= v),\n        before = values[ index - 1 ],\n        after = values[ index ]\n\n      return val - before <= after - val\n        ? before\n        : after\n    }\n\n    function getMask () {\n      return props.calendar !== 'persian' && props.mask !== null\n        ? props.mask\n        : `HH:mm${ props.withSeconds === true ? ':ss' : '' }`\n    }\n\n    function getDefaultDateModel () {\n      if (typeof props.defaultDate !== 'string') {\n        const date = getCurrentDate(true)\n        date.dateHash = getDayHash(date)\n        return date\n      }\n\n      return __splitDate(props.defaultDate, 'YYYY/MM/DD', void 0, props.calendar)\n    }\n\n    function shouldAbortInteraction () {\n      return vmIsDestroyed(vm) === true\n        // if we have limited options, can we actually set any?\n        || (\n          viewValidOptions.value !== null\n          && (\n            viewValidOptions.value.values.length === 0\n            || (\n              view.value === 'hour' && computedFormat24h.value !== true\n              && validHours.value[ isAM.value === true ? 'am' : 'pm' ].values.length === 0\n            )\n          )\n        )\n    }\n\n    function getClockRect () {\n      const\n        clock = clockRef.value,\n        { top, left, width } = clock.getBoundingClientRect(),\n        dist = width / 2\n\n      return {\n        top: top + dist,\n        left: left + dist,\n        dist: dist * 0.7\n      }\n    }\n\n    function onPan (event) {\n      if (shouldAbortInteraction() === true) {\n        return\n      }\n\n      if (event.isFirst === true) {\n        draggingClockRect = getClockRect()\n        dragCache = updateClock(event.evt, draggingClockRect)\n        return\n      }\n\n      dragCache = updateClock(event.evt, draggingClockRect, dragCache)\n\n      if (event.isFinal === true) {\n        draggingClockRect = false\n        dragCache = null\n        goToNextView()\n      }\n    }\n\n    function goToNextView () {\n      if (view.value === 'hour') {\n        view.value = 'minute'\n      }\n      else if (props.withSeconds && view.value === 'minute') {\n        view.value = 'second'\n      }\n    }\n\n    function updateClock (evt, clockRect, cacheVal) {\n      const\n        pos = position(evt),\n        height = Math.abs(pos.top - clockRect.top),\n        distance = Math.sqrt(\n          Math.pow(Math.abs(pos.top - clockRect.top), 2)\n          + Math.pow(Math.abs(pos.left - clockRect.left), 2)\n        )\n\n      let\n        val,\n        angle = Math.asin(height / distance) * (180 / Math.PI)\n\n      if (pos.top < clockRect.top) {\n        angle = clockRect.left < pos.left ? 90 - angle : 270 + angle\n      }\n      else {\n        angle = clockRect.left < pos.left ? angle + 90 : 270 - angle\n      }\n\n      if (view.value === 'hour') {\n        val = angle / 30\n\n        if (validHours.value !== null) {\n          const am = computedFormat24h.value !== true\n            ? isAM.value === true\n            : (\n                validHours.value.am.values.length !== 0 && validHours.value.pm.values.length !== 0\n                  ? distance >= clockRect.dist\n                  : validHours.value.am.values.length !== 0\n              )\n\n          val = getNormalizedClockValue(\n            val + (am === true ? 0 : 12),\n            validHours.value[ am === true ? 'am' : 'pm' ]\n          )\n        }\n        else {\n          val = Math.round(val)\n\n          if (computedFormat24h.value === true) {\n            if (distance < clockRect.dist) {\n              if (val < 12) {\n                val += 12\n              }\n            }\n            else if (val === 12) {\n              val = 0\n            }\n          }\n          else if (isAM.value === true && val === 12) {\n            val = 0\n          }\n          else if (isAM.value === false && val !== 12) {\n            val += 12\n          }\n        }\n\n        if (computedFormat24h.value === true) {\n          isAM.value = val < 12\n        }\n      }\n      else {\n        val = Math.round(angle / 6) % 60\n\n        if (view.value === 'minute' && validMinutes.value !== null) {\n          val = getNormalizedClockValue(val, validMinutes.value)\n        }\n        else if (view.value === 'second' && validSeconds.value !== null) {\n          val = getNormalizedClockValue(val, validSeconds.value)\n        }\n      }\n\n      if (cacheVal !== val) {\n        setModel[ view.value ](val)\n      }\n\n      return val\n    }\n\n    const setView = {\n      hour () { view.value = 'hour' },\n      minute () { view.value = 'minute' },\n      second () { view.value = 'second' }\n    }\n\n    function setAmOnKey (e) {\n      e.keyCode === 13 && setAm()\n    }\n\n    function setPmOnKey (e) {\n      e.keyCode === 13 && setPm()\n    }\n\n    function onClick (evt) {\n      if (shouldAbortInteraction() !== true) {\n        // onMousedown() has already updated the offset\n        // (on desktop only, through mousedown event)\n        if ($q.platform.is.desktop !== true) {\n          updateClock(evt, getClockRect())\n        }\n\n        goToNextView()\n      }\n    }\n\n    function onMousedown (evt) {\n      if (shouldAbortInteraction() !== true) {\n        updateClock(evt, getClockRect())\n      }\n    }\n\n    function onKeyupHour (e) {\n      if (e.keyCode === 13) { // ENTER\n        view.value = 'hour'\n      }\n      else if ([ 37, 39 ].includes(e.keyCode)) {\n        const payload = e.keyCode === 37 ? -1 : 1\n\n        if (validHours.value !== null) {\n          const values = computedFormat24h.value === true\n            ? validHours.value.values\n            : validHours.value[ isAM.value === true ? 'am' : 'pm' ].values\n\n          if (values.length === 0) { return }\n\n          if (innerModel.value.hour === null) {\n            setHour(values[ 0 ])\n          }\n          else {\n            const index = (\n              values.length\n              + values.indexOf(innerModel.value.hour)\n              + payload\n            ) % values.length\n\n            setHour(values[ index ])\n          }\n        }\n        else {\n          const\n            wrap = computedFormat24h.value === true ? 24 : 12,\n            offset = computedFormat24h.value !== true && isAM.value === false ? 12 : 0,\n            val = innerModel.value.hour === null ? -payload : innerModel.value.hour\n\n          setHour(offset + (24 + val + payload) % wrap)\n        }\n      }\n    }\n\n    function onKeyupMinute (e) {\n      if (e.keyCode === 13) { // ENTER\n        view.value = 'minute'\n      }\n      else if ([ 37, 39 ].includes(e.keyCode)) {\n        const payload = e.keyCode === 37 ? -1 : 1\n\n        if (validMinutes.value !== null) {\n          const values = validMinutes.value.values\n\n          if (values.length === 0) { return }\n\n          if (innerModel.value.minute === null) {\n            setMinute(values[ 0 ])\n          }\n          else {\n            const index = (\n              values.length\n              + values.indexOf(innerModel.value.minute)\n              + payload\n            ) % values.length\n\n            setMinute(values[ index ])\n          }\n        }\n        else {\n          const val = innerModel.value.minute === null ? -payload : innerModel.value.minute\n          setMinute((60 + val + payload) % 60)\n        }\n      }\n    }\n\n    function onKeyupSecond (e) {\n      if (e.keyCode === 13) { // ENTER\n        view.value = 'second'\n      }\n      else if ([ 37, 39 ].includes(e.keyCode)) {\n        const payload = e.keyCode === 37 ? -1 : 1\n\n        if (validSeconds.value !== null) {\n          const values = validSeconds.value.values\n\n          if (values.length === 0) { return }\n\n          if (innerModel.value.seconds === null) {\n            setSecond(values[ 0 ])\n          }\n          else {\n            const index = (\n              values.length\n              + values.indexOf(innerModel.value.second)\n              + payload\n            ) % values.length\n\n            setSecond(values[ index ])\n          }\n        }\n        else {\n          const val = innerModel.value.second === null ? -payload : innerModel.value.second\n          setSecond((60 + val + payload) % 60)\n        }\n      }\n    }\n\n    function setHour (hour) {\n      if (innerModel.value.hour !== hour) {\n        innerModel.value.hour = hour\n        verifyAndUpdate()\n      }\n    }\n\n    function setMinute (minute) {\n      if (innerModel.value.minute !== minute) {\n        innerModel.value.minute = minute\n        verifyAndUpdate()\n      }\n    }\n\n    function setSecond (second) {\n      if (innerModel.value.second !== second) {\n        innerModel.value.second = second\n        verifyAndUpdate()\n      }\n    }\n\n    const setModel = {\n      hour: setHour,\n      minute: setMinute,\n      second: setSecond\n    }\n\n    function setAm () {\n      if (isAM.value === false) {\n        isAM.value = true\n\n        if (innerModel.value.hour !== null) {\n          innerModel.value.hour -= 12\n          verifyAndUpdate()\n        }\n      }\n    }\n\n    function setPm () {\n      if (isAM.value === true) {\n        isAM.value = false\n\n        if (innerModel.value.hour !== null) {\n          innerModel.value.hour += 12\n          verifyAndUpdate()\n        }\n      }\n    }\n\n    function goToViewWhenHasModel (newView) {\n      const model = props.modelValue\n      if (\n        view.value !== newView\n        && model !== void 0\n        && model !== null\n        && model !== ''\n        && typeof model !== 'string'\n      ) {\n        view.value = newView\n      }\n    }\n\n    function verifyAndUpdate () {\n      if (hourInSelection.value !== null && hourInSelection.value(innerModel.value.hour) !== true) {\n        innerModel.value = __splitDate()\n        goToViewWhenHasModel('hour')\n        return\n      }\n\n      if (minuteInSelection.value !== null && minuteInSelection.value(innerModel.value.minute) !== true) {\n        innerModel.value.minute = null\n        innerModel.value.second = null\n        goToViewWhenHasModel('minute')\n        return\n      }\n\n      if (props.withSeconds === true && secondInSelection.value !== null && secondInSelection.value(innerModel.value.second) !== true) {\n        innerModel.value.second = null\n        goToViewWhenHasModel('second')\n        return\n      }\n\n      if (innerModel.value.hour === null || innerModel.value.minute === null || (props.withSeconds === true && innerModel.value.second === null)) {\n        return\n      }\n\n      updateValue()\n    }\n\n    function updateValue (obj) {\n      const date = Object.assign({ ...innerModel.value }, obj)\n\n      const val = props.calendar === 'persian'\n        ? pad(date.hour) + ':'\n          + pad(date.minute)\n          + (props.withSeconds === true ? ':' + pad(date.second) : '')\n        : formatDate(\n          new Date(\n            date.year,\n            date.month === null ? null : date.month - 1,\n            date.day,\n            date.hour,\n            date.minute,\n            date.second,\n            date.millisecond\n          ),\n          mask.value,\n          locale.value,\n          date.year,\n          date.timezoneOffset\n        )\n\n      date.changed = val !== props.modelValue\n      emit('update:modelValue', val, date)\n    }\n\n    function getHeader () {\n      const label = [\n        h('div', {\n          class: 'q-time__link '\n            + (view.value === 'hour' ? 'q-time__link--active' : 'cursor-pointer'),\n          tabindex: tabindex.value,\n          onClick: setView.hour,\n          onKeyup: onKeyupHour\n        }, stringModel.value.hour),\n\n        h('div', ':'),\n\n        h(\n          'div',\n          minLink.value === true\n            ? {\n                class: 'q-time__link '\n                + (view.value === 'minute' ? 'q-time__link--active' : 'cursor-pointer'),\n                tabindex: tabindex.value,\n                onKeyup: onKeyupMinute,\n                onClick: setView.minute\n              }\n            : { class: 'q-time__link' },\n          stringModel.value.minute\n        )\n      ]\n\n      if (props.withSeconds === true) {\n        label.push(\n          h('div', ':'),\n\n          h(\n            'div',\n            secLink.value === true\n              ? {\n                  class: 'q-time__link '\n                  + (view.value === 'second' ? 'q-time__link--active' : 'cursor-pointer'),\n                  tabindex: tabindex.value,\n                  onKeyup: onKeyupSecond,\n                  onClick: setView.second\n                }\n              : { class: 'q-time__link' },\n            stringModel.value.second\n          )\n        )\n      }\n\n      const child = [\n        h('div', {\n          class: 'q-time__header-label row items-center no-wrap',\n          dir: 'ltr'\n        }, label)\n      ]\n\n      computedFormat24h.value === false && child.push(\n        h('div', {\n          class: 'q-time__header-ampm column items-between no-wrap'\n        }, [\n          h('div', {\n            class: 'q-time__link '\n              + (isAM.value === true ? 'q-time__link--active' : 'cursor-pointer'),\n            tabindex: tabindex.value,\n            onClick: setAm,\n            onKeyup: setAmOnKey\n          }, 'AM'),\n\n          h('div', {\n            class: 'q-time__link '\n              + (isAM.value !== true ? 'q-time__link--active' : 'cursor-pointer'),\n            tabindex: tabindex.value,\n            onClick: setPm,\n            onKeyup: setPmOnKey\n          }, 'PM')\n        ])\n      )\n\n      return h('div', {\n        class: 'q-time__header flex flex-center no-wrap ' + headerClass.value\n      }, child)\n    }\n\n    function getClock () {\n      const current = innerModel.value[ view.value ]\n\n      return h('div', {\n        class: 'q-time__content col relative-position'\n      }, [\n        h(Transition, {\n          name: 'q-transition--scale'\n        }, () => h('div', {\n          key: 'clock' + view.value,\n          class: 'q-time__container-parent absolute-full'\n        }, [\n          h('div', {\n            ref: clockRef,\n            class: 'q-time__container-child fit overflow-hidden'\n          }, [\n            withDirectives(\n              h('div', {\n                class: 'q-time__clock cursor-pointer non-selectable',\n                onClick,\n                onMousedown\n              }, [\n                h('div', { class: 'q-time__clock-circle fit' }, [\n                  h('div', {\n                    class: 'q-time__clock-pointer'\n                      + (innerModel.value[ view.value ] === null ? ' hidden' : (props.color !== void 0 ? ` text-${ props.color }` : '')),\n                    style: pointerStyle.value\n                  }),\n\n                  positions.value.map(pos => h('div', {\n                    class: `q-time__clock-position row flex-center q-time__clock-pos-${ pos.index }`\n                      + (pos.val === current\n                        ? ' q-time__clock-position--active ' + headerClass.value\n                        : (pos.disable === true ? ' q-time__clock-position--disable' : ''))\n                  }, [ h('span', pos.label) ]))\n                ])\n              ]),\n              clockDirectives.value\n            )\n          ])\n        ])),\n\n        props.nowBtn === true ? h(QBtn, {\n          class: 'q-time__now-button absolute',\n          icon: $q.iconSet.datetime.now,\n          unelevated: true,\n          size: 'sm',\n          round: true,\n          color: props.color,\n          textColor: props.textColor,\n          tabindex: tabindex.value,\n          onClick: setNow\n        }) : null\n      ])\n    }\n\n    // expose public method\n    vm.proxy.setNow = setNow\n\n    return () => {\n      const child = [ getClock() ]\n\n      const def = hSlot(slots.default)\n      def !== void 0 && child.push(\n        h('div', { class: 'q-time__actions' }, def)\n      )\n\n      if (props.name !== void 0 && props.disable !== true) {\n        injectFormInput(child, 'push')\n      }\n\n      return h('div', {\n        class: classes.value,\n        tabindex: -1\n      }, [\n        getHeader(),\n        h('div', { class: 'q-time__main col overflow-auto' }, child)\n      ])\n    }\n  }\n})\n",
+      "start": 1703982896609,
+      "end": 1703982896647,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896647,
+      "end": 1703982896647,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896647,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896648,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896648,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896648,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896648,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896648,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896648,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896648,
+      "end": 1703982896648,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896648,
+      "end": 1703982896650,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896650,
+      "end": 1703982896650,
+      "order": "normal"
+    }
+  ]
+}

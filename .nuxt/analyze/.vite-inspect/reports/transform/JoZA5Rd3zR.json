@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/chat/QChatMessage.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed } from 'vue'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { getNormalizedVNodes } from '../../utils/private/vm.js'\n\nexport default createComponent({\n  name: 'QChatMessage',\n\n  props: {\n    sent: Boolean,\n    label: String,\n    bgColor: String,\n    textColor: String,\n    name: String,\n    avatar: String,\n    text: Array,\n    stamp: String,\n    size: String,\n    labelHtml: Boolean,\n    nameHtml: Boolean,\n    textHtml: Boolean,\n    stampHtml: Boolean\n  },\n\n  setup (props, { slots }) {\n    const op = computed(() => (props.sent === true ? 'sent' : 'received'))\n\n    const textClass = computed(() =>\n      `q-message-text-content q-message-text-content--${ op.value }`\n      + (props.textColor !== void 0 ? ` text-${ props.textColor }` : '')\n    )\n\n    const messageClass = computed(() =>\n      `q-message-text q-message-text--${ op.value }`\n      + (props.bgColor !== void 0 ? ` text-${ props.bgColor }` : '')\n    )\n\n    const containerClass = computed(() =>\n      'q-message-container row items-end no-wrap'\n      + (props.sent === true ? ' reverse' : '')\n    )\n\n    const sizeClass = computed(() => (props.size !== void 0 ? `col-${ props.size }` : ''))\n\n    const domProps = computed(() => ({\n      msg: props.textHtml === true ? 'innerHTML' : 'textContent',\n      stamp: props.stampHtml === true ? 'innerHTML' : 'textContent',\n      name: props.nameHtml === true ? 'innerHTML' : 'textContent',\n      label: props.labelHtml === true ? 'innerHTML' : 'textContent'\n    }))\n\n    function wrapStamp (node) {\n      if (slots.stamp !== void 0) {\n        return [ node, h('div', { class: 'q-message-stamp' }, slots.stamp()) ]\n      }\n\n      if (props.stamp) {\n        return [\n          node,\n          h('div', {\n            class: 'q-message-stamp',\n            [ domProps.value.stamp ]: props.stamp\n          })\n        ]\n      }\n\n      return [ node ]\n    }\n\n    function getText (contentList, withSlots) {\n      const content = withSlots === true\n        ? (contentList.length > 1 ? text => text : text => h('div', [ text ]))\n        : text => h('div', { [ domProps.value.msg ]: text })\n\n      return contentList.map((msg, index) => h('div', {\n        key: index,\n        class: messageClass.value\n      }, [\n        h('div', { class: textClass.value }, wrapStamp(content(msg)))\n      ]))\n    }\n\n    return () => {\n      const container = []\n\n      if (slots.avatar !== void 0) {\n        container.push(slots.avatar())\n      }\n      else if (props.avatar !== void 0) {\n        container.push(\n          h('img', {\n            class: `q-message-avatar q-message-avatar--${ op.value }`,\n            src: props.avatar,\n            'aria-hidden': 'true'\n          })\n        )\n      }\n\n      const msg = []\n\n      if (slots.name !== void 0) {\n        msg.push(\n          h('div', { class: `q-message-name q-message-name--${ op.value }` }, slots.name())\n        )\n      }\n      else if (props.name !== void 0) {\n        msg.push(\n          h('div', {\n            class: `q-message-name q-message-name--${ op.value }`,\n            [ domProps.value.name ]: props.name\n          })\n        )\n      }\n\n      if (slots.default !== void 0) {\n        msg.push(\n          getText(\n            getNormalizedVNodes(slots.default()),\n            true\n          )\n        )\n      }\n      else if (props.text !== void 0) {\n        msg.push(getText(props.text))\n      }\n\n      container.push(\n        h('div', { class: sizeClass.value }, msg)\n      )\n\n      const child = []\n\n      if (slots.label !== void 0) {\n        child.push(\n          h('div', { class: 'q-message-label' }, slots.label())\n        )\n      }\n      else if (props.label !== void 0) {\n        child.push(\n          h('div', {\n            class: 'q-message-label',\n            [ domProps.value.label ]: props.label\n          })\n        )\n      }\n\n      child.push(\n        h('div', { class: containerClass.value }, container)\n      )\n\n      return h('div', {\n        class: `q-message q-message-${ op.value }`\n      }, child)\n    }\n  }\n})\n",
+      "start": 1703982896197,
+      "end": 1703982896281,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896281,
+      "end": 1703982896281,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896281,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896282,
+      "end": 1703982896282,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/scroll-observer/QScrollObserver.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { watch, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { getScrollTarget, getVerticalScrollPosition, getHorizontalScrollPosition } from '../../utils/scroll.js'\nimport { listenOpts, noop } from '../../utils/event.js'\n\nconst { passive } = listenOpts\nconst axisValues = [ 'both', 'horizontal', 'vertical' ]\n\nexport default createComponent({\n  name: 'QScrollObserver',\n\n  props: {\n    axis: {\n      type: String,\n      validator: v => axisValues.includes(v),\n      default: 'vertical'\n    },\n\n    debounce: [ String, Number ],\n\n    scrollTarget: {\n      default: void 0\n    }\n  },\n\n  emits: [ 'scroll' ],\n\n  setup (props, { emit }) {\n    const scroll = {\n      position: {\n        top: 0,\n        left: 0\n      },\n\n      direction: 'down',\n      directionChanged: false,\n\n      delta: {\n        top: 0,\n        left: 0\n      },\n\n      inflectionPoint: {\n        top: 0,\n        left: 0\n      }\n    }\n\n    let clearTimer = null, localScrollTarget, parentEl\n\n    watch(() => props.scrollTarget, () => {\n      unconfigureScrollTarget()\n      configureScrollTarget()\n    })\n\n    function emitEvent () {\n      clearTimer !== null && clearTimer()\n\n      const top = Math.max(0, getVerticalScrollPosition(localScrollTarget))\n      const left = getHorizontalScrollPosition(localScrollTarget)\n\n      const delta = {\n        top: top - scroll.position.top,\n        left: left - scroll.position.left\n      }\n\n      if (\n        (props.axis === 'vertical' && delta.top === 0)\n        || (props.axis === 'horizontal' && delta.left === 0)\n      ) {\n        return\n      }\n\n      const curDir = Math.abs(delta.top) >= Math.abs(delta.left)\n        ? (delta.top < 0 ? 'up' : 'down')\n        : (delta.left < 0 ? 'left' : 'right')\n\n      scroll.position = { top, left }\n      scroll.directionChanged = scroll.direction !== curDir\n      scroll.delta = delta\n\n      if (scroll.directionChanged === true) {\n        scroll.direction = curDir\n        scroll.inflectionPoint = scroll.position\n      }\n\n      emit('scroll', { ...scroll })\n    }\n\n    function configureScrollTarget () {\n      localScrollTarget = getScrollTarget(parentEl, props.scrollTarget)\n      localScrollTarget.addEventListener('scroll', trigger, passive)\n      trigger(true)\n    }\n\n    function unconfigureScrollTarget () {\n      if (localScrollTarget !== void 0) {\n        localScrollTarget.removeEventListener('scroll', trigger, passive)\n        localScrollTarget = void 0\n      }\n    }\n\n    function trigger (immediately) {\n      if (immediately === true || props.debounce === 0 || props.debounce === '0') {\n        emitEvent()\n      }\n      else if (clearTimer === null) {\n        const [ timer, fn ] = props.debounce\n          ? [ setTimeout(emitEvent, props.debounce), clearTimeout ]\n          : [ requestAnimationFrame(emitEvent), cancelAnimationFrame ]\n\n        clearTimer = () => {\n          fn(timer)\n          clearTimer = null\n        }\n      }\n    }\n\n    const { proxy } = getCurrentInstance()\n\n    watch(() => proxy.$q.lang.rtl, emitEvent)\n\n    onMounted(() => {\n      parentEl = proxy.$el.parentNode\n      configureScrollTarget()\n    })\n\n    onBeforeUnmount(() => {\n      clearTimer !== null && clearTimer()\n      unconfigureScrollTarget()\n    })\n\n    // expose public methods\n    Object.assign(proxy, {\n      trigger,\n      getPosition: () => scroll\n    })\n\n    return noop\n  }\n})\n",
+      "start": 1703982896467,
+      "end": 1703982896540,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896540,
+      "end": 1703982896540,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896540,
+      "end": 1703982896540,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896540,
+      "end": 1703982896540,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896540,
+      "end": 1703982896540,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896540,
+      "end": 1703982896540,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896541,
+      "end": 1703982896541,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896541,
+      "end": 1703982896542,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896542,
+      "end": 1703982896542,
+      "order": "normal"
+    }
+  ]
+}

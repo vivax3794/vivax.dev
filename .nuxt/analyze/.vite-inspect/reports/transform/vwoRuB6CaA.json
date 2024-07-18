@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/AddressbarColor.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { client } from './Platform.js'\nimport { noop } from '../utils/event.js'\nimport getCssVar from '../utils/get-css-var.js'\n\nlet metaValue\n\nfunction getProp () {\n  return client.is.winphone\n    ? 'msapplication-navbutton-color'\n    : (\n        client.is.safari\n          ? 'apple-mobile-web-app-status-bar-style'\n          : 'theme-color' // Chrome, Firefox OS, Opera, Vivaldi, ...\n      )\n}\n\nfunction getMetaTag (v) {\n  const els = document.getElementsByTagName('META')\n  for (const i in els) {\n    if (els[ i ].name === v) {\n      return els[ i ]\n    }\n  }\n}\n\nfunction setColor (hexColor) {\n  if (metaValue === void 0) {\n    // cache it\n    metaValue = getProp()\n  }\n\n  let metaTag = getMetaTag(metaValue)\n  const newTag = metaTag === void 0\n\n  if (newTag) {\n    metaTag = document.createElement('meta')\n    metaTag.setAttribute('name', metaValue)\n  }\n\n  metaTag.setAttribute('content', hexColor)\n\n  if (newTag) {\n    document.head.appendChild(metaTag)\n  }\n}\n\nexport default {\n  set: __QUASAR_SSR_SERVER__ !== true && client.is.mobile === true && (\n    client.is.nativeMobile === true\n    || client.is.winphone === true || client.is.safari === true\n    || client.is.webkit === true || client.is.vivaldi === true\n  )\n    ? hexColor => {\n      const val = hexColor || getCssVar('primary')\n\n      if (client.is.nativeMobile === true && window.StatusBar) {\n        window.StatusBar.backgroundColorByHexString(val)\n      }\n      else {\n        setColor(val)\n      }\n    }\n    : noop,\n\n  install ({ $q }) {\n    $q.addressbarColor = this\n    $q.config.addressbarColor && this.set($q.config.addressbarColor)\n  }\n}\n",
+      "start": 1703982896680,
+      "end": 1703982896728,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896728,
+      "end": 1703982896728,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { client } from \"./Platform.js\";\nimport { noop } from \"../utils/event.js\";\nimport getCssVar from \"../utils/get-css-var.js\";\nlet metaValue;\nfunction getProp() {\n  return client.is.winphone ? \"msapplication-navbutton-color\" : client.is.safari ? \"apple-mobile-web-app-status-bar-style\" : \"theme-color\";\n}\nfunction getMetaTag(v) {\n  const els = document.getElementsByTagName(\"META\");\n  for (const i in els) {\n    if (els[i].name === v) {\n      return els[i];\n    }\n  }\n}\nfunction setColor(hexColor) {\n  if (metaValue === void 0) {\n    metaValue = getProp();\n  }\n  let metaTag = getMetaTag(metaValue);\n  const newTag = metaTag === void 0;\n  if (newTag) {\n    metaTag = document.createElement(\"meta\");\n    metaTag.setAttribute(\"name\", metaValue);\n  }\n  metaTag.setAttribute(\"content\", hexColor);\n  if (newTag) {\n    document.head.appendChild(metaTag);\n  }\n}\nexport default {\n  set: client.is.mobile === true && (client.is.nativeMobile === true || client.is.winphone === true || client.is.safari === true || client.is.webkit === true || client.is.vivaldi === true) ? (hexColor) => {\n    const val = hexColor || getCssVar(\"primary\");\n    if (client.is.nativeMobile === true && window.StatusBar) {\n      window.StatusBar.backgroundColorByHexString(val);\n    } else {\n      setColor(val);\n    }\n  } : noop,\n  install({ $q }) {\n    $q.addressbarColor = this;\n    $q.config.addressbarColor && this.set($q.config.addressbarColor);\n  }\n};\n",
+      "start": 1703982896728,
+      "end": 1703982896747,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896747,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896749,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896749,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    }
+  ]
+}

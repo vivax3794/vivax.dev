@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/checkbox/use-checkbox.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, getCurrentInstance, toRaw } from 'vue'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport useSize, { useSizeProps } from '../../composables/private/use-size.js'\nimport useRefocusTarget from '../../composables/private/use-refocus-target.js'\nimport { useFormInject, useFormProps } from '../../composables/private/use-form.js'\n\nimport optionSizes from '../../utils/private/option-sizes.js'\nimport { stopAndPrevent } from '../../utils/event.js'\nimport { hSlot, hMergeSlot } from '../../utils/private/render.js'\n\nexport const useCheckboxProps = {\n  ...useDarkProps,\n  ...useSizeProps,\n  ...useFormProps,\n\n  modelValue: {\n    required: true,\n    default: null\n  },\n  val: {},\n\n  trueValue: { default: true },\n  falseValue: { default: false },\n  indeterminateValue: { default: null },\n\n  checkedIcon: String,\n  uncheckedIcon: String,\n  indeterminateIcon: String,\n\n  toggleOrder: {\n    type: String,\n    validator: v => v === 'tf' || v === 'ft'\n  },\n  toggleIndeterminate: Boolean,\n\n  label: String,\n  leftLabel: Boolean,\n\n  color: String,\n  keepColor: Boolean,\n  dense: Boolean,\n\n  disable: Boolean,\n  tabindex: [ String, Number ]\n}\n\nexport const useCheckboxEmits = [ 'update:modelValue' ]\n\nexport default function (type, getInner) {\n  const { props, slots, emit, proxy } = getCurrentInstance()\n  const { $q } = proxy\n\n  const isDark = useDark(props, $q)\n\n  const rootRef = ref(null)\n  const { refocusTargetEl, refocusTarget } = useRefocusTarget(props, rootRef)\n  const sizeStyle = useSize(props, optionSizes)\n\n  const modelIsArray = computed(() =>\n    props.val !== void 0 && Array.isArray(props.modelValue)\n  )\n\n  const index = computed(() => {\n    const val = toRaw(props.val)\n    return modelIsArray.value === true\n      ? props.modelValue.findIndex(opt => toRaw(opt) === val)\n      : -1\n  })\n\n  const isTrue = computed(() => (\n    modelIsArray.value === true\n      ? index.value > -1\n      : toRaw(props.modelValue) === toRaw(props.trueValue)\n  ))\n\n  const isFalse = computed(() => (\n    modelIsArray.value === true\n      ? index.value === -1\n      : toRaw(props.modelValue) === toRaw(props.falseValue)\n  ))\n\n  const isIndeterminate = computed(() =>\n    isTrue.value === false && isFalse.value === false\n  )\n\n  const tabindex = computed(() => (\n    props.disable === true ? -1 : props.tabindex || 0\n  ))\n\n  const classes = computed(() =>\n    `q-${ type } cursor-pointer no-outline row inline no-wrap items-center`\n    + (props.disable === true ? ' disabled' : '')\n    + (isDark.value === true ? ` q-${ type }--dark` : '')\n    + (props.dense === true ? ` q-${ type }--dense` : '')\n    + (props.leftLabel === true ? ' reverse' : '')\n  )\n\n  const innerClass = computed(() => {\n    const state = isTrue.value === true ? 'truthy' : (isFalse.value === true ? 'falsy' : 'indet')\n    const color = props.color !== void 0 && (\n      props.keepColor === true\n      || (type === 'toggle' ? isTrue.value === true : isFalse.value !== true)\n    )\n      ? ` text-${ props.color }`\n      : ''\n\n    return `q-${ type }__inner relative-position non-selectable q-${ type }__inner--${ state }${ color }`\n  })\n\n  const formAttrs = computed(() => {\n    const prop = { type: 'checkbox' }\n\n    props.name !== void 0 && Object.assign(prop, {\n      // see https://vuejs.org/guide/extras/render-function.html#creating-vnodes (.prop)\n      '.checked': isTrue.value,\n      '^checked': isTrue.value === true ? 'checked' : void 0,\n      name: props.name,\n      value: modelIsArray.value === true\n        ? props.val\n        : props.trueValue\n    })\n\n    return prop\n  })\n\n  const injectFormInput = useFormInject(formAttrs)\n\n  const attributes = computed(() => {\n    const attrs = {\n      tabindex: tabindex.value,\n      role: type === 'toggle' ? 'switch' : 'checkbox',\n      'aria-label': props.label,\n      'aria-checked': isIndeterminate.value === true\n        ? 'mixed'\n        : (isTrue.value === true ? 'true' : 'false')\n    }\n\n    if (props.disable === true) {\n      attrs[ 'aria-disabled' ] = 'true'\n    }\n\n    return attrs\n  })\n\n  function onClick (e) {\n    if (e !== void 0) {\n      stopAndPrevent(e)\n      refocusTarget(e)\n    }\n\n    if (props.disable !== true) {\n      emit('update:modelValue', getNextValue(), e)\n    }\n  }\n\n  function getNextValue () {\n    if (modelIsArray.value === true) {\n      if (isTrue.value === true) {\n        const val = props.modelValue.slice()\n        val.splice(index.value, 1)\n        return val\n      }\n\n      return props.modelValue.concat([ props.val ])\n    }\n\n    if (isTrue.value === true) {\n      if (props.toggleOrder !== 'ft' || props.toggleIndeterminate === false) {\n        return props.falseValue\n      }\n    }\n    else if (isFalse.value === true) {\n      if (props.toggleOrder === 'ft' || props.toggleIndeterminate === false) {\n        return props.trueValue\n      }\n    }\n    else {\n      return props.toggleOrder !== 'ft'\n        ? props.trueValue\n        : props.falseValue\n    }\n\n    return props.indeterminateValue\n  }\n\n  function onKeydown (e) {\n    if (e.keyCode === 13 || e.keyCode === 32) {\n      stopAndPrevent(e)\n    }\n  }\n\n  function onKeyup (e) {\n    if (e.keyCode === 13 || e.keyCode === 32) {\n      onClick(e)\n    }\n  }\n\n  const getInnerContent = getInner(isTrue, isIndeterminate)\n\n  // expose public methods\n  Object.assign(proxy, { toggle: onClick })\n\n  return () => {\n    const inner = getInnerContent()\n\n    props.disable !== true && injectFormInput(\n      inner,\n      'unshift',\n      ` q-${ type }__native absolute q-ma-none q-pa-none`\n    )\n\n    const child = [\n      h('div', {\n        class: innerClass.value,\n        style: sizeStyle.value,\n        'aria-hidden': 'true'\n      }, inner)\n    ]\n\n    if (refocusTargetEl.value !== null) {\n      child.push(refocusTargetEl.value)\n    }\n\n    const label = props.label !== void 0\n      ? hMergeSlot(slots.default, [ props.label ])\n      : hSlot(slots.default)\n\n    label !== void 0 && child.push(\n      h('div', {\n        class: `q-${ type }__label q-anchor--skip`\n      }, label)\n    )\n\n    return h('div', {\n      ref: rootRef,\n      class: classes.value,\n      ...attributes.value,\n      onClick,\n      onKeydown,\n      onKeyup\n    }, child)\n  }\n}\n",
+      "start": 1703982897220,
+      "end": 1703982897306,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897306,
+      "end": 1703982897306,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897306,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897307,
+      "end": 1703982897307,
+      "order": "normal"
+    }
+  ]
+}

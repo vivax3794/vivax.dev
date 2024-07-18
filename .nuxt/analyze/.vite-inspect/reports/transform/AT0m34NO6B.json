@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/card/QCard.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, getCurrentInstance } from 'vue'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot } from '../../utils/private/render.js'\n\nexport default createComponent({\n  name: 'QCard',\n\n  props: {\n    ...useDarkProps,\n\n    tag: {\n      type: String,\n      default: 'div'\n    },\n\n    square: Boolean,\n    flat: Boolean,\n    bordered: Boolean\n  },\n\n  setup (props, { slots }) {\n    const { proxy: { $q } } = getCurrentInstance()\n    const isDark = useDark(props, $q)\n\n    const classes = computed(() =>\n      'q-card'\n      + (isDark.value === true ? ' q-card--dark q-dark' : '')\n      + (props.bordered === true ? ' q-card--bordered' : '')\n      + (props.square === true ? ' q-card--square no-border-radius' : '')\n      + (props.flat === true ? ' q-card--flat no-shadow' : '')\n    )\n\n    return () => h(props.tag, { class: classes.value }, hSlot(slots.default))\n  }\n})\n",
+      "start": 1703982896162,
+      "end": 1703982896261,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896261,
+      "end": 1703982896261,
+      "order": "normal"
+    }
+  ]
+}

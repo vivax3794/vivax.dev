@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/circular-progress/QCircularProgress.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, getCurrentInstance } from 'vue'\n\nimport useSize from '../../composables/private/use-size.js'\nimport { useCircularCommonProps } from './use-circular-progress.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hMergeSlotSafely } from '../../utils/private/render.js'\nimport { between } from '../../utils/format.js'\n\nconst\n  radius = 50,\n  diameter = 2 * radius,\n  circumference = diameter * Math.PI,\n  strokeDashArray = Math.round(circumference * 1000) / 1000\n\nexport default createComponent({\n  name: 'QCircularProgress',\n\n  props: {\n    ...useCircularCommonProps,\n\n    value: {\n      type: Number,\n      default: 0\n    },\n\n    animationSpeed: {\n      type: [ String, Number ],\n      default: 600\n    },\n\n    indeterminate: Boolean\n  },\n\n  setup (props, { slots }) {\n    const { proxy: { $q } } = getCurrentInstance()\n    const sizeStyle = useSize(props)\n\n    const svgStyle = computed(() => {\n      const angle = ($q.lang.rtl === true ? -1 : 1) * props.angle\n\n      return {\n        transform: props.reverse !== ($q.lang.rtl === true)\n          ? `scale3d(-1, 1, 1) rotate3d(0, 0, 1, ${ -90 - angle }deg)`\n          : `rotate3d(0, 0, 1, ${ angle - 90 }deg)`\n      }\n    })\n\n    const circleStyle = computed(() => (\n      props.instantFeedback !== true && props.indeterminate !== true\n        ? { transition: `stroke-dashoffset ${ props.animationSpeed }ms ease 0s, stroke ${ props.animationSpeed }ms ease` }\n        : ''\n    ))\n\n    const viewBox = computed(() => diameter / (1 - props.thickness / 2))\n\n    const viewBoxAttr = computed(() =>\n      `${ viewBox.value / 2 } ${ viewBox.value / 2 } ${ viewBox.value } ${ viewBox.value }`\n    )\n\n    const normalized = computed(() => between(props.value, props.min, props.max))\n\n    const range = computed(() => props.max - props.min)\n    const strokeWidth = computed(() => props.thickness / 2 * viewBox.value)\n    const strokeDashOffset = computed(() => {\n      const dashRatio = (props.max - normalized.value) / range.value\n      const dashGap = props.rounded === true && normalized.value < props.max && dashRatio < 0.25\n        ? strokeWidth.value / 2 * (1 - dashRatio / 0.25)\n        : 0\n\n      return circumference * dashRatio + dashGap\n    })\n\n    function getCircle ({ thickness, offset, color, cls, rounded }) {\n      return h('circle', {\n        class: 'q-circular-progress__' + cls + (color !== void 0 ? ` text-${ color }` : ''),\n        style: circleStyle.value,\n        fill: 'transparent',\n        stroke: 'currentColor',\n        'stroke-width': thickness,\n        'stroke-dasharray': strokeDashArray,\n        'stroke-dashoffset': offset,\n        'stroke-linecap': rounded,\n        cx: viewBox.value,\n        cy: viewBox.value,\n        r: radius\n      })\n    }\n\n    return () => {\n      const svgChild = []\n\n      props.centerColor !== void 0 && props.centerColor !== 'transparent' && svgChild.push(\n        h('circle', {\n          class: `q-circular-progress__center text-${ props.centerColor }`,\n          fill: 'currentColor',\n          r: radius - strokeWidth.value / 2,\n          cx: viewBox.value,\n          cy: viewBox.value\n        })\n      )\n\n      props.trackColor !== void 0 && props.trackColor !== 'transparent' && svgChild.push(\n        getCircle({\n          cls: 'track',\n          thickness: strokeWidth.value,\n          offset: 0,\n          color: props.trackColor\n        })\n      )\n\n      svgChild.push(\n        getCircle({\n          cls: 'circle',\n          thickness: strokeWidth.value,\n          offset: strokeDashOffset.value,\n          color: props.color,\n          rounded: props.rounded === true ? 'round' : void 0\n        })\n      )\n\n      const child = [\n        h('svg', {\n          class: 'q-circular-progress__svg',\n          style: svgStyle.value,\n          viewBox: viewBoxAttr.value,\n          'aria-hidden': 'true'\n        }, svgChild)\n      ]\n\n      props.showValue === true && child.push(\n        h('div', {\n          class: 'q-circular-progress__text absolute-full row flex-center content-center',\n          style: { fontSize: props.fontSize }\n        }, slots.default !== void 0 ? slots.default() : [ h('div', normalized.value) ])\n      )\n\n      return h('div', {\n        class: `q-circular-progress q-circular-progress--${ props.indeterminate === true ? 'in' : '' }determinate`,\n        style: sizeStyle.value,\n        role: 'progressbar',\n        'aria-valuemin': props.min,\n        'aria-valuemax': props.max,\n        'aria-valuenow': props.indeterminate === true ? void 0 : normalized.value\n      }, hMergeSlotSafely(slots.internal, child)) // \"internal\" is used by QKnob\n    }\n  }\n})\n",
+      "start": 1703982896202,
+      "end": 1703982896284,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896284,
+      "end": 1703982896284,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896284,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "normal"
+    }
+  ]
+}

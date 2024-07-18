@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/ajax-bar/QAjaxBar.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, onMounted, onBeforeUnmount, getCurrentInstance } from 'vue'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { between } from '../../utils/format.js'\n\nconst\n  xhr = __QUASAR_SSR_SERVER__ ? null : XMLHttpRequest,\n  open = __QUASAR_SSR_SERVER__ ? null : xhr.prototype.open,\n  positionValues = [ 'top', 'right', 'bottom', 'left' ]\n\nlet stack = []\nlet highjackCount = 0\n\nfunction translate ({ p, pos, active, horiz, reverse, dir }) {\n  let x = 1, y = 1\n\n  if (horiz === true) {\n    if (reverse === true) { x = -1 }\n    if (pos === 'bottom') { y = -1 }\n    return { transform: `translate3d(${ x * (p - 100) }%,${ active ? 0 : y * -200 }%,0)` }\n  }\n\n  if (reverse === true) { y = -1 }\n  if (pos === 'right') { x = -1 }\n  return { transform: `translate3d(${ active ? 0 : dir * x * -200 }%,${ y * (p - 100) }%,0)` }\n}\n\nfunction inc (p, amount) {\n  if (typeof amount !== 'number') {\n    if (p < 25) {\n      amount = Math.random() * 3 + 3\n    }\n    else if (p < 65) {\n      amount = Math.random() * 3\n    }\n    else if (p < 85) {\n      amount = Math.random() * 2\n    }\n    else if (p < 99) {\n      amount = 0.6\n    }\n    else {\n      amount = 0\n    }\n  }\n  return between(p + amount, 0, 100)\n}\n\nfunction highjackAjax (stackEntry) {\n  highjackCount++\n\n  stack.push(stackEntry)\n\n  if (highjackCount > 1) { return }\n\n  xhr.prototype.open = function (_, url) {\n    const stopStack = []\n\n    const loadStart = () => {\n      stack.forEach(entry => {\n        if (\n          entry.hijackFilter.value === null\n          || (entry.hijackFilter.value(url) === true)\n        ) {\n          entry.start()\n          stopStack.push(entry.stop)\n        }\n      })\n    }\n\n    const loadEnd = () => {\n      stopStack.forEach(stop => { stop() })\n    }\n\n    this.addEventListener('loadstart', loadStart, { once: true })\n    this.addEventListener('loadend', loadEnd, { once: true })\n\n    open.apply(this, arguments)\n  }\n}\n\nfunction restoreAjax (start) {\n  stack = stack.filter(entry => entry.start !== start)\n\n  highjackCount = Math.max(0, highjackCount - 1)\n  if (highjackCount === 0) {\n    xhr.prototype.open = open\n  }\n}\n\nexport default createComponent({\n  name: 'QAjaxBar',\n\n  props: {\n    position: {\n      type: String,\n      default: 'top',\n      validator: val => positionValues.includes(val)\n    },\n\n    size: {\n      type: String,\n      default: '2px'\n    },\n\n    color: String,\n    skipHijack: Boolean,\n    reverse: Boolean,\n\n    hijackFilter: Function\n  },\n\n  emits: [ 'start', 'stop' ],\n\n  setup (props, { emit }) {\n    const { proxy } = getCurrentInstance()\n\n    const progress = ref(0)\n    const onScreen = ref(false)\n    const animate = ref(true)\n\n    let sessions = 0, timer = null, speed\n\n    const classes = computed(() =>\n      `q-loading-bar q-loading-bar--${ props.position }`\n      + (props.color !== void 0 ? ` bg-${ props.color }` : '')\n      + (animate.value === true ? '' : ' no-transition')\n    )\n\n    const horizontal = computed(() => props.position === 'top' || props.position === 'bottom')\n    const sizeProp = computed(() => (horizontal.value === true ? 'height' : 'width'))\n\n    const style = computed(() => {\n      const active = onScreen.value\n\n      const obj = translate({\n        p: progress.value,\n        pos: props.position,\n        active,\n        horiz: horizontal.value,\n        reverse: proxy.$q.lang.rtl === true && [ 'top', 'bottom' ].includes(props.position)\n          ? props.reverse === false\n          : props.reverse,\n        dir: proxy.$q.lang.rtl === true ? -1 : 1\n      })\n\n      obj[ sizeProp.value ] = props.size\n      obj.opacity = active ? 1 : 0\n\n      return obj\n    })\n\n    const attributes = computed(() => (\n      onScreen.value === true\n        ? {\n            role: 'progressbar',\n            'aria-valuemin': 0,\n            'aria-valuemax': 100,\n            'aria-valuenow': progress.value\n          }\n        : { 'aria-hidden': 'true' }\n    ))\n\n    function start (newSpeed = 300) {\n      const oldSpeed = speed\n      speed = Math.max(0, newSpeed) || 0\n\n      sessions++\n\n      if (sessions > 1) {\n        if (oldSpeed === 0 && newSpeed > 0) {\n          planNextStep()\n        }\n        else if (timer !== null && oldSpeed > 0 && newSpeed <= 0) {\n          clearTimeout(timer)\n          timer = null\n        }\n\n        return sessions\n      }\n\n      timer !== null && clearTimeout(timer)\n      emit('start')\n\n      progress.value = 0\n\n      timer = setTimeout(() => {\n        timer = null\n        animate.value = true\n        newSpeed > 0 && planNextStep()\n      }, onScreen.value === true ? 500 : 1)\n\n      if (onScreen.value !== true) {\n        onScreen.value = true\n        animate.value = false\n      }\n\n      return sessions\n    }\n\n    function increment (amount) {\n      if (sessions > 0) {\n        progress.value = inc(progress.value, amount)\n      }\n\n      return sessions\n    }\n\n    function stop () {\n      sessions = Math.max(0, sessions - 1)\n      if (sessions > 0) {\n        return sessions\n      }\n\n      if (timer !== null) {\n        clearTimeout(timer)\n        timer = null\n      }\n\n      emit('stop')\n\n      const end = () => {\n        animate.value = true\n        progress.value = 100\n        timer = setTimeout(() => {\n          timer = null\n          onScreen.value = false\n        }, 1000)\n      }\n\n      if (progress.value === 0) {\n        timer = setTimeout(end, 1)\n      }\n      else {\n        end()\n      }\n\n      return sessions\n    }\n\n    function planNextStep () {\n      if (progress.value < 100) {\n        timer = setTimeout(() => {\n          timer = null\n          increment()\n          planNextStep()\n        }, speed)\n      }\n    }\n\n    let hijacked\n\n    onMounted(() => {\n      if (props.skipHijack !== true) {\n        hijacked = true\n        highjackAjax({\n          start,\n          stop,\n          hijackFilter: computed(() => props.hijackFilter || null)\n        })\n      }\n    })\n\n    onBeforeUnmount(() => {\n      timer !== null && clearTimeout(timer)\n      hijacked === true && restoreAjax(start)\n    })\n\n    // expose public methods\n    Object.assign(proxy, { start, stop, increment })\n\n    return () => h('div', {\n      class: classes.value,\n      style: style.value,\n      ...attributes.value\n    })\n  }\n})\n",
+      "start": 1703982896125,
+      "end": 1703982896201,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896201,
+      "end": 1703982896201,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896201,
+      "end": 1703982896202,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896202,
+      "end": 1703982896202,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896202,
+      "end": 1703982896202,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, ref, computed, onMounted, onBeforeUnmount, getCurrentInstance } from \"vue\";\nimport { createComponent } from \"../../utils/private/create.js\";\nimport { between } from \"../../utils/format.js\";\nconst xhr = false ? null : XMLHttpRequest, open = false ? null : xhr.prototype.open, positionValues = [\"top\", \"right\", \"bottom\", \"left\"];\nlet stack = [];\nlet highjackCount = 0;\nfunction translate({ p, pos, active, horiz, reverse, dir }) {\n  let x = 1, y = 1;\n  if (horiz === true) {\n    if (reverse === true) {\n      x = -1;\n    }\n    if (pos === \"bottom\") {\n      y = -1;\n    }\n    return { transform: `translate3d(${x * (p - 100)}%,${active ? 0 : y * -200}%,0)` };\n  }\n  if (reverse === true) {\n    y = -1;\n  }\n  if (pos === \"right\") {\n    x = -1;\n  }\n  return { transform: `translate3d(${active ? 0 : dir * x * -200}%,${y * (p - 100)}%,0)` };\n}\nfunction inc(p, amount) {\n  if (typeof amount !== \"number\") {\n    if (p < 25) {\n      amount = Math.random() * 3 + 3;\n    } else if (p < 65) {\n      amount = Math.random() * 3;\n    } else if (p < 85) {\n      amount = Math.random() * 2;\n    } else if (p < 99) {\n      amount = 0.6;\n    } else {\n      amount = 0;\n    }\n  }\n  return between(p + amount, 0, 100);\n}\nfunction highjackAjax(stackEntry) {\n  highjackCount++;\n  stack.push(stackEntry);\n  if (highjackCount > 1) {\n    return;\n  }\n  xhr.prototype.open = function(_, url) {\n    const stopStack = [];\n    const loadStart = () => {\n      stack.forEach((entry) => {\n        if (entry.hijackFilter.value === null || entry.hijackFilter.value(url) === true) {\n          entry.start();\n          stopStack.push(entry.stop);\n        }\n      });\n    };\n    const loadEnd = () => {\n      stopStack.forEach((stop) => {\n        stop();\n      });\n    };\n    this.addEventListener(\"loadstart\", loadStart, { once: true });\n    this.addEventListener(\"loadend\", loadEnd, { once: true });\n    open.apply(this, arguments);\n  };\n}\nfunction restoreAjax(start) {\n  stack = stack.filter((entry) => entry.start !== start);\n  highjackCount = Math.max(0, highjackCount - 1);\n  if (highjackCount === 0) {\n    xhr.prototype.open = open;\n  }\n}\nexport default createComponent({\n  name: \"QAjaxBar\",\n  props: {\n    position: {\n      type: String,\n      default: \"top\",\n      validator: (val) => positionValues.includes(val)\n    },\n    size: {\n      type: String,\n      default: \"2px\"\n    },\n    color: String,\n    skipHijack: Boolean,\n    reverse: Boolean,\n    hijackFilter: Function\n  },\n  emits: [\"start\", \"stop\"],\n  setup(props, { emit }) {\n    const { proxy } = getCurrentInstance();\n    const progress = ref(0);\n    const onScreen = ref(false);\n    const animate = ref(true);\n    let sessions = 0, timer = null, speed;\n    const classes = computed(\n      () => `q-loading-bar q-loading-bar--${props.position}` + (props.color !== void 0 ? ` bg-${props.color}` : \"\") + (animate.value === true ? \"\" : \" no-transition\")\n    );\n    const horizontal = computed(() => props.position === \"top\" || props.position === \"bottom\");\n    const sizeProp = computed(() => horizontal.value === true ? \"height\" : \"width\");\n    const style = computed(() => {\n      const active = onScreen.value;\n      const obj = translate({\n        p: progress.value,\n        pos: props.position,\n        active,\n        horiz: horizontal.value,\n        reverse: proxy.$q.lang.rtl === true && [\"top\", \"bottom\"].includes(props.position) ? props.reverse === false : props.reverse,\n        dir: proxy.$q.lang.rtl === true ? -1 : 1\n      });\n      obj[sizeProp.value] = props.size;\n      obj.opacity = active ? 1 : 0;\n      return obj;\n    });\n    const attributes = computed(() => onScreen.value === true ? {\n      role: \"progressbar\",\n      \"aria-valuemin\": 0,\n      \"aria-valuemax\": 100,\n      \"aria-valuenow\": progress.value\n    } : { \"aria-hidden\": \"true\" });\n    function start(newSpeed = 300) {\n      const oldSpeed = speed;\n      speed = Math.max(0, newSpeed) || 0;\n      sessions++;\n      if (sessions > 1) {\n        if (oldSpeed === 0 && newSpeed > 0) {\n          planNextStep();\n        } else if (timer !== null && oldSpeed > 0 && newSpeed <= 0) {\n          clearTimeout(timer);\n          timer = null;\n        }\n        return sessions;\n      }\n      timer !== null && clearTimeout(timer);\n      emit(\"start\");\n      progress.value = 0;\n      timer = setTimeout(() => {\n        timer = null;\n        animate.value = true;\n        newSpeed > 0 && planNextStep();\n      }, onScreen.value === true ? 500 : 1);\n      if (onScreen.value !== true) {\n        onScreen.value = true;\n        animate.value = false;\n      }\n      return sessions;\n    }\n    function increment(amount) {\n      if (sessions > 0) {\n        progress.value = inc(progress.value, amount);\n      }\n      return sessions;\n    }\n    function stop() {\n      sessions = Math.max(0, sessions - 1);\n      if (sessions > 0) {\n        return sessions;\n      }\n      if (timer !== null) {\n        clearTimeout(timer);\n        timer = null;\n      }\n      emit(\"stop\");\n      const end = () => {\n        animate.value = true;\n        progress.value = 100;\n        timer = setTimeout(() => {\n          timer = null;\n          onScreen.value = false;\n        }, 1e3);\n      };\n      if (progress.value === 0) {\n        timer = setTimeout(end, 1);\n      } else {\n        end();\n      }\n      return sessions;\n    }\n    function planNextStep() {\n      if (progress.value < 100) {\n        timer = setTimeout(() => {\n          timer = null;\n          increment();\n          planNextStep();\n        }, speed);\n      }\n    }\n    let hijacked;\n    onMounted(() => {\n      if (props.skipHijack !== true) {\n        hijacked = true;\n        highjackAjax({\n          start,\n          stop,\n          hijackFilter: computed(() => props.hijackFilter || null)\n        });\n      }\n    });\n    onBeforeUnmount(() => {\n      timer !== null && clearTimeout(timer);\n      hijacked === true && restoreAjax(start);\n    });\n    Object.assign(proxy, { start, stop, increment });\n    return () => h(\"div\", {\n      class: classes.value,\n      style: style.value,\n      ...attributes.value\n    });\n  }\n});\n",
+      "start": 1703982896202,
+      "end": 1703982896277,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896277,
+      "end": 1703982896277,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896277,
+      "end": 1703982896277,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896277,
+      "end": 1703982896277,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896277,
+      "end": 1703982896277,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896277,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896278,
+      "end": 1703982896278,
+      "order": "normal"
+    }
+  ]
+}

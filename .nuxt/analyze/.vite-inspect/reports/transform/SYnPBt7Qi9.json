@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/form/QForm.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, onActivated, onDeactivated, onMounted, getCurrentInstance, nextTick, provide } from 'vue'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stopAndPrevent } from '../../utils/event.js'\nimport { addFocusFn } from '../../utils/private/focus-manager.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { formKey } from '../../utils/private/symbols.js'\nimport { vmIsDestroyed } from '../../utils/private/vm.js'\n\nexport default createComponent({\n  name: 'QForm',\n\n  props: {\n    autofocus: Boolean,\n    noErrorFocus: Boolean,\n    noResetFocus: Boolean,\n    greedy: Boolean,\n\n    onSubmit: Function\n  },\n\n  emits: [ 'reset', 'validationSuccess', 'validationError' ],\n\n  setup (props, { slots, emit }) {\n    const vm = getCurrentInstance()\n    const rootRef = ref(null)\n\n    let validateIndex = 0\n    const registeredComponents = []\n\n    function validate (shouldFocus) {\n      const focus = typeof shouldFocus === 'boolean'\n        ? shouldFocus\n        : props.noErrorFocus !== true\n\n      const index = ++validateIndex\n\n      const emitEvent = (res, ref) => {\n        emit('validation' + (res === true ? 'Success' : 'Error'), ref)\n      }\n\n      const validateComponent = comp => {\n        const valid = comp.validate()\n\n        return typeof valid.then === 'function'\n          ? valid.then(\n            valid => ({ valid, comp }),\n            err => ({ valid: false, comp, err })\n          )\n          : Promise.resolve({ valid, comp })\n      }\n\n      const errorsPromise = props.greedy === true\n        ? Promise\n          .all(registeredComponents.map(validateComponent))\n          .then(res => res.filter(r => r.valid !== true))\n        : registeredComponents\n          .reduce(\n            (acc, comp) => acc.then(() => {\n              return validateComponent(comp).then(r => {\n                if (r.valid === false) { return Promise.reject(r) }\n              })\n            }),\n            Promise.resolve()\n          )\n          .catch(error => [ error ])\n\n      return errorsPromise.then(errors => {\n        if (errors === void 0 || errors.length === 0) {\n          index === validateIndex && emitEvent(true)\n          return true\n        }\n\n        // if not outdated already\n        if (index === validateIndex) {\n          const { comp, err } = errors[ 0 ]\n\n          err !== void 0 && console.error(err)\n          emitEvent(false, comp)\n\n          if (focus === true) {\n            // Try to focus first mounted and active component\n            const activeError = errors.find(({ comp }) => (\n              typeof comp.focus === 'function'\n              && vmIsDestroyed(comp.$) === false\n            ))\n\n            if (activeError !== void 0) {\n              activeError.comp.focus()\n            }\n          }\n        }\n\n        return false\n      })\n    }\n\n    function resetValidation () {\n      validateIndex++\n\n      registeredComponents.forEach(comp => {\n        typeof comp.resetValidation === 'function' && comp.resetValidation()\n      })\n    }\n\n    function submit (evt) {\n      evt !== void 0 && stopAndPrevent(evt)\n\n      const index = validateIndex + 1\n\n      validate().then(val => {\n        // if not outdated && validation succeeded\n        if (index === validateIndex && val === true) {\n          if (props.onSubmit !== void 0) {\n            emit('submit', evt)\n          }\n          else if (evt !== void 0 && evt.target !== void 0 && typeof evt.target.submit === 'function') {\n            evt.target.submit()\n          }\n        }\n      })\n    }\n\n    function reset (evt) {\n      evt !== void 0 && stopAndPrevent(evt)\n\n      emit('reset')\n\n      nextTick(() => { // allow userland to reset values before\n        resetValidation()\n        if (props.autofocus === true && props.noResetFocus !== true) {\n          focus()\n        }\n      })\n    }\n\n    function focus () {\n      addFocusFn(() => {\n        if (rootRef.value === null) { return }\n\n        const target = rootRef.value.querySelector('[autofocus][tabindex], [data-autofocus][tabindex]')\n          || rootRef.value.querySelector('[autofocus] [tabindex], [data-autofocus] [tabindex]')\n          || rootRef.value.querySelector('[autofocus], [data-autofocus]')\n          || Array.prototype.find.call(rootRef.value.querySelectorAll('[tabindex]'), el => el.tabIndex > -1)\n\n        target !== null && target !== void 0 && target.focus({ preventScroll: true })\n      })\n    }\n\n    provide(formKey, {\n      bindComponent (vmProxy) {\n        registeredComponents.push(vmProxy)\n      },\n\n      unbindComponent (vmProxy) {\n        const index = registeredComponents.indexOf(vmProxy)\n        if (index > -1) {\n          registeredComponents.splice(index, 1)\n        }\n      }\n    })\n\n    let shouldActivate = false\n\n    onDeactivated(() => {\n      shouldActivate = true\n    })\n\n    onActivated(() => {\n      shouldActivate === true && props.autofocus === true && focus()\n    })\n\n    onMounted(() => {\n      props.autofocus === true && focus()\n    })\n\n    // expose public methods\n    Object.assign(vm.proxy, {\n      validate,\n      resetValidation,\n      submit,\n      reset,\n      focus,\n      getValidationComponents: () => registeredComponents\n    })\n\n    return () => h('form', {\n      class: 'q-form',\n      ref: rootRef,\n      onSubmit: submit,\n      onReset: reset\n    }, hSlot(slots.default))\n  }\n})\n",
+      "start": 1703982896262,
+      "end": 1703982896349,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896349,
+      "end": 1703982896349,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896349,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896350,
+      "end": 1703982896350,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896350,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896351,
+      "end": 1703982896351,
+      "order": "normal"
+    }
+  ]
+}

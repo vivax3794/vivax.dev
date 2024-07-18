@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/Loading.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, Transition, onMounted } from 'vue'\n\nimport QSpinner from '../components/spinner/QSpinner.js'\n\nimport { createChildApp } from '../install-quasar.js'\nimport defineReactivePlugin from '../utils/private/define-reactive-plugin.js'\nimport { createGlobalNode, removeGlobalNode } from '../utils/private/global-nodes.js'\nimport preventScroll from '../utils/prevent-scroll.js'\nimport { isObject } from '../utils/is.js'\n\nlet\n  app,\n  vm,\n  uid = 0,\n  timeout = null,\n  props = {},\n  activeGroups = {}\n\nconst originalDefaults = {\n  group: '__default_quasar_group__',\n  delay: 0,\n  message: false,\n  html: false,\n  spinnerSize: 80,\n  spinnerColor: '',\n  messageColor: '',\n  backgroundColor: '',\n  boxClass: '',\n  spinner: QSpinner,\n  customClass: ''\n}\n\nconst defaults = { ...originalDefaults }\n\nfunction registerProps (opts) {\n  if (opts && opts.group !== void 0 && activeGroups[ opts.group ] !== void 0) {\n    return Object.assign(activeGroups[ opts.group ], opts)\n  }\n\n  const newProps = isObject(opts) === true && opts.ignoreDefaults === true\n    ? { ...originalDefaults, ...opts }\n    : { ...defaults, ...opts }\n\n  activeGroups[ newProps.group ] = newProps\n  return newProps\n}\n\nconst Plugin = defineReactivePlugin({\n  isActive: false\n}, {\n  show (opts) {\n    if (__QUASAR_SSR_SERVER__) { return }\n\n    props = registerProps(opts)\n    const { group } = props\n\n    Plugin.isActive = true\n\n    if (app !== void 0) {\n      props.uid = uid\n      vm.$forceUpdate()\n    }\n    else {\n      props.uid = ++uid\n      timeout !== null && clearTimeout(timeout)\n\n      timeout = setTimeout(() => {\n        timeout = null\n\n        const el = createGlobalNode('q-loading')\n\n        app = createChildApp({\n          name: 'QLoading',\n\n          setup () {\n            onMounted(() => {\n              preventScroll(true)\n            })\n\n            function onAfterLeave () {\n              // might be called to finalize\n              // previous leave, even if it was cancelled\n              if (Plugin.isActive !== true && app !== void 0) {\n                preventScroll(false)\n                app.unmount(el)\n                removeGlobalNode(el)\n                app = void 0\n                vm = void 0\n              }\n            }\n\n            function getContent () {\n              if (Plugin.isActive !== true) {\n                return null\n              }\n\n              const content = [\n                h(props.spinner, {\n                  class: 'q-loading__spinner',\n                  color: props.spinnerColor,\n                  size: props.spinnerSize\n                })\n              ]\n\n              props.message && content.push(\n                h('div', {\n                  class: 'q-loading__message'\n                    + (props.messageColor ? ` text-${ props.messageColor }` : ''),\n                  [ props.html === true ? 'innerHTML' : 'textContent' ]: props.message\n                })\n              )\n\n              return h('div', {\n                class: 'q-loading fullscreen flex flex-center z-max ' + props.customClass.trim(),\n                key: props.uid\n              }, [\n                h('div', {\n                  class: 'q-loading__backdrop'\n                    + (props.backgroundColor ? ` bg-${ props.backgroundColor }` : '')\n                }),\n\n                h('div', {\n                  class: 'q-loading__box column items-center ' + props.boxClass\n                }, content)\n              ])\n            }\n\n            return () => h(Transition, {\n              name: 'q-transition--fade',\n              appear: true,\n              onAfterLeave\n            }, getContent)\n          }\n        }, Plugin.__parentApp)\n\n        vm = app.mount(el)\n      }, props.delay)\n    }\n\n    return paramProps => {\n      // if we don't have params (or not an Object param) then we need to hide this group\n      if (paramProps === void 0 || Object(paramProps) !== paramProps) {\n        Plugin.hide(group)\n        return\n      }\n\n      // else we have params so we need to update this group\n      Plugin.show({ ...paramProps, group })\n    }\n  },\n\n  hide (group) {\n    if (__QUASAR_SSR_SERVER__ !== true && Plugin.isActive === true) {\n      if (group === void 0) {\n        // clear out any active groups\n        activeGroups = {}\n      }\n      else if (activeGroups[ group ] === void 0) {\n        // we've already hidden it so nothing to do\n        return\n      }\n      else {\n        // remove active group\n        delete activeGroups[ group ]\n\n        const keys = Object.keys(activeGroups)\n\n        // if there are other groups registered then\n        // show last registered one since that one is still active\n        if (keys.length !== 0) {\n          // get last registered group\n          const lastGroup = keys[ keys.length - 1 ]\n          Plugin.show({ group: lastGroup })\n          return\n        }\n      }\n\n      if (timeout !== null) {\n        clearTimeout(timeout)\n        timeout = null\n      }\n\n      Plugin.isActive = false\n    }\n  },\n\n  setDefaults (opts) {\n    if (__QUASAR_SSR_SERVER__ !== true) {\n      isObject(opts) === true && Object.assign(defaults, opts)\n    }\n  },\n\n  install ({ $q, parentApp }) {\n    $q.loading = this\n\n    if (__QUASAR_SSR_SERVER__ !== true) {\n      Plugin.__parentApp = parentApp\n\n      if ($q.config.loading !== void 0) {\n        this.setDefaults($q.config.loading)\n      }\n    }\n  }\n})\n\nexport default Plugin\n",
+      "start": 1703982896689,
+      "end": 1703982896744,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896744,
+      "end": 1703982896744,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, Transition, onMounted } from \"vue\";\nimport QSpinner from \"../components/spinner/QSpinner.js\";\nimport { createChildApp } from \"../install-quasar.js\";\nimport defineReactivePlugin from \"../utils/private/define-reactive-plugin.js\";\nimport { createGlobalNode, removeGlobalNode } from \"../utils/private/global-nodes.js\";\nimport preventScroll from \"../utils/prevent-scroll.js\";\nimport { isObject } from \"../utils/is.js\";\nlet app, vm, uid = 0, timeout = null, props = {}, activeGroups = {};\nconst originalDefaults = {\n  group: \"__default_quasar_group__\",\n  delay: 0,\n  message: false,\n  html: false,\n  spinnerSize: 80,\n  spinnerColor: \"\",\n  messageColor: \"\",\n  backgroundColor: \"\",\n  boxClass: \"\",\n  spinner: QSpinner,\n  customClass: \"\"\n};\nconst defaults = { ...originalDefaults };\nfunction registerProps(opts) {\n  if (opts && opts.group !== void 0 && activeGroups[opts.group] !== void 0) {\n    return Object.assign(activeGroups[opts.group], opts);\n  }\n  const newProps = isObject(opts) === true && opts.ignoreDefaults === true ? { ...originalDefaults, ...opts } : { ...defaults, ...opts };\n  activeGroups[newProps.group] = newProps;\n  return newProps;\n}\nconst Plugin = defineReactivePlugin({\n  isActive: false\n}, {\n  show(opts) {\n    if (false) {\n      return;\n    }\n    props = registerProps(opts);\n    const { group } = props;\n    Plugin.isActive = true;\n    if (app !== void 0) {\n      props.uid = uid;\n      vm.$forceUpdate();\n    } else {\n      props.uid = ++uid;\n      timeout !== null && clearTimeout(timeout);\n      timeout = setTimeout(() => {\n        timeout = null;\n        const el = createGlobalNode(\"q-loading\");\n        app = createChildApp({\n          name: \"QLoading\",\n          setup() {\n            onMounted(() => {\n              preventScroll(true);\n            });\n            function onAfterLeave() {\n              if (Plugin.isActive !== true && app !== void 0) {\n                preventScroll(false);\n                app.unmount(el);\n                removeGlobalNode(el);\n                app = void 0;\n                vm = void 0;\n              }\n            }\n            function getContent() {\n              if (Plugin.isActive !== true) {\n                return null;\n              }\n              const content = [\n                h(props.spinner, {\n                  class: \"q-loading__spinner\",\n                  color: props.spinnerColor,\n                  size: props.spinnerSize\n                })\n              ];\n              props.message && content.push(\n                h(\"div\", {\n                  class: \"q-loading__message\" + (props.messageColor ? ` text-${props.messageColor}` : \"\"),\n                  [props.html === true ? \"innerHTML\" : \"textContent\"]: props.message\n                })\n              );\n              return h(\"div\", {\n                class: \"q-loading fullscreen flex flex-center z-max \" + props.customClass.trim(),\n                key: props.uid\n              }, [\n                h(\"div\", {\n                  class: \"q-loading__backdrop\" + (props.backgroundColor ? ` bg-${props.backgroundColor}` : \"\")\n                }),\n                h(\"div\", {\n                  class: \"q-loading__box column items-center \" + props.boxClass\n                }, content)\n              ]);\n            }\n            return () => h(Transition, {\n              name: \"q-transition--fade\",\n              appear: true,\n              onAfterLeave\n            }, getContent);\n          }\n        }, Plugin.__parentApp);\n        vm = app.mount(el);\n      }, props.delay);\n    }\n    return (paramProps) => {\n      if (paramProps === void 0 || Object(paramProps) !== paramProps) {\n        Plugin.hide(group);\n        return;\n      }\n      Plugin.show({ ...paramProps, group });\n    };\n  },\n  hide(group) {\n    if (Plugin.isActive === true) {\n      if (group === void 0) {\n        activeGroups = {};\n      } else if (activeGroups[group] === void 0) {\n        return;\n      } else {\n        delete activeGroups[group];\n        const keys = Object.keys(activeGroups);\n        if (keys.length !== 0) {\n          const lastGroup = keys[keys.length - 1];\n          Plugin.show({ group: lastGroup });\n          return;\n        }\n      }\n      if (timeout !== null) {\n        clearTimeout(timeout);\n        timeout = null;\n      }\n      Plugin.isActive = false;\n    }\n  },\n  setDefaults(opts) {\n    if (true) {\n      isObject(opts) === true && Object.assign(defaults, opts);\n    }\n  },\n  install({ $q, parentApp }) {\n    $q.loading = this;\n    if (true) {\n      Plugin.__parentApp = parentApp;\n      if ($q.config.loading !== void 0) {\n        this.setDefaults($q.config.loading);\n      }\n    }\n  }\n});\nexport default Plugin;\n",
+      "start": 1703982896744,
+      "end": 1703982896747,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896749,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896749,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    }
+  ]
+}

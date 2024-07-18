@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/body.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import setCssVar from './utils/set-css-var.js'\nimport { noop } from './utils/event.js'\nimport { onKeyDownComposition } from './utils/private/key-composition.js'\nimport { isRuntimeSsrPreHydration, client, iosCorrection } from './plugins/Platform.js'\n\nfunction getMobilePlatform (is) {\n  if (is.ios === true) return 'ios'\n  if (is.android === true) return 'android'\n}\n\nfunction getBodyClasses ({ is, has, within }, cfg) {\n  const cls = [\n    is.desktop === true ? 'desktop' : 'mobile',\n    `${ has.touch === false ? 'no-' : '' }touch`\n  ]\n\n  if (is.mobile === true) {\n    const mobile = getMobilePlatform(is)\n    mobile !== void 0 && cls.push('platform-' + mobile)\n  }\n\n  if (is.nativeMobile === true) {\n    const type = is.nativeMobileWrapper\n\n    cls.push(type)\n    cls.push('native-mobile')\n\n    if (\n      is.ios === true\n      && (cfg[ type ] === void 0 || cfg[ type ].iosStatusBarPadding !== false)\n    ) {\n      cls.push('q-ios-padding')\n    }\n  }\n  else if (is.electron === true) {\n    cls.push('electron')\n  }\n  else if (is.bex === true) {\n    cls.push('bex')\n  }\n\n  within.iframe === true && cls.push('within-iframe')\n\n  return cls\n}\n\nfunction applyClientSsrCorrections () {\n  const { is } = client\n  const classes = document.body.className\n\n  const classList = new Set(classes.replace(/ {2}/g, ' ').split(' '))\n\n  if (iosCorrection !== void 0) {\n    classList.delete('desktop')\n    classList.add('platform-ios')\n    classList.add('mobile')\n  }\n  // else: is it SSG?\n  else if (is.nativeMobile !== true && is.electron !== true && is.bex !== true) {\n    if (is.desktop === true) {\n      classList.delete('mobile')\n      classList.delete('platform-ios')\n      classList.delete('platform-android')\n      classList.add('desktop')\n    }\n    else if (is.mobile === true) {\n      classList.delete('desktop')\n      classList.add('mobile')\n\n      const mobile = getMobilePlatform(is)\n      if (mobile !== void 0) {\n        classList.add(`platform-${ mobile }`)\n        classList.delete(`platform-${ mobile === 'ios' ? 'android' : 'ios' }`)\n      }\n      else {\n        classList.delete('platform-ios')\n        classList.delete('platform-android')\n      }\n    }\n  }\n\n  if (client.has.touch === true) {\n    classList.delete('no-touch')\n    classList.add('touch')\n  }\n\n  if (client.within.iframe === true) {\n    classList.add('within-iframe')\n  }\n\n  const newCls = Array.from(classList).join(' ')\n\n  if (classes !== newCls) {\n    document.body.className = newCls\n  }\n}\n\nfunction setColors (brand) {\n  for (const color in brand) {\n    setCssVar(color, brand[ color ])\n  }\n}\n\nexport default {\n  install (opts) {\n    if (__QUASAR_SSR_SERVER__) {\n      const { $q, ssrContext } = opts\n      const cls = getBodyClasses($q.platform, $q.config)\n\n      if ($q.config.screen !== void 0 && $q.config.screen.bodyClass === true) {\n        cls.push('screen--xs')\n      }\n\n      ssrContext._meta.bodyClasses += cls.join(' ')\n\n      const brand = $q.config.brand\n      if (brand !== void 0) {\n        const vars = Object.keys(brand)\n          .map(key => `--q-${ key }:${ brand[ key ] };`)\n          .join('')\n\n        ssrContext._meta.endingHeadTags += `<style>:root{${ vars }}</style>`\n      }\n\n      return\n    }\n\n    if (this.__installed === true) { return }\n\n    if (isRuntimeSsrPreHydration.value === true) {\n      applyClientSsrCorrections()\n    }\n    else {\n      const { $q } = opts\n\n      $q.config.brand !== void 0 && setColors($q.config.brand)\n\n      const cls = getBodyClasses(client, $q.config)\n      document.body.classList.add.apply(document.body.classList, cls)\n    }\n\n    if (client.is.ios === true) {\n      // needed for iOS button active state\n      document.body.addEventListener('touchstart', noop)\n    }\n\n    window.addEventListener('keydown', onKeyDownComposition, true)\n  }\n}\n",
+      "start": 1703982896854,
+      "end": 1703982896897,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896897,
+      "end": 1703982896897,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import setCssVar from \"./utils/set-css-var.js\";\nimport { noop } from \"./utils/event.js\";\nimport { onKeyDownComposition } from \"./utils/private/key-composition.js\";\nimport { isRuntimeSsrPreHydration, client, iosCorrection } from \"./plugins/Platform.js\";\nfunction getMobilePlatform(is) {\n  if (is.ios === true)\n    return \"ios\";\n  if (is.android === true)\n    return \"android\";\n}\nfunction getBodyClasses({ is, has, within }, cfg) {\n  const cls = [\n    is.desktop === true ? \"desktop\" : \"mobile\",\n    `${has.touch === false ? \"no-\" : \"\"}touch`\n  ];\n  if (is.mobile === true) {\n    const mobile = getMobilePlatform(is);\n    mobile !== void 0 && cls.push(\"platform-\" + mobile);\n  }\n  if (is.nativeMobile === true) {\n    const type = is.nativeMobileWrapper;\n    cls.push(type);\n    cls.push(\"native-mobile\");\n    if (is.ios === true && (cfg[type] === void 0 || cfg[type].iosStatusBarPadding !== false)) {\n      cls.push(\"q-ios-padding\");\n    }\n  } else if (is.electron === true) {\n    cls.push(\"electron\");\n  } else if (is.bex === true) {\n    cls.push(\"bex\");\n  }\n  within.iframe === true && cls.push(\"within-iframe\");\n  return cls;\n}\nfunction applyClientSsrCorrections() {\n  const { is } = client;\n  const classes = document.body.className;\n  const classList = new Set(classes.replace(/ {2}/g, \" \").split(\" \"));\n  if (iosCorrection !== void 0) {\n    classList.delete(\"desktop\");\n    classList.add(\"platform-ios\");\n    classList.add(\"mobile\");\n  } else if (is.nativeMobile !== true && is.electron !== true && is.bex !== true) {\n    if (is.desktop === true) {\n      classList.delete(\"mobile\");\n      classList.delete(\"platform-ios\");\n      classList.delete(\"platform-android\");\n      classList.add(\"desktop\");\n    } else if (is.mobile === true) {\n      classList.delete(\"desktop\");\n      classList.add(\"mobile\");\n      const mobile = getMobilePlatform(is);\n      if (mobile !== void 0) {\n        classList.add(`platform-${mobile}`);\n        classList.delete(`platform-${mobile === \"ios\" ? \"android\" : \"ios\"}`);\n      } else {\n        classList.delete(\"platform-ios\");\n        classList.delete(\"platform-android\");\n      }\n    }\n  }\n  if (client.has.touch === true) {\n    classList.delete(\"no-touch\");\n    classList.add(\"touch\");\n  }\n  if (client.within.iframe === true) {\n    classList.add(\"within-iframe\");\n  }\n  const newCls = Array.from(classList).join(\" \");\n  if (classes !== newCls) {\n    document.body.className = newCls;\n  }\n}\nfunction setColors(brand) {\n  for (const color in brand) {\n    setCssVar(color, brand[color]);\n  }\n}\nexport default {\n  install(opts) {\n    if (false) {\n      const { $q, ssrContext } = opts;\n      const cls = getBodyClasses($q.platform, $q.config);\n      if ($q.config.screen !== void 0 && $q.config.screen.bodyClass === true) {\n        cls.push(\"screen--xs\");\n      }\n      ssrContext._meta.bodyClasses += cls.join(\" \");\n      const brand = $q.config.brand;\n      if (brand !== void 0) {\n        const vars = Object.keys(brand).map((key) => `--q-${key}:${brand[key]};`).join(\"\");\n        ssrContext._meta.endingHeadTags += `<style>:root{${vars}}</style>`;\n      }\n      return;\n    }\n    if (this.__installed === true) {\n      return;\n    }\n    if (isRuntimeSsrPreHydration.value === true) {\n      applyClientSsrCorrections();\n    } else {\n      const { $q } = opts;\n      $q.config.brand !== void 0 && setColors($q.config.brand);\n      const cls = getBodyClasses(client, $q.config);\n      document.body.classList.add.apply(document.body.classList, cls);\n    }\n    if (client.is.ios === true) {\n      document.body.addEventListener(\"touchstart\", noop);\n    }\n    window.addEventListener(\"keydown\", onKeyDownComposition, true);\n  }\n};\n",
+      "start": 1703982896897,
+      "end": 1703982896978,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896978,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    }
+  ]
+}

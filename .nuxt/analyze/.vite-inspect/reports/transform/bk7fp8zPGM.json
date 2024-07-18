@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/resize-observer/QResizeObserver.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, onMounted, onBeforeUnmount, getCurrentInstance, nextTick } from 'vue'\n\nimport useCanRender from '../../composables/private/use-can-render.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { listenOpts, noop } from '../../utils/event.js'\n\nconst hasObserver = typeof ResizeObserver !== 'undefined'\nconst resizeProps = hasObserver === true\n  ? {}\n  : {\n      style: 'display:block;position:absolute;top:0;left:0;right:0;bottom:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1;',\n      url: 'about:blank'\n    }\n\nexport default createComponent({\n  name: 'QResizeObserver',\n\n  props: {\n    debounce: {\n      type: [ String, Number ],\n      default: 100\n    }\n  },\n\n  emits: [ 'resize' ],\n\n  setup (props, { emit }) {\n    if (__QUASAR_SSR_SERVER__) { return noop }\n\n    let timer = null, targetEl, size = { width: -1, height: -1 }\n\n    function trigger (immediately) {\n      if (immediately === true || props.debounce === 0 || props.debounce === '0') {\n        emitEvent()\n      }\n      else if (timer === null) {\n        timer = setTimeout(emitEvent, props.debounce)\n      }\n    }\n\n    function emitEvent () {\n      if (timer !== null) {\n        clearTimeout(timer)\n        timer = null\n      }\n\n      if (targetEl) {\n        const { offsetWidth: width, offsetHeight: height } = targetEl\n\n        if (width !== size.width || height !== size.height) {\n          size = { width, height }\n          emit('resize', size)\n        }\n      }\n    }\n\n    const { proxy } = getCurrentInstance()\n\n    // expose public method\n    proxy.trigger = trigger\n\n    if (hasObserver === true) {\n      let observer\n\n      // initialize as soon as possible\n      const init = stop => {\n        targetEl = proxy.$el.parentNode\n\n        if (targetEl) {\n          observer = new ResizeObserver(trigger)\n          observer.observe(targetEl)\n          emitEvent()\n        }\n        else if (stop !== true) {\n          nextTick(() => { init(true) })\n        }\n      }\n\n      onMounted(() => { init() })\n\n      onBeforeUnmount(() => {\n        timer !== null && clearTimeout(timer)\n\n        if (observer !== void 0) {\n          if (observer.disconnect !== void 0) {\n            observer.disconnect()\n          }\n          else if (targetEl) { // FF for Android\n            observer.unobserve(targetEl)\n          }\n        }\n      })\n\n      return noop\n    }\n    else { // no observer, so fallback to old iframe method\n      const canRender = useCanRender()\n\n      let curDocView\n\n      function cleanup () {\n        if (timer !== null) {\n          clearTimeout(timer)\n          timer = null\n        }\n\n        if (curDocView !== void 0) {\n          // iOS is fuzzy, need to check it first\n          if (curDocView.removeEventListener !== void 0) {\n            curDocView.removeEventListener('resize', trigger, listenOpts.passive)\n          }\n          curDocView = void 0\n        }\n      }\n\n      function onObjLoad () {\n        cleanup()\n\n        if (targetEl && targetEl.contentDocument) {\n          curDocView = targetEl.contentDocument.defaultView\n          curDocView.addEventListener('resize', trigger, listenOpts.passive)\n          emitEvent()\n        }\n      }\n\n      onMounted(() => {\n        nextTick(() => {\n          targetEl = proxy.$el\n          targetEl && onObjLoad()\n        })\n      })\n\n      onBeforeUnmount(cleanup)\n\n      return () => {\n        if (canRender.value === true) {\n          return h('object', {\n            style: resizeProps.style,\n            tabindex: -1, // fix for Firefox\n            type: 'text/html',\n            data: resizeProps.url,\n            'aria-hidden': 'true',\n            onLoad: onObjLoad\n          })\n        }\n      }\n    }\n  }\n})\n",
+      "start": 1703982896430,
+      "end": 1703982896513,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896513,
+      "end": 1703982896513,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, onMounted, onBeforeUnmount, getCurrentInstance, nextTick } from \"vue\";\nimport useCanRender from \"../../composables/private/use-can-render.js\";\nimport { createComponent } from \"../../utils/private/create.js\";\nimport { listenOpts, noop } from \"../../utils/event.js\";\nconst hasObserver = typeof ResizeObserver !== \"undefined\";\nconst resizeProps = hasObserver === true ? {} : {\n  style: \"display:block;position:absolute;top:0;left:0;right:0;bottom:0;height:100%;width:100%;overflow:hidden;pointer-events:none;z-index:-1;\",\n  url: \"about:blank\"\n};\nexport default createComponent({\n  name: \"QResizeObserver\",\n  props: {\n    debounce: {\n      type: [String, Number],\n      default: 100\n    }\n  },\n  emits: [\"resize\"],\n  setup(props, { emit }) {\n    if (false) {\n      return noop;\n    }\n    let timer = null, targetEl, size = { width: -1, height: -1 };\n    function trigger(immediately) {\n      if (immediately === true || props.debounce === 0 || props.debounce === \"0\") {\n        emitEvent();\n      } else if (timer === null) {\n        timer = setTimeout(emitEvent, props.debounce);\n      }\n    }\n    function emitEvent() {\n      if (timer !== null) {\n        clearTimeout(timer);\n        timer = null;\n      }\n      if (targetEl) {\n        const { offsetWidth: width, offsetHeight: height } = targetEl;\n        if (width !== size.width || height !== size.height) {\n          size = { width, height };\n          emit(\"resize\", size);\n        }\n      }\n    }\n    const { proxy } = getCurrentInstance();\n    proxy.trigger = trigger;\n    if (hasObserver === true) {\n      let observer;\n      const init = (stop) => {\n        targetEl = proxy.$el.parentNode;\n        if (targetEl) {\n          observer = new ResizeObserver(trigger);\n          observer.observe(targetEl);\n          emitEvent();\n        } else if (stop !== true) {\n          nextTick(() => {\n            init(true);\n          });\n        }\n      };\n      onMounted(() => {\n        init();\n      });\n      onBeforeUnmount(() => {\n        timer !== null && clearTimeout(timer);\n        if (observer !== void 0) {\n          if (observer.disconnect !== void 0) {\n            observer.disconnect();\n          } else if (targetEl) {\n            observer.unobserve(targetEl);\n          }\n        }\n      });\n      return noop;\n    } else {\n      let cleanup = function() {\n        if (timer !== null) {\n          clearTimeout(timer);\n          timer = null;\n        }\n        if (curDocView !== void 0) {\n          if (curDocView.removeEventListener !== void 0) {\n            curDocView.removeEventListener(\"resize\", trigger, listenOpts.passive);\n          }\n          curDocView = void 0;\n        }\n      }, onObjLoad = function() {\n        cleanup();\n        if (targetEl && targetEl.contentDocument) {\n          curDocView = targetEl.contentDocument.defaultView;\n          curDocView.addEventListener(\"resize\", trigger, listenOpts.passive);\n          emitEvent();\n        }\n      };\n      const canRender = useCanRender();\n      let curDocView;\n      onMounted(() => {\n        nextTick(() => {\n          targetEl = proxy.$el;\n          targetEl && onObjLoad();\n        });\n      });\n      onBeforeUnmount(cleanup);\n      return () => {\n        if (canRender.value === true) {\n          return h(\"object\", {\n            style: resizeProps.style,\n            tabindex: -1,\n            // fix for Firefox\n            type: \"text/html\",\n            data: resizeProps.url,\n            \"aria-hidden\": \"true\",\n            onLoad: onObjLoad\n          });\n        }\n      };\n    }\n  }\n});\n",
+      "start": 1703982896513,
+      "end": 1703982896583,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896583,
+      "end": 1703982896583,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896584,
+      "end": 1703982896584,
+      "order": "normal"
+    }
+  ]
+}

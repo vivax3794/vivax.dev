@@ -1,0 +1,227 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/pages/blog.vue",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "<template>\n    <div>\n        <ContentList path=\"/blog\" v-slot=\"{ list }\">\n            <div class=\"page\">\n                <NuxtLink v-for=\"article in list.slice().reverse()\" :key=\"article._path\" :to=\"article._path\">\n                    <div class=\"card q-ma-md shadow-3 row\">\n                        <div class=\"col-8\">\n                            <div class=\"text-h4 text-white\">{{ article.title }}</div>\n                            <div class=\"desc\">{{ article.description }}</div>\n                        </div>\n                        <div class=\"col\" v-if=\"article.image !== undefined\">\n                            <img class=\"image\" :src=\"article.image\" />\n                        </div>\n                    </div>\n                </NuxtLink>\n            </div>\n        </ContentList>\n    </div>\n</template>\n\n<style scoped lang=\"scss\">\n$page-width: 40%;\n\n.page {\n    width: $page-width;\n    margin-left: (100% - $page-width) / 2;\n}\n\n.card {\n    background-color: rgb(53, 53, 53);\n    border-radius: 10px;\n    padding-left: 20px;\n    // overflow: hidden;\n}\n\n.image {\n    object-fit: cover;\n    width: 100%;\n    height: 100%;\n}\n\n.desc {\n    color: gray;\n}\n</style>\n",
+      "start": 1703982896103,
+      "end": 1703982896162,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896162,
+      "end": 1703982896162,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896162,
+      "end": 1703982896163,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896163,
+      "end": 1703982896163,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896163,
+      "end": 1703982896163,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896163,
+      "end": 1703982896163,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896163,
+      "end": 1703982896163,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896163,
+      "end": 1703982896163,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896163,
+      "end": 1703982896163,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "result": "const _sfc_main = {}\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, createBlock as _createBlock, createVNode as _createVNode, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\"\n\nconst _withScopeId = n => (_pushScopeId(\"data-v-0c57add0\"),n=n(),_popScopeId(),n)\nconst _hoisted_1 = { class: \"page\" }\nconst _hoisted_2 = { class: \"card q-ma-md shadow-3 row\" }\nconst _hoisted_3 = { class: \"col-8\" }\nconst _hoisted_4 = { class: \"text-h4 text-white\" }\nconst _hoisted_5 = { class: \"desc\" }\nconst _hoisted_6 = {\n  key: 0,\n  class: \"col\"\n}\nconst _hoisted_7 = [\"src\"]\n\nfunction _sfc_render(_ctx, _cache) {\n  const _component_NuxtLink = _resolveComponent(\"NuxtLink\")\n  const _component_ContentList = _resolveComponent(\"ContentList\")\n\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createVNode(_component_ContentList, { path: \"/blog\" }, {\n      default: _withCtx(({ list }) => [\n        _createElementVNode(\"div\", _hoisted_1, [\n          (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list.slice().reverse(), (article) => {\n            return (_openBlock(), _createBlock(_component_NuxtLink, {\n              key: article._path,\n              to: article._path\n            }, {\n              default: _withCtx(() => [\n                _createElementVNode(\"div\", _hoisted_2, [\n                  _createElementVNode(\"div\", _hoisted_3, [\n                    _createElementVNode(\"div\", _hoisted_4, _toDisplayString(article.title), 1),\n                    _createElementVNode(\"div\", _hoisted_5, _toDisplayString(article.description), 1)\n                  ]),\n                  (article.image !== undefined)\n                    ? (_openBlock(), _createElementBlock(\"div\", _hoisted_6, [\n                        _createElementVNode(\"img\", {\n                          class: \"image\",\n                          src: article.image\n                        }, null, 8, _hoisted_7)\n                      ]))\n                    : _createCommentVNode(\"\", true)\n                ])\n              ]),\n              _: 2\n            }, 1032, [\"to\"]))\n          }), 128))\n        ])\n      ]),\n      _: 1\n    })\n  ]))\n}\n\nimport \"/home/vivax/coding/vivax.dev/pages/blog.vue?vue&type=style&index=0&scoped=0c57add0&lang.scss\"\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render],['__scopeId',\"data-v-0c57add0\"]])",
+      "start": 1703982896163,
+      "end": 1703982896165,
+      "order": "normal",
+      "sourcemaps": {
+        "mappings": ""
+      }
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896165,
+      "end": 1703982896165,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896165,
+      "end": 1703982896165,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896165,
+      "end": 1703982896165,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896165,
+      "end": 1703982896165,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896166,
+      "end": 1703982896166,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896166,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896167,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896167,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896167,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896167,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896167,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "result": "import { default as __nuxt_component_0 } from \"/home/vivax/coding/vivax.dev/node_modules/nuxt/dist/app/components/nuxt-link\";\nimport { default as __nuxt_component_1 } from \"/home/vivax/coding/vivax.dev/node_modules/@nuxt/content/dist/runtime/components/ContentList.vue\";\nconst _sfc_main = {}\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode, resolveComponent as _resolveComponent, withCtx as _withCtx, createBlock as _createBlock, createVNode as _createVNode, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\"\n\nconst _withScopeId = n => (_pushScopeId(\"data-v-0c57add0\"),n=n(),_popScopeId(),n)\nconst _hoisted_1 = { class: \"page\" }\nconst _hoisted_2 = { class: \"card q-ma-md shadow-3 row\" }\nconst _hoisted_3 = { class: \"col-8\" }\nconst _hoisted_4 = { class: \"text-h4 text-white\" }\nconst _hoisted_5 = { class: \"desc\" }\nconst _hoisted_6 = {\n  key: 0,\n  class: \"col\"\n}\nconst _hoisted_7 = [\"src\"]\n\nfunction _sfc_render(_ctx, _cache) {\n  const _component_NuxtLink = __nuxt_component_0\n  const _component_ContentList = __nuxt_component_1\n\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createVNode(_component_ContentList, { path: \"/blog\" }, {\n      default: _withCtx(({ list }) => [\n        _createElementVNode(\"div\", _hoisted_1, [\n          (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(list.slice().reverse(), (article) => {\n            return (_openBlock(), _createBlock(_component_NuxtLink, {\n              key: article._path,\n              to: article._path\n            }, {\n              default: _withCtx(() => [\n                _createElementVNode(\"div\", _hoisted_2, [\n                  _createElementVNode(\"div\", _hoisted_3, [\n                    _createElementVNode(\"div\", _hoisted_4, _toDisplayString(article.title), 1),\n                    _createElementVNode(\"div\", _hoisted_5, _toDisplayString(article.description), 1)\n                  ]),\n                  (article.image !== undefined)\n                    ? (_openBlock(), _createElementBlock(\"div\", _hoisted_6, [\n                        _createElementVNode(\"img\", {\n                          class: \"image\",\n                          src: article.image\n                        }, null, 8, _hoisted_7)\n                      ]))\n                    : _createCommentVNode(\"\", true)\n                ])\n              ]),\n              _: 2\n            }, 1032, [\"to\"]))\n          }), 128))\n        ])\n      ]),\n      _: 1\n    })\n  ]))\n}\n\nimport \"/home/vivax/coding/vivax.dev/pages/blog.vue?vue&type=style&index=0&scoped=0c57add0&lang.scss\"\n\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['render',_sfc_render],['__scopeId',\"data-v-0c57add0\"]])",
+      "start": 1703982896167,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896167,
+      "end": 1703982896167,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896168,
+      "end": 1703982896168,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896168,
+      "end": 1703982896168,
+      "order": "normal"
+    }
+  ]
+}

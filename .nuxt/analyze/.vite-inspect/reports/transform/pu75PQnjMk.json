@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/btn/use-btn.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { computed } from 'vue'\n\nimport useAlign, { useAlignProps } from '../../composables/private/use-align.js'\nimport useSize, { useSizeProps } from '../../composables/private/use-size.js'\nimport useRouterLink, { useRouterLinkProps } from '../../composables/private/use-router-link.js'\n\nexport const btnPadding = {\n  none: 0,\n  xs: 4,\n  sm: 8,\n  md: 16,\n  lg: 24,\n  xl: 32\n}\n\nconst defaultSizes = {\n  xs: 8,\n  sm: 10,\n  md: 14,\n  lg: 20,\n  xl: 24\n}\n\nconst formTypes = [ 'button', 'submit', 'reset' ]\nconst mediaTypeRE = /[^\\s]\\/[^\\s]/\n\nexport const btnDesignOptions = [ 'flat', 'outline', 'push', 'unelevated' ]\nexport const getBtnDesign = (props, defaultValue) => {\n  if (props.flat === true) return 'flat'\n  if (props.outline === true) return 'outline'\n  if (props.push === true) return 'push'\n  if (props.unelevated === true) return 'unelevated'\n  return defaultValue\n}\nexport const getBtnDesignAttr = props => {\n  const design = getBtnDesign(props)\n  return design !== void 0\n    ? { [ design ]: true }\n    : {}\n}\n\nexport const useBtnProps = {\n  ...useSizeProps,\n  ...useRouterLinkProps,\n\n  type: {\n    type: String,\n    default: 'button'\n  },\n\n  label: [ Number, String ],\n  icon: String,\n  iconRight: String,\n\n  ...btnDesignOptions.reduce(\n    (acc, val) => (acc[ val ] = Boolean) && acc,\n    {}\n  ),\n\n  square: Boolean,\n  round: Boolean,\n  rounded: Boolean,\n  glossy: Boolean,\n\n  size: String,\n  fab: Boolean,\n  fabMini: Boolean,\n  padding: String,\n\n  color: String,\n  textColor: String,\n  noCaps: Boolean,\n  noWrap: Boolean,\n  dense: Boolean,\n\n  tabindex: [ Number, String ],\n\n  ripple: {\n    type: [ Boolean, Object ],\n    default: true\n  },\n\n  align: {\n    ...useAlignProps.align,\n    default: 'center'\n  },\n  stack: Boolean,\n  stretch: Boolean,\n  loading: {\n    type: Boolean,\n    default: null\n  },\n  disable: Boolean\n}\n\nexport default function (props) {\n  const sizeStyle = useSize(props, defaultSizes)\n  const alignClass = useAlign(props)\n  const { hasRouterLink, hasLink, linkTag, linkAttrs, navigateOnClick } = useRouterLink({\n    fallbackTag: 'button'\n  })\n\n  const style = computed(() => {\n    const obj = props.fab === false && props.fabMini === false\n      ? sizeStyle.value\n      : {}\n\n    return props.padding !== void 0\n      ? Object.assign({}, obj, {\n        padding: props.padding\n          .split(/\\s+/)\n          .map(v => (v in btnPadding ? btnPadding[ v ] + 'px' : v))\n          .join(' '),\n        minWidth: '0',\n        minHeight: '0'\n      })\n      : obj\n  })\n\n  const isRounded = computed(() =>\n    props.rounded === true || props.fab === true || props.fabMini === true\n  )\n\n  const isActionable = computed(() =>\n    props.disable !== true && props.loading !== true\n  )\n\n  const tabIndex = computed(() => (\n    isActionable.value === true ? props.tabindex || 0 : -1\n  ))\n\n  const design = computed(() => getBtnDesign(props, 'standard'))\n\n  const attributes = computed(() => {\n    const acc = { tabindex: tabIndex.value }\n\n    if (hasLink.value === true) {\n      Object.assign(acc, linkAttrs.value)\n    }\n    else if (formTypes.includes(props.type) === true) {\n      acc.type = props.type\n    }\n\n    if (linkTag.value === 'a') {\n      if (props.disable === true) {\n        acc[ 'aria-disabled' ] = 'true'\n      }\n      else if (acc.href === void 0) {\n        acc.role = 'button'\n      }\n\n      if (hasRouterLink.value !== true && mediaTypeRE.test(props.type) === true) {\n        acc.type = props.type\n      }\n    }\n    else if (props.disable === true) {\n      acc.disabled = ''\n      acc[ 'aria-disabled' ] = 'true'\n    }\n\n    if (props.loading === true && props.percentage !== void 0) {\n      Object.assign(acc, {\n        role: 'progressbar',\n        'aria-valuemin': 0,\n        'aria-valuemax': 100,\n        'aria-valuenow': props.percentage\n      })\n    }\n\n    return acc\n  })\n\n  const classes = computed(() => {\n    let colors\n\n    if (props.color !== void 0) {\n      if (props.flat === true || props.outline === true) {\n        colors = `text-${ props.textColor || props.color }`\n      }\n      else {\n        colors = `bg-${ props.color } text-${ props.textColor || 'white' }`\n      }\n    }\n    else if (props.textColor) {\n      colors = `text-${ props.textColor }`\n    }\n\n    const shape = props.round === true\n      ? 'round'\n      : `rectangle${ isRounded.value === true ? ' q-btn--rounded' : (props.square === true ? ' q-btn--square' : '') }`\n\n    return `q-btn--${ design.value } q-btn--${ shape }`\n      + (colors !== void 0 ? ' ' + colors : '')\n      + (isActionable.value === true ? ' q-btn--actionable q-focusable q-hoverable' : (props.disable === true ? ' disabled' : ''))\n      + (props.fab === true ? ' q-btn--fab' : (props.fabMini === true ? ' q-btn--fab-mini' : ''))\n      + (props.noCaps === true ? ' q-btn--no-uppercase' : '')\n      + (props.dense === true ? ' q-btn--dense' : '')\n      + (props.stretch === true ? ' no-border-radius self-stretch' : '')\n      + (props.glossy === true ? ' glossy' : '')\n      + (props.square ? ' q-btn--square' : '')\n  })\n\n  const innerClasses = computed(() =>\n    alignClass.value + (props.stack === true ? ' column' : ' row')\n    + (props.noWrap === true ? ' no-wrap text-no-wrap' : '')\n    + (props.loading === true ? ' q-btn__content--hidden' : '')\n  )\n\n  return {\n    classes,\n    style,\n    innerClasses,\n    attributes,\n    hasLink,\n    linkTag,\n    navigateOnClick,\n    isActionable\n  }\n}\n",
+      "start": 1703982897190,
+      "end": 1703982897300,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897300,
+      "end": 1703982897300,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897301,
+      "end": 1703982897301,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897301,
+      "end": 1703982897302,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897302,
+      "end": 1703982897302,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897302,
+      "end": 1703982897302,
+      "order": "normal"
+    }
+  ]
+}

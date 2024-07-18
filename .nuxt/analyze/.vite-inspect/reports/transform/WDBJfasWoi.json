@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/spinner/QSpinnerBars.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h } from 'vue'\n\nimport useSpinner, { useSpinnerProps } from './use-spinner.js'\n\nimport { createComponent } from '../../utils/private/create.js'\n\nconst svg = [\n  h('rect', {\n    y: '10',\n    width: '15',\n    height: '120',\n    rx: '6'\n  }, [\n    h('animate', {\n      attributeName: 'height',\n      begin: '0.5s',\n      dur: '1s',\n      values: '120;110;100;90;80;70;60;50;40;140;120',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    }),\n    h('animate', {\n      attributeName: 'y',\n      begin: '0.5s',\n      dur: '1s',\n      values: '10;15;20;25;30;35;40;45;50;0;10',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    })\n  ]),\n  h('rect', {\n    x: '30',\n    y: '10',\n    width: '15',\n    height: '120',\n    rx: '6'\n  }, [\n    h('animate', {\n      attributeName: 'height',\n      begin: '0.25s',\n      dur: '1s',\n      values: '120;110;100;90;80;70;60;50;40;140;120',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    }),\n    h('animate', {\n      attributeName: 'y',\n      begin: '0.25s',\n      dur: '1s',\n      values: '10;15;20;25;30;35;40;45;50;0;10',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    })\n  ]),\n  h('rect', {\n    x: '60',\n    width: '15',\n    height: '140',\n    rx: '6'\n  }, [\n    h('animate', {\n      attributeName: 'height',\n      begin: '0s',\n      dur: '1s',\n      values: '120;110;100;90;80;70;60;50;40;140;120',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    }),\n    h('animate', {\n      attributeName: 'y',\n      begin: '0s',\n      dur: '1s',\n      values: '10;15;20;25;30;35;40;45;50;0;10',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    })\n  ]),\n  h('rect', {\n    x: '90',\n    y: '10',\n    width: '15',\n    height: '120',\n    rx: '6'\n  }, [\n    h('animate', {\n      attributeName: 'height',\n      begin: '0.25s',\n      dur: '1s',\n      values: '120;110;100;90;80;70;60;50;40;140;120',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    }),\n    h('animate', {\n      attributeName: 'y',\n      begin: '0.25s',\n      dur: '1s',\n      values: '10;15;20;25;30;35;40;45;50;0;10',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    })\n  ]),\n  h('rect', {\n    x: '120',\n    y: '10',\n    width: '15',\n    height: '120',\n    rx: '6'\n  }, [\n    h('animate', {\n      attributeName: 'height',\n      begin: '0.5s',\n      dur: '1s',\n      values: '120;110;100;90;80;70;60;50;40;140;120',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    }),\n    h('animate', {\n      attributeName: 'y',\n      begin: '0.5s',\n      dur: '1s',\n      values: '10;15;20;25;30;35;40;45;50;0;10',\n      calcMode: 'linear',\n      repeatCount: 'indefinite'\n    })\n  ])\n]\n\nexport default createComponent({\n  name: 'QSpinnerBars',\n\n  props: useSpinnerProps,\n\n  setup (props) {\n    const { cSize, classes } = useSpinner(props)\n\n    return () => h('svg', {\n      class: classes.value,\n      fill: 'currentColor',\n      width: cSize.value,\n      height: cSize.value,\n      viewBox: '0 0 135 140',\n      xmlns: 'http://www.w3.org/2000/svg'\n    }, svg)\n  }\n})\n",
+      "start": 1703982896504,
+      "end": 1703982896591,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896591,
+      "end": 1703982896591,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896591,
+      "end": 1703982896592,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896592,
+      "end": 1703982896592,
+      "order": "normal"
+    }
+  ]
+}

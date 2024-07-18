@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/export-file.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "function clean (link) {\n  // allow time for iOS\n  setTimeout(() => {\n    window.URL.revokeObjectURL(link.href)\n  }, 10000)\n\n  link.remove()\n}\n\n/**\n * Forces browser to download file with specified content\n *\n * @param {*} fileName - String\n * @param {*} rawData - String | ArrayBuffer | ArrayBufferView | Blob\n * @param {*} opts - String (mimeType) or Object\n *                   Object form: { mimeType?: String, byteOrderMark?: String | Uint8Array, encoding?: String }\n * @returns Boolean | Error\n *\n * mimeType       - Examples: 'application/octect-stream' (default), 'text/plain', 'application/json',\n *                  'text/plain;charset=UTF-8', 'video/mp4', 'image/png', 'application/pdf'\n *                  https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types\n *\n * byteOrderMark  - (BOM) Example: '\\uFEFF'\n *                  https://en.wikipedia.org/wiki/Byte_order_mark\n *\n * encoding       - Performs a TextEncoder.encode() over the rawData;\n *                  Example: 'windows-1252' (ANSI, a subset of ISO-8859-1)\n *                  https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder\n */\nexport default function (fileName, rawData, opts = {}) {\n  const { mimeType, byteOrderMark, encoding } = typeof opts === 'string'\n    ? { mimeType: opts }\n    : opts\n\n  const data = encoding !== void 0\n    ? (new TextEncoder(encoding)).encode([ rawData ])\n    : rawData\n\n  const blobData = byteOrderMark !== void 0 ? [ byteOrderMark, data ] : [ data ]\n  const blob = new Blob(blobData, { type: mimeType || 'application/octet-stream' })\n  const link = document.createElement('a')\n\n  link.href = window.URL.createObjectURL(blob)\n  link.setAttribute('download', fileName)\n\n  // Check for \"download\" attribute support;\n  // If not supported, open this in new window\n  if (typeof link.download === 'undefined') {\n    link.setAttribute('target', '_blank')\n  }\n\n  link.classList.add('hidden')\n  link.style.position = 'fixed' // avoid scrolling to bottom\n  document.body.appendChild(link)\n\n  try {\n    link.click()\n    clean(link)\n    return true\n  }\n  catch (err) {\n    clean(link)\n    return err\n  }\n}\n",
+      "start": 1703982896745,
+      "end": 1703982896802,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896802,
+      "end": 1703982896802,
+      "order": "normal"
+    }
+  ]
+}

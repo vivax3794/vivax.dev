@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/popup-proxy/QPopupProxy.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, getCurrentInstance } from 'vue'\n\nimport QDialog from '../dialog/QDialog.js'\nimport QMenu from '../menu/QMenu.js'\n\nimport useAnchor, { useAnchorProps } from '../../composables/private/use-anchor.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { injectProp } from '../../utils/private/inject-obj-prop.js'\n\nexport default createComponent({\n  name: 'QPopupProxy',\n\n  props: {\n    ...useAnchorProps,\n\n    breakpoint: {\n      type: [ String, Number ],\n      default: 450\n    }\n  },\n\n  emits: [ 'show', 'hide' ],\n\n  setup (props, { slots, emit, attrs }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const showing = ref(false)\n    const popupRef = ref(null)\n    const breakpoint = computed(() => parseInt(props.breakpoint, 10))\n\n    const { canShow } = useAnchor({ showing })\n\n    function getType () {\n      return $q.screen.width < breakpoint.value || $q.screen.height < breakpoint.value\n        ? 'dialog'\n        : 'menu'\n    }\n\n    const type = ref(getType())\n\n    const popupProps = computed(() => (\n      type.value === 'menu' ? { maxHeight: '99vh' } : {})\n    )\n\n    watch(() => getType(), val => {\n      if (showing.value !== true) {\n        type.value = val\n      }\n    })\n\n    function onShow (evt) {\n      showing.value = true\n      emit('show', evt)\n    }\n\n    function onHide (evt) {\n      showing.value = false\n      type.value = getType()\n      emit('hide', evt)\n    }\n\n    // expose public methods\n    Object.assign(proxy, {\n      show (evt) { canShow(evt) === true && popupRef.value.show(evt) },\n      hide (evt) { popupRef.value.hide(evt) },\n      toggle (evt) { popupRef.value.toggle(evt) }\n    })\n\n    injectProp(proxy, 'currentComponent', () => ({\n      type: type.value,\n      ref: popupRef.value\n    }))\n\n    return () => {\n      const data = {\n        ref: popupRef,\n        ...popupProps.value,\n        ...attrs,\n        onShow,\n        onHide\n      }\n\n      let component\n\n      if (type.value === 'dialog') {\n        component = QDialog\n      }\n      else {\n        component = QMenu\n        Object.assign(data, {\n          target: props.target,\n          contextMenu: props.contextMenu,\n          noParentEvent: true,\n          separateClosePopup: true\n        })\n      }\n\n      return h(component, data, slots.default)\n    }\n  }\n})\n",
+      "start": 1703982896421,
+      "end": 1703982896505,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896505,
+      "end": 1703982896506,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896506,
+      "end": 1703982896506,
+      "order": "normal"
+    }
+  ]
+}

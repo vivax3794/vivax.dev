@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/AppVisibility.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import defineReactivePlugin from '../utils/private/define-reactive-plugin.js'\nimport { injectProp } from '../utils/private/inject-obj-prop.js'\n\nconst Plugin = defineReactivePlugin({\n  appVisible: true\n}, {\n  install ({ $q }) {\n    if (__QUASAR_SSR_SERVER__) {\n      this.appVisible = $q.appVisible = true\n      return\n    }\n\n    injectProp($q, 'appVisible', () => this.appVisible)\n  }\n})\n\nif (__QUASAR_SSR_SERVER__ !== true) {\n  let prop, evt\n\n  if (typeof document.hidden !== 'undefined') { // Opera 12.10 and Firefox 18 and later support\n    prop = 'hidden'\n    evt = 'visibilitychange'\n  }\n  else if (typeof document.msHidden !== 'undefined') {\n    prop = 'msHidden'\n    evt = 'msvisibilitychange'\n  }\n  else if (typeof document.webkitHidden !== 'undefined') {\n    prop = 'webkitHidden'\n    evt = 'webkitvisibilitychange'\n  }\n\n  if (evt && typeof document[ prop ] !== 'undefined') {\n    const update = () => { Plugin.appVisible = !document[ prop ] }\n    document.addEventListener(evt, update, false)\n  }\n}\n\nexport default Plugin\n",
+      "start": 1703982896683,
+      "end": 1703982896740,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896740,
+      "end": 1703982896740,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import defineReactivePlugin from \"../utils/private/define-reactive-plugin.js\";\nimport { injectProp } from \"../utils/private/inject-obj-prop.js\";\nconst Plugin = defineReactivePlugin({\n  appVisible: true\n}, {\n  install({ $q }) {\n    if (false) {\n      this.appVisible = $q.appVisible = true;\n      return;\n    }\n    injectProp($q, \"appVisible\", () => this.appVisible);\n  }\n});\nif (true) {\n  let prop, evt;\n  if (typeof document.hidden !== \"undefined\") {\n    prop = \"hidden\";\n    evt = \"visibilitychange\";\n  } else if (typeof document.msHidden !== \"undefined\") {\n    prop = \"msHidden\";\n    evt = \"msvisibilitychange\";\n  } else if (typeof document.webkitHidden !== \"undefined\") {\n    prop = \"webkitHidden\";\n    evt = \"webkitvisibilitychange\";\n  }\n  if (evt && typeof document[prop] !== \"undefined\") {\n    const update = () => {\n      Plugin.appVisible = !document[prop];\n    };\n    document.addEventListener(evt, update, false);\n  }\n}\nexport default Plugin;\n",
+      "start": 1703982896740,
+      "end": 1703982896747,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896748,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896749,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    }
+  ]
+}

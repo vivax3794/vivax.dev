@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/private/use-panel.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, nextTick, getCurrentInstance, Transition, KeepAlive } from 'vue'\n\nimport TouchSwipe from '../../directives/TouchSwipe.js'\n\nimport useCache from '../../composables/private/use-cache.js'\n\nimport { hSlot } from '../../utils/private/render.js'\nimport { getNormalizedVNodes } from '../../utils/private/vm.js'\n\nexport const usePanelChildProps = {\n  name: { required: true },\n  disable: Boolean\n}\n\nconst PanelWrapper = {\n  setup (_, { slots }) {\n    return () => h('div', {\n      class: 'q-panel scroll',\n      role: 'tabpanel'\n    }, hSlot(slots.default))\n  }\n}\n\nexport const usePanelProps = {\n  modelValue: {\n    required: true\n  },\n\n  animated: Boolean,\n  infinite: Boolean,\n  swipeable: Boolean,\n  vertical: Boolean,\n\n  transitionPrev: String,\n  transitionNext: String,\n  transitionDuration: {\n    type: [ String, Number ],\n    default: 300\n  },\n\n  keepAlive: Boolean,\n  keepAliveInclude: [ String, Array, RegExp ],\n  keepAliveExclude: [ String, Array, RegExp ],\n  keepAliveMax: Number\n}\n\nexport const usePanelEmits = [ 'update:modelValue', 'beforeTransition', 'transition' ]\n\nexport default function () {\n  const { props, emit, proxy } = getCurrentInstance()\n  const { getCacheWithFn } = useCache()\n\n  let panels, forcedPanelTransition\n\n  const panelIndex = ref(null)\n  const panelTransition = ref(null)\n\n  function onSwipe (evt) {\n    const dir = props.vertical === true ? 'up' : 'left'\n    goToPanelByOffset((proxy.$q.lang.rtl === true ? -1 : 1) * (evt.direction === dir ? 1 : -1))\n  }\n\n  const panelDirectives = computed(() => {\n    // if props.swipeable\n    return [ [\n      TouchSwipe,\n      onSwipe,\n      void 0,\n      {\n        horizontal: props.vertical !== true,\n        vertical: props.vertical,\n        mouse: true\n      }\n    ] ]\n  })\n\n  const transitionPrev = computed(() =>\n    props.transitionPrev || `slide-${ props.vertical === true ? 'down' : 'right' }`\n  )\n\n  const transitionNext = computed(() =>\n    props.transitionNext || `slide-${ props.vertical === true ? 'up' : 'left' }`\n  )\n\n  const transitionStyle = computed(\n    () => `--q-transition-duration: ${ props.transitionDuration }ms`\n  )\n\n  const contentKey = computed(() => (\n    typeof props.modelValue === 'string' || typeof props.modelValue === 'number'\n      ? props.modelValue\n      : String(props.modelValue)\n  ))\n\n  const keepAliveProps = computed(() => ({\n    include: props.keepAliveInclude,\n    exclude: props.keepAliveExclude,\n    max: props.keepAliveMax\n  }))\n\n  const needsUniqueKeepAliveWrapper = computed(() =>\n    props.keepAliveInclude !== void 0\n    || props.keepAliveExclude !== void 0\n  )\n\n  watch(() => props.modelValue, (newVal, oldVal) => {\n    const index = isValidPanelName(newVal) === true\n      ? getPanelIndex(newVal)\n      : -1\n\n    if (forcedPanelTransition !== true) {\n      updatePanelTransition(\n        index === -1 ? 0 : (index < getPanelIndex(oldVal) ? -1 : 1)\n      )\n    }\n\n    if (panelIndex.value !== index) {\n      panelIndex.value = index\n      emit('beforeTransition', newVal, oldVal)\n      nextTick(() => {\n        emit('transition', newVal, oldVal)\n      })\n    }\n  })\n\n  function nextPanel () { goToPanelByOffset(1) }\n  function previousPanel () { goToPanelByOffset(-1) }\n\n  function goToPanel (name) {\n    emit('update:modelValue', name)\n  }\n\n  function isValidPanelName (name) {\n    return name !== void 0 && name !== null && name !== ''\n  }\n\n  function getPanelIndex (name) {\n    return panels.findIndex(panel => {\n      return panel.props.name === name\n        && panel.props.disable !== ''\n        && panel.props.disable !== true\n    })\n  }\n\n  function getEnabledPanels () {\n    return panels.filter(panel => {\n      return panel.props.disable !== ''\n        && panel.props.disable !== true\n    })\n  }\n\n  function updatePanelTransition (direction) {\n    const val = direction !== 0 && props.animated === true && panelIndex.value !== -1\n      ? 'q-transition--' + (direction === -1 ? transitionPrev.value : transitionNext.value)\n      : null\n\n    if (panelTransition.value !== val) {\n      panelTransition.value = val\n    }\n  }\n\n  function goToPanelByOffset (direction, startIndex = panelIndex.value) {\n    let index = startIndex + direction\n\n    while (index > -1 && index < panels.length) {\n      const opt = panels[ index ]\n\n      if (\n        opt !== void 0\n        && opt.props.disable !== ''\n        && opt.props.disable !== true\n      ) {\n        updatePanelTransition(direction)\n        forcedPanelTransition = true\n        emit('update:modelValue', opt.props.name)\n        setTimeout(() => {\n          forcedPanelTransition = false\n        })\n        return\n      }\n\n      index += direction\n    }\n\n    if (props.infinite === true && panels.length !== 0 && startIndex !== -1 && startIndex !== panels.length) {\n      goToPanelByOffset(direction, direction === -1 ? panels.length : -1)\n    }\n  }\n\n  function updatePanelIndex () {\n    const index = getPanelIndex(props.modelValue)\n\n    if (panelIndex.value !== index) {\n      panelIndex.value = index\n    }\n\n    return true\n  }\n\n  function getPanelContentChild () {\n    const panel = isValidPanelName(props.modelValue) === true\n      && updatePanelIndex()\n      && panels[ panelIndex.value ]\n\n    return props.keepAlive === true\n      ? [\n          h(KeepAlive, keepAliveProps.value, [\n            h(\n              needsUniqueKeepAliveWrapper.value === true\n                ? getCacheWithFn(contentKey.value, () => ({ ...PanelWrapper, name: contentKey.value }))\n                : PanelWrapper,\n              { key: contentKey.value, style: transitionStyle.value },\n              () => panel\n            )\n          ])\n        ]\n      : [\n          h('div', {\n            class: 'q-panel scroll',\n            style: transitionStyle.value,\n            key: contentKey.value,\n            role: 'tabpanel'\n          }, [ panel ])\n        ]\n  }\n\n  function getPanelContent () {\n    if (panels.length === 0) {\n      return\n    }\n\n    return props.animated === true\n      ? [ h(Transition, { name: panelTransition.value }, getPanelContentChild) ]\n      : getPanelContentChild()\n  }\n\n  function updatePanelsList (slots) {\n    panels = getNormalizedVNodes(\n      hSlot(slots.default, [])\n    ).filter(\n      panel => panel.props !== null\n        && panel.props.slot === void 0\n        && isValidPanelName(panel.props.name) === true\n    )\n\n    return panels.length\n  }\n\n  function getPanels () {\n    return panels\n  }\n\n  // expose public methods\n  Object.assign(proxy, {\n    next: nextPanel,\n    previous: previousPanel,\n    goTo: goToPanel\n  })\n\n  return {\n    panelIndex,\n    panelDirectives,\n\n    updatePanelsList,\n    updatePanelIndex,\n\n    getPanelContent,\n    getEnabledPanels,\n    getPanels,\n\n    isValidPanelName,\n\n    keepAliveProps,\n    needsUniqueKeepAliveWrapper,\n\n    goToPanelByOffset,\n    goToPanel,\n\n    nextPanel,\n    previousPanel\n  }\n}\n",
+      "start": 1703982897197,
+      "end": 1703982897304,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897304,
+      "end": 1703982897304,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897304,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897305,
+      "end": 1703982897305,
+      "order": "normal"
+    }
+  ]
+}

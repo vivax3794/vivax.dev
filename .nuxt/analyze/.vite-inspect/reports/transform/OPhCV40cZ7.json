@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/directives/TouchHold.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { client } from '../plugins/Platform.js'\n\nimport { createDirective } from '../utils/private/create.js'\nimport { addEvt, cleanEvt, position, leftClick, stopAndPrevent, noop } from '../utils/event.js'\nimport { clearSelection } from '../utils/private/selection.js'\nimport getSSRProps from '../utils/private/noop-ssr-directive-transform.js'\n\nexport default createDirective(__QUASAR_SSR_SERVER__\n  ? { name: 'touch-hold', getSSRProps }\n  : {\n      name: 'touch-hold',\n\n      beforeMount (el, binding) {\n        const { modifiers } = binding\n\n        // early return, we don't need to do anything\n        if (modifiers.mouse !== true && client.has.touch !== true) {\n          return\n        }\n\n        const ctx = {\n          handler: binding.value,\n          noop,\n\n          mouseStart (evt) {\n            if (typeof ctx.handler === 'function' && leftClick(evt) === true) {\n              addEvt(ctx, 'temp', [\n                [ document, 'mousemove', 'move', 'passiveCapture' ],\n                [ document, 'click', 'end', 'notPassiveCapture' ]\n              ])\n              ctx.start(evt, true)\n            }\n          },\n\n          touchStart (evt) {\n            if (evt.target !== void 0 && typeof ctx.handler === 'function') {\n              const target = evt.target\n              addEvt(ctx, 'temp', [\n                [ target, 'touchmove', 'move', 'passiveCapture' ],\n                [ target, 'touchcancel', 'end', 'notPassiveCapture' ],\n                [ target, 'touchend', 'end', 'notPassiveCapture' ]\n              ])\n              ctx.start(evt)\n            }\n          },\n\n          start (evt, mouseEvent) {\n            ctx.origin = position(evt)\n\n            const startTime = Date.now()\n\n            if (client.is.mobile === true) {\n              document.body.classList.add('non-selectable')\n              clearSelection()\n\n              ctx.styleCleanup = withDelay => {\n                ctx.styleCleanup = void 0\n\n                const remove = () => {\n                  document.body.classList.remove('non-selectable')\n                }\n\n                if (withDelay === true) {\n                  clearSelection()\n                  setTimeout(remove, 10)\n                }\n                else { remove() }\n              }\n            }\n\n            ctx.triggered = false\n            ctx.sensitivity = mouseEvent === true\n              ? ctx.mouseSensitivity\n              : ctx.touchSensitivity\n\n            ctx.timer = setTimeout(() => {\n              ctx.timer = void 0\n              clearSelection()\n              ctx.triggered = true\n\n              ctx.handler({\n                evt,\n                touch: mouseEvent !== true,\n                mouse: mouseEvent === true,\n                position: ctx.origin,\n                duration: Date.now() - startTime\n              })\n            }, ctx.duration)\n          },\n\n          move (evt) {\n            const { top, left } = position(evt)\n            if (\n              ctx.timer !== void 0 && (\n                Math.abs(left - ctx.origin.left) >= ctx.sensitivity\n                || Math.abs(top - ctx.origin.top) >= ctx.sensitivity\n              )\n            ) {\n              clearTimeout(ctx.timer)\n              ctx.timer = void 0\n            }\n          },\n\n          end (evt) {\n            cleanEvt(ctx, 'temp')\n\n            // delay needed otherwise selection still occurs\n            ctx.styleCleanup !== void 0 && ctx.styleCleanup(ctx.triggered)\n\n            if (ctx.triggered === true) {\n              evt !== void 0 && stopAndPrevent(evt)\n            }\n            else if (ctx.timer !== void 0) {\n              clearTimeout(ctx.timer)\n              ctx.timer = void 0\n            }\n          }\n        }\n\n        // duration in ms, touch in pixels, mouse in pixels\n        const data = [ 600, 5, 7 ]\n\n        if (typeof binding.arg === 'string' && binding.arg.length !== 0) {\n          binding.arg.split(':').forEach((val, index) => {\n            const v = parseInt(val, 10)\n            v && (data[ index ] = v)\n          })\n        }\n\n        [ ctx.duration, ctx.touchSensitivity, ctx.mouseSensitivity ] = data\n\n        el.__qtouchhold = ctx\n\n        if (modifiers.mouse === true) {\n          // account for UMD too where modifiers will be lowercased to work\n          const capture = modifiers.mouseCapture === true || modifiers.mousecapture === true\n            ? 'Capture'\n            : ''\n\n          addEvt(ctx, 'main', [\n            [ el, 'mousedown', 'mouseStart', `passive${ capture }` ]\n          ])\n        }\n\n        client.has.touch === true && addEvt(ctx, 'main', [\n          [ el, 'touchstart', 'touchStart', `passive${ modifiers.capture === true ? 'Capture' : '' }` ],\n          [ el, 'touchend', 'noop', 'notPassiveCapture' ]\n        ])\n      },\n\n      updated (el, binding) {\n        const ctx = el.__qtouchhold\n\n        if (ctx !== void 0 && binding.oldValue !== binding.value) {\n          typeof binding.value !== 'function' && ctx.end()\n          ctx.handler = binding.value\n        }\n      },\n\n      beforeUnmount (el) {\n        const ctx = el.__qtouchhold\n\n        if (ctx !== void 0) {\n          cleanEvt(ctx, 'main')\n          cleanEvt(ctx, 'temp')\n\n          ctx.timer !== void 0 && clearTimeout(ctx.timer)\n          ctx.styleCleanup !== void 0 && ctx.styleCleanup()\n\n          delete el.__qtouchhold\n        }\n      }\n    }\n)\n",
+      "start": 1703982896645,
+      "end": 1703982896708,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { client } from \"../plugins/Platform.js\";\nimport { createDirective } from \"../utils/private/create.js\";\nimport { addEvt, cleanEvt, position, leftClick, stopAndPrevent, noop } from \"../utils/event.js\";\nimport { clearSelection } from \"../utils/private/selection.js\";\nimport getSSRProps from \"../utils/private/noop-ssr-directive-transform.js\";\nexport default createDirective(\n  false ? { name: \"touch-hold\", getSSRProps } : {\n    name: \"touch-hold\",\n    beforeMount(el, binding) {\n      const { modifiers } = binding;\n      if (modifiers.mouse !== true && client.has.touch !== true) {\n        return;\n      }\n      const ctx = {\n        handler: binding.value,\n        noop,\n        mouseStart(evt) {\n          if (typeof ctx.handler === \"function\" && leftClick(evt) === true) {\n            addEvt(ctx, \"temp\", [\n              [document, \"mousemove\", \"move\", \"passiveCapture\"],\n              [document, \"click\", \"end\", \"notPassiveCapture\"]\n            ]);\n            ctx.start(evt, true);\n          }\n        },\n        touchStart(evt) {\n          if (evt.target !== void 0 && typeof ctx.handler === \"function\") {\n            const target = evt.target;\n            addEvt(ctx, \"temp\", [\n              [target, \"touchmove\", \"move\", \"passiveCapture\"],\n              [target, \"touchcancel\", \"end\", \"notPassiveCapture\"],\n              [target, \"touchend\", \"end\", \"notPassiveCapture\"]\n            ]);\n            ctx.start(evt);\n          }\n        },\n        start(evt, mouseEvent) {\n          ctx.origin = position(evt);\n          const startTime = Date.now();\n          if (client.is.mobile === true) {\n            document.body.classList.add(\"non-selectable\");\n            clearSelection();\n            ctx.styleCleanup = (withDelay) => {\n              ctx.styleCleanup = void 0;\n              const remove = () => {\n                document.body.classList.remove(\"non-selectable\");\n              };\n              if (withDelay === true) {\n                clearSelection();\n                setTimeout(remove, 10);\n              } else {\n                remove();\n              }\n            };\n          }\n          ctx.triggered = false;\n          ctx.sensitivity = mouseEvent === true ? ctx.mouseSensitivity : ctx.touchSensitivity;\n          ctx.timer = setTimeout(() => {\n            ctx.timer = void 0;\n            clearSelection();\n            ctx.triggered = true;\n            ctx.handler({\n              evt,\n              touch: mouseEvent !== true,\n              mouse: mouseEvent === true,\n              position: ctx.origin,\n              duration: Date.now() - startTime\n            });\n          }, ctx.duration);\n        },\n        move(evt) {\n          const { top, left } = position(evt);\n          if (ctx.timer !== void 0 && (Math.abs(left - ctx.origin.left) >= ctx.sensitivity || Math.abs(top - ctx.origin.top) >= ctx.sensitivity)) {\n            clearTimeout(ctx.timer);\n            ctx.timer = void 0;\n          }\n        },\n        end(evt) {\n          cleanEvt(ctx, \"temp\");\n          ctx.styleCleanup !== void 0 && ctx.styleCleanup(ctx.triggered);\n          if (ctx.triggered === true) {\n            evt !== void 0 && stopAndPrevent(evt);\n          } else if (ctx.timer !== void 0) {\n            clearTimeout(ctx.timer);\n            ctx.timer = void 0;\n          }\n        }\n      };\n      const data = [600, 5, 7];\n      if (typeof binding.arg === \"string\" && binding.arg.length !== 0) {\n        binding.arg.split(\":\").forEach((val, index) => {\n          const v = parseInt(val, 10);\n          v && (data[index] = v);\n        });\n      }\n      [ctx.duration, ctx.touchSensitivity, ctx.mouseSensitivity] = data;\n      el.__qtouchhold = ctx;\n      if (modifiers.mouse === true) {\n        const capture = modifiers.mouseCapture === true || modifiers.mousecapture === true ? \"Capture\" : \"\";\n        addEvt(ctx, \"main\", [\n          [el, \"mousedown\", \"mouseStart\", `passive${capture}`]\n        ]);\n      }\n      client.has.touch === true && addEvt(ctx, \"main\", [\n        [el, \"touchstart\", \"touchStart\", `passive${modifiers.capture === true ? \"Capture\" : \"\"}`],\n        [el, \"touchend\", \"noop\", \"notPassiveCapture\"]\n      ]);\n    },\n    updated(el, binding) {\n      const ctx = el.__qtouchhold;\n      if (ctx !== void 0 && binding.oldValue !== binding.value) {\n        typeof binding.value !== \"function\" && ctx.end();\n        ctx.handler = binding.value;\n      }\n    },\n    beforeUnmount(el) {\n      const ctx = el.__qtouchhold;\n      if (ctx !== void 0) {\n        cleanEvt(ctx, \"main\");\n        cleanEvt(ctx, \"temp\");\n        ctx.timer !== void 0 && clearTimeout(ctx.timer);\n        ctx.styleCleanup !== void 0 && ctx.styleCleanup();\n        delete el.__qtouchhold;\n      }\n    }\n  }\n);\n",
+      "start": 1703982896708,
+      "end": 1703982896715,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896715,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896718,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896720,
+      "end": 1703982896721,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896721,
+      "end": 1703982896721,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896721,
+      "end": 1703982896721,
+      "order": "normal"
+    }
+  ]
+}

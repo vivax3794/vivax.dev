@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/editor/editor-utils.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h } from 'vue'\n\nimport QBtn from '../btn/QBtn.js'\nimport QBtnDropdown from '../btn-dropdown/QBtnDropdown.js'\nimport QIcon from '../icon/QIcon.js'\nimport QTooltip from '../tooltip/QTooltip.js'\nimport QItem from '../item/QItem.js'\nimport QItemSection from '../item/QItemSection.js'\n\nimport { prevent, stop } from '../../utils/event.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { shouldIgnoreKey } from '../../utils/private/key-composition.js'\n\nfunction run (e, btn, eVm) {\n  if (btn.handler) {\n    btn.handler(e, eVm, eVm.caret)\n  }\n  else {\n    eVm.runCmd(btn.cmd, btn.param)\n  }\n}\n\nfunction getGroup (children) {\n  return h('div', { class: 'q-editor__toolbar-group' }, children)\n}\n\nfunction getBtn (eVm, btn, clickHandler, active = false) {\n  const\n    toggled = active || (btn.type === 'toggle'\n      ? (btn.toggled ? btn.toggled(eVm) : btn.cmd && eVm.caret.is(btn.cmd, btn.param))\n      : false),\n    child = []\n\n  if (btn.tip && eVm.$q.platform.is.desktop) {\n    const Key = btn.key\n      ? h('div', [\n        h('small', `(CTRL + ${ String.fromCharCode(btn.key) })`)\n      ])\n      : null\n    child.push(\n      h(QTooltip, { delay: 1000 }, () => [\n        h('div', { innerHTML: btn.tip }),\n        Key\n      ])\n    )\n  }\n\n  return h(QBtn, {\n    ...eVm.buttonProps.value,\n    icon: btn.icon !== null ? btn.icon : void 0,\n    color: toggled ? btn.toggleColor || eVm.props.toolbarToggleColor : btn.color || eVm.props.toolbarColor,\n    textColor: toggled && !eVm.props.toolbarPush ? null : btn.textColor || eVm.props.toolbarTextColor,\n    label: btn.label,\n    disable: btn.disable ? (typeof btn.disable === 'function' ? btn.disable(eVm) : true) : false,\n    size: 'sm',\n    onClick (e) {\n      clickHandler && clickHandler()\n      run(e, btn, eVm)\n    }\n  }, () => child)\n}\n\nfunction getDropdown (eVm, btn) {\n  const onlyIcons = btn.list === 'only-icons'\n  let\n    label = btn.label,\n    icon = btn.icon !== null ? btn.icon : void 0,\n    contentClass,\n    Items\n\n  function closeDropdown () {\n    Dropdown.component.proxy.hide()\n  }\n\n  if (onlyIcons) {\n    Items = btn.options.map(btn => {\n      const active = btn.type === void 0\n        ? eVm.caret.is(btn.cmd, btn.param)\n        : false\n\n      if (active) {\n        label = btn.tip\n        icon = btn.icon !== null ? btn.icon : void 0\n      }\n      return getBtn(eVm, btn, closeDropdown, active)\n    })\n    contentClass = eVm.toolbarBackgroundClass.value\n    Items = [\n      getGroup(Items)\n    ]\n  }\n  else {\n    const activeClass = eVm.props.toolbarToggleColor !== void 0\n      ? `text-${ eVm.props.toolbarToggleColor }`\n      : null\n    const inactiveClass = eVm.props.toolbarTextColor !== void 0\n      ? `text-${ eVm.props.toolbarTextColor }`\n      : null\n\n    const noIcons = btn.list === 'no-icons'\n\n    Items = btn.options.map(btn => {\n      const disable = btn.disable ? btn.disable(eVm) : false\n      const active = btn.type === void 0\n        ? eVm.caret.is(btn.cmd, btn.param)\n        : false\n\n      if (active) {\n        label = btn.tip\n        icon = btn.icon !== null ? btn.icon : void 0\n      }\n\n      const htmlTip = btn.htmlTip\n\n      return h(QItem, {\n        active,\n        activeClass,\n        clickable: true,\n        disable,\n        dense: true,\n        onClick (e) {\n          closeDropdown()\n          eVm.contentRef.value !== null && eVm.contentRef.value.focus()\n          eVm.caret.restore()\n          run(e, btn, eVm)\n        }\n      }, () => [\n        noIcons === true\n          ? null\n          : h(\n            QItemSection,\n            {\n              class: active ? activeClass : inactiveClass,\n              side: true\n            },\n            () => h(QIcon, { name: btn.icon !== null ? btn.icon : void 0 })\n          ),\n\n        h(\n          QItemSection,\n          htmlTip\n            ? () => h('div', { class: 'text-no-wrap', innerHTML: btn.htmlTip })\n            : (btn.tip ? () => h('div', { class: 'text-no-wrap' }, btn.tip) : void 0)\n        )\n      ])\n    })\n    contentClass = [ eVm.toolbarBackgroundClass.value, inactiveClass ]\n  }\n\n  const highlight = btn.highlight && label !== btn.label\n  const Dropdown = h(QBtnDropdown, {\n    ...eVm.buttonProps.value,\n    noCaps: true,\n    noWrap: true,\n    color: highlight ? eVm.props.toolbarToggleColor : eVm.props.toolbarColor,\n    textColor: highlight && !eVm.props.toolbarPush ? null : eVm.props.toolbarTextColor,\n    label: btn.fixedLabel ? btn.label : label,\n    icon: btn.fixedIcon ? (btn.icon !== null ? btn.icon : void 0) : icon,\n    contentClass,\n    onShow: evt => eVm.emit('dropdownShow', evt),\n    onHide: evt => eVm.emit('dropdownHide', evt),\n    onBeforeShow: evt => eVm.emit('dropdownBeforeShow', evt),\n    onBeforeHide: evt => eVm.emit('dropdownBeforeHide', evt)\n  }, () => Items)\n\n  return Dropdown\n}\n\nexport function getToolbar (eVm) {\n  if (eVm.caret) {\n    return eVm.buttons.value\n      .filter(f => {\n        return !eVm.isViewingSource.value || f.find(fb => fb.cmd === 'viewsource')\n      })\n      .map(group => getGroup(\n        group.map(btn => {\n          if (eVm.isViewingSource.value && btn.cmd !== 'viewsource') {\n            return false\n          }\n\n          if (btn.type === 'slot') {\n            return hSlot(eVm.slots[ btn.slot ])\n          }\n\n          if (btn.type === 'dropdown') {\n            return getDropdown(eVm, btn)\n          }\n\n          return getBtn(eVm, btn)\n        })\n      ))\n  }\n}\n\nexport function getFonts (defaultFont, defaultFontLabel, defaultFontIcon, fonts = {}) {\n  const aliases = Object.keys(fonts)\n  if (aliases.length === 0) {\n    return {}\n  }\n\n  const def = {\n    default_font: {\n      cmd: 'fontName',\n      param: defaultFont,\n      icon: defaultFontIcon,\n      tip: defaultFontLabel\n    }\n  }\n\n  aliases.forEach(alias => {\n    const name = fonts[ alias ]\n    def[ alias ] = {\n      cmd: 'fontName',\n      param: name,\n      icon: defaultFontIcon,\n      tip: name,\n      htmlTip: `<font face=\"${ name }\">${ name }</font>`\n    }\n  })\n\n  return def\n}\n\nexport function getLinkEditor (eVm) {\n  if (eVm.caret) {\n    const color = eVm.props.toolbarColor || eVm.props.toolbarTextColor\n    let link = eVm.editLinkUrl.value\n    const updateLink = () => {\n      eVm.caret.restore()\n\n      if (link !== eVm.editLinkUrl.value) {\n        document.execCommand('createLink', false, link === '' ? ' ' : link)\n      }\n\n      eVm.editLinkUrl.value = null\n    }\n\n    return [\n      h('div', { class: `q-mx-xs text-${ color }` }, `${ eVm.$q.lang.editor.url }: `),\n      h('input', {\n        key: 'qedt_btm_input',\n        class: 'col q-editor__link-input',\n        value: link,\n        onInput: evt => {\n          stop(evt)\n          link = evt.target.value\n        },\n        onKeydown: evt => {\n          if (shouldIgnoreKey(evt) === true) {\n            return\n          }\n\n          switch (evt.keyCode) {\n            case 13: // ENTER key\n              prevent(evt)\n              return updateLink()\n            case 27: // ESCAPE key\n              prevent(evt)\n              eVm.caret.restore()\n              if (!eVm.editLinkUrl.value || eVm.editLinkUrl.value === 'https://') {\n                document.execCommand('unlink')\n              }\n              eVm.editLinkUrl.value = null\n              break\n          }\n        }\n      }),\n      getGroup([\n        h(QBtn, {\n          key: 'qedt_btm_rem',\n          tabindex: -1,\n          ...eVm.buttonProps.value,\n          label: eVm.$q.lang.label.remove,\n          noCaps: true,\n          onClick: () => {\n            eVm.caret.restore()\n            document.execCommand('unlink')\n            eVm.editLinkUrl.value = null\n          }\n        }),\n        h(QBtn, {\n          key: 'qedt_btm_upd',\n          ...eVm.buttonProps.value,\n          label: eVm.$q.lang.label.update,\n          noCaps: true,\n          onClick: updateLink\n        })\n      ])\n    ]\n  }\n}\n",
+      "start": 1703982897306,
+      "end": 1703982897353,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897353,
+      "end": 1703982897353,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897353,
+      "end": 1703982897354,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897354,
+      "end": 1703982897354,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897354,
+      "end": 1703982897354,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897354,
+      "end": 1703982897354,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897354,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897355,
+      "end": 1703982897355,
+      "order": "normal"
+    }
+  ]
+}

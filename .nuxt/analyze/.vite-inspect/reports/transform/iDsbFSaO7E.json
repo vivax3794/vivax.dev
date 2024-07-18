@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/plugins/Cookies.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "function encode (string) {\n  return encodeURIComponent(string)\n}\n\nfunction decode (string) {\n  return decodeURIComponent(string)\n}\n\nfunction stringifyCookieValue (value) {\n  return encode(value === Object(value) ? JSON.stringify(value) : '' + value)\n}\n\nfunction read (string) {\n  if (string === '') {\n    return string\n  }\n\n  if (string.indexOf('\"') === 0) {\n    // This is a quoted cookie as according to RFC2068, unescape...\n    string = string.slice(1, -1).replace(/\\\\\"/g, '\"').replace(/\\\\\\\\/g, '\\\\')\n  }\n\n  // Replace server-side written pluses with spaces.\n  // If we can't decode the cookie, ignore it, it's unusable.\n  // If we can't parse the cookie, ignore it, it's unusable.\n  string = decode(string.replace(/\\+/g, ' '))\n\n  try {\n    const parsed = JSON.parse(string)\n\n    if (parsed === Object(parsed) || Array.isArray(parsed) === true) {\n      string = parsed\n    }\n  }\n  catch (e) {}\n\n  return string\n}\n\nfunction getString (msOffset) {\n  const time = new Date()\n  time.setMilliseconds(time.getMilliseconds() + msOffset)\n  return time.toUTCString()\n}\n\nfunction parseExpireString (str) {\n  let timestamp = 0\n\n  const days = str.match(/(\\d+)d/)\n  const hours = str.match(/(\\d+)h/)\n  const minutes = str.match(/(\\d+)m/)\n  const seconds = str.match(/(\\d+)s/)\n\n  if (days) { timestamp += days[ 1 ] * 864e+5 }\n  if (hours) { timestamp += hours[ 1 ] * 36e+5 }\n  if (minutes) { timestamp += minutes[ 1 ] * 6e+4 }\n  if (seconds) { timestamp += seconds[ 1 ] * 1000 }\n\n  return timestamp === 0\n    ? str\n    : getString(timestamp)\n}\n\nfunction set (key, val, opts = {}, ssr) {\n  let expire, expireValue\n\n  if (opts.expires !== void 0) {\n    // if it's a Date Object\n    if (Object.prototype.toString.call(opts.expires) === '[object Date]') {\n      expire = opts.expires.toUTCString()\n    }\n    // if it's a String (eg. \"15m\", \"1h\", \"13d\", \"1d 15m\", \"31s\")\n    // possible units: d (days), h (hours), m (minutes), s (seconds)\n    else if (typeof opts.expires === 'string') {\n      expire = parseExpireString(opts.expires)\n    }\n    // otherwise it must be a Number (defined in days)\n    else {\n      expireValue = parseFloat(opts.expires)\n      expire = isNaN(expireValue) === false\n        ? getString(expireValue * 864e+5)\n        : opts.expires\n    }\n  }\n\n  const keyValue = `${ encode(key) }=${ stringifyCookieValue(val) }`\n\n  const cookie = [\n    keyValue,\n    expire !== void 0 ? '; Expires=' + expire : '', // use expires attribute, max-age is not supported by IE\n    opts.path ? '; Path=' + opts.path : '',\n    opts.domain ? '; Domain=' + opts.domain : '',\n    opts.sameSite ? '; SameSite=' + opts.sameSite : '',\n    opts.httpOnly ? '; HttpOnly' : '',\n    opts.secure ? '; Secure' : '',\n    opts.other ? '; ' + opts.other : ''\n  ].join('')\n\n  if (ssr) {\n    if (ssr.req.qCookies) {\n      ssr.req.qCookies.push(cookie)\n    }\n    else {\n      ssr.req.qCookies = [ cookie ]\n    }\n\n    ssr.res.setHeader('Set-Cookie', ssr.req.qCookies)\n\n    // make temporary update so future get()\n    // within same SSR timeframe would return the set value\n\n    let all = ssr.req.headers.cookie || ''\n\n    if (expire !== void 0 && expireValue < 0) {\n      const val = get(key, ssr)\n      if (val !== undefined) {\n        all = all\n          .replace(`${ key }=${ val }; `, '')\n          .replace(`; ${ key }=${ val }`, '')\n          .replace(`${ key }=${ val }`, '')\n      }\n    }\n    else {\n      all = all\n        ? `${ keyValue }; ${ all }`\n        : cookie\n    }\n\n    ssr.req.headers.cookie = all\n  }\n  else {\n    document.cookie = cookie\n  }\n}\n\nfunction get (key, ssr) {\n  const\n    cookieSource = ssr ? ssr.req.headers : document,\n    cookies = cookieSource.cookie ? cookieSource.cookie.split('; ') : [],\n    l = cookies.length\n  let\n    result = key ? null : {},\n    i = 0,\n    parts,\n    name,\n    cookie\n\n  for (; i < l; i++) {\n    parts = cookies[ i ].split('=')\n    name = decode(parts.shift())\n    cookie = parts.join('=')\n\n    if (!key) {\n      result[ name ] = cookie\n    }\n    else if (key === name) {\n      result = read(cookie)\n      break\n    }\n  }\n\n  return result\n}\n\nfunction remove (key, options, ssr) {\n  set(\n    key,\n    '',\n    { expires: -1, ...options },\n    ssr\n  )\n}\n\nfunction has (key, ssr) {\n  return get(key, ssr) !== null\n}\n\nexport function getObject (ssr) {\n  return {\n    get: key => get(key, ssr),\n    set: (key, val, opts) => set(key, val, opts, ssr),\n    has: key => has(key, ssr),\n    remove: (key, options) => remove(key, options, ssr),\n    getAll: () => get(null, ssr)\n  }\n}\n\nconst Plugin = {\n  install ({ $q, ssrContext }) {\n    $q.cookies = __QUASAR_SSR_SERVER__\n      ? getObject(ssrContext)\n      : this\n  }\n}\n\nif (__QUASAR_SSR__) {\n  Plugin.parseSSR = ssrContext => {\n    if (ssrContext !== void 0) {\n      return getObject(ssrContext)\n    }\n  }\n}\n\nif (__QUASAR_SSR_SERVER__ !== true) {\n  Object.assign(Plugin, getObject())\n}\n\nexport default Plugin\n",
+      "start": 1703982896685,
+      "end": 1703982896742,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896742,
+      "end": 1703982896742,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "function encode(string) {\n  return encodeURIComponent(string);\n}\nfunction decode(string) {\n  return decodeURIComponent(string);\n}\nfunction stringifyCookieValue(value) {\n  return encode(value === Object(value) ? JSON.stringify(value) : \"\" + value);\n}\nfunction read(string) {\n  if (string === \"\") {\n    return string;\n  }\n  if (string.indexOf('\"') === 0) {\n    string = string.slice(1, -1).replace(/\\\\\"/g, '\"').replace(/\\\\\\\\/g, \"\\\\\");\n  }\n  string = decode(string.replace(/\\+/g, \" \"));\n  try {\n    const parsed = JSON.parse(string);\n    if (parsed === Object(parsed) || Array.isArray(parsed) === true) {\n      string = parsed;\n    }\n  } catch (e) {\n  }\n  return string;\n}\nfunction getString(msOffset) {\n  const time = /* @__PURE__ */ new Date();\n  time.setMilliseconds(time.getMilliseconds() + msOffset);\n  return time.toUTCString();\n}\nfunction parseExpireString(str) {\n  let timestamp = 0;\n  const days = str.match(/(\\d+)d/);\n  const hours = str.match(/(\\d+)h/);\n  const minutes = str.match(/(\\d+)m/);\n  const seconds = str.match(/(\\d+)s/);\n  if (days) {\n    timestamp += days[1] * 864e5;\n  }\n  if (hours) {\n    timestamp += hours[1] * 36e5;\n  }\n  if (minutes) {\n    timestamp += minutes[1] * 6e4;\n  }\n  if (seconds) {\n    timestamp += seconds[1] * 1e3;\n  }\n  return timestamp === 0 ? str : getString(timestamp);\n}\nfunction set(key, val, opts = {}, ssr) {\n  let expire, expireValue;\n  if (opts.expires !== void 0) {\n    if (Object.prototype.toString.call(opts.expires) === \"[object Date]\") {\n      expire = opts.expires.toUTCString();\n    } else if (typeof opts.expires === \"string\") {\n      expire = parseExpireString(opts.expires);\n    } else {\n      expireValue = parseFloat(opts.expires);\n      expire = isNaN(expireValue) === false ? getString(expireValue * 864e5) : opts.expires;\n    }\n  }\n  const keyValue = `${encode(key)}=${stringifyCookieValue(val)}`;\n  const cookie = [\n    keyValue,\n    expire !== void 0 ? \"; Expires=\" + expire : \"\",\n    // use expires attribute, max-age is not supported by IE\n    opts.path ? \"; Path=\" + opts.path : \"\",\n    opts.domain ? \"; Domain=\" + opts.domain : \"\",\n    opts.sameSite ? \"; SameSite=\" + opts.sameSite : \"\",\n    opts.httpOnly ? \"; HttpOnly\" : \"\",\n    opts.secure ? \"; Secure\" : \"\",\n    opts.other ? \"; \" + opts.other : \"\"\n  ].join(\"\");\n  if (ssr) {\n    if (ssr.req.qCookies) {\n      ssr.req.qCookies.push(cookie);\n    } else {\n      ssr.req.qCookies = [cookie];\n    }\n    ssr.res.setHeader(\"Set-Cookie\", ssr.req.qCookies);\n    let all = ssr.req.headers.cookie || \"\";\n    if (expire !== void 0 && expireValue < 0) {\n      const val2 = get(key, ssr);\n      if (val2 !== void 0) {\n        all = all.replace(`${key}=${val2}; `, \"\").replace(`; ${key}=${val2}`, \"\").replace(`${key}=${val2}`, \"\");\n      }\n    } else {\n      all = all ? `${keyValue}; ${all}` : cookie;\n    }\n    ssr.req.headers.cookie = all;\n  } else {\n    document.cookie = cookie;\n  }\n}\nfunction get(key, ssr) {\n  const cookieSource = ssr ? ssr.req.headers : document, cookies = cookieSource.cookie ? cookieSource.cookie.split(\"; \") : [], l = cookies.length;\n  let result = key ? null : {}, i = 0, parts, name, cookie;\n  for (; i < l; i++) {\n    parts = cookies[i].split(\"=\");\n    name = decode(parts.shift());\n    cookie = parts.join(\"=\");\n    if (!key) {\n      result[name] = cookie;\n    } else if (key === name) {\n      result = read(cookie);\n      break;\n    }\n  }\n  return result;\n}\nfunction remove(key, options, ssr) {\n  set(\n    key,\n    \"\",\n    { expires: -1, ...options },\n    ssr\n  );\n}\nfunction has(key, ssr) {\n  return get(key, ssr) !== null;\n}\nexport function getObject(ssr) {\n  return {\n    get: (key) => get(key, ssr),\n    set: (key, val, opts) => set(key, val, opts, ssr),\n    has: (key) => has(key, ssr),\n    remove: (key, options) => remove(key, options, ssr),\n    getAll: () => get(null, ssr)\n  };\n}\nconst Plugin = {\n  install({ $q, ssrContext }) {\n    $q.cookies = false ? getObject(ssrContext) : this;\n  }\n};\nif (true) {\n  Plugin.parseSSR = (ssrContext) => {\n    if (ssrContext !== void 0) {\n      return getObject(ssrContext);\n    }\n  };\n}\nif (true) {\n  Object.assign(Plugin, getObject());\n}\nexport default Plugin;\n",
+      "start": 1703982896742,
+      "end": 1703982896747,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896747,
+      "end": 1703982896747,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896748,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896749,
+      "end": 1703982896749,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896750,
+      "end": 1703982896750,
+      "order": "normal"
+    }
+  ]
+}

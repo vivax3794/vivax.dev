@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/radio/QRadio.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, getCurrentInstance, toRaw } from 'vue'\n\nimport QIcon from '../icon/QIcon.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport useSize, { useSizeProps } from '../../composables/private/use-size.js'\nimport useRefocusTarget from '../../composables/private/use-refocus-target.js'\nimport { useFormProps, useFormInject } from '../../composables/private/use-form.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport optionSizes from '../../utils/private/option-sizes.js'\nimport { stopAndPrevent } from '../../utils/event.js'\nimport { hSlot, hMergeSlot } from '../../utils/private/render.js'\n\nconst svg = h('svg', {\n  key: 'svg',\n  class: 'q-radio__bg absolute non-selectable',\n  viewBox: '0 0 24 24'\n}, [\n  h('path', {\n    d: 'M12,22a10,10 0 0 1 -10,-10a10,10 0 0 1 10,-10a10,10 0 0 1 10,10a10,10 0 0 1 -10,10m0,-22a12,12 0 0 0 -12,12a12,12 0 0 0 12,12a12,12 0 0 0 12,-12a12,12 0 0 0 -12,-12'\n  }),\n\n  h('path', {\n    class: 'q-radio__check',\n    d: 'M12,6a6,6 0 0 0 -6,6a6,6 0 0 0 6,6a6,6 0 0 0 6,-6a6,6 0 0 0 -6,-6'\n  })\n])\n\nexport default createComponent({\n  name: 'QRadio',\n\n  props: {\n    ...useDarkProps,\n    ...useSizeProps,\n    ...useFormProps,\n\n    modelValue: { required: true },\n    val: { required: true },\n\n    label: String,\n    leftLabel: Boolean,\n\n    checkedIcon: String,\n    uncheckedIcon: String,\n\n    color: String,\n    keepColor: Boolean,\n    dense: Boolean,\n\n    disable: Boolean,\n    tabindex: [ String, Number ]\n  },\n\n  emits: [ 'update:modelValue' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy } = getCurrentInstance()\n\n    const isDark = useDark(props, proxy.$q)\n    const sizeStyle = useSize(props, optionSizes)\n\n    const rootRef = ref(null)\n    const { refocusTargetEl, refocusTarget } = useRefocusTarget(props, rootRef)\n\n    const isTrue = computed(() => toRaw(props.modelValue) === toRaw(props.val))\n\n    const classes = computed(() =>\n      'q-radio cursor-pointer no-outline row inline no-wrap items-center'\n      + (props.disable === true ? ' disabled' : '')\n      + (isDark.value === true ? ' q-radio--dark' : '')\n      + (props.dense === true ? ' q-radio--dense' : '')\n      + (props.leftLabel === true ? ' reverse' : '')\n    )\n\n    const innerClass = computed(() => {\n      const color = props.color !== void 0 && (\n        props.keepColor === true\n        || isTrue.value === true\n      )\n        ? ` text-${ props.color }`\n        : ''\n\n      return 'q-radio__inner relative-position '\n        + `q-radio__inner--${ isTrue.value === true ? 'truthy' : 'falsy' }${ color }`\n    })\n\n    const icon = computed(() =>\n      (isTrue.value === true\n        ? props.checkedIcon\n        : props.uncheckedIcon\n      ) || null\n    )\n\n    const tabindex = computed(() => (\n      props.disable === true ? -1 : props.tabindex || 0\n    ))\n\n    const formAttrs = computed(() => {\n      const prop = { type: 'radio' }\n\n      props.name !== void 0 && Object.assign(prop, {\n        // see https://vuejs.org/guide/extras/render-function.html#creating-vnodes (.prop)\n        '.checked': isTrue.value === true,\n        '^checked': isTrue.value === true ? 'checked' : void 0,\n        name: props.name,\n        value: props.val\n      })\n\n      return prop\n    })\n\n    const injectFormInput = useFormInject(formAttrs)\n\n    function onClick (e) {\n      if (e !== void 0) {\n        stopAndPrevent(e)\n        refocusTarget(e)\n      }\n\n      if (props.disable !== true && isTrue.value !== true) {\n        emit('update:modelValue', props.val, e)\n      }\n    }\n\n    function onKeydown (e) {\n      if (e.keyCode === 13 || e.keyCode === 32) {\n        stopAndPrevent(e)\n      }\n    }\n\n    function onKeyup (e) {\n      if (e.keyCode === 13 || e.keyCode === 32) {\n        onClick(e)\n      }\n    }\n\n    // expose public methods\n    Object.assign(proxy, { set: onClick })\n\n    return () => {\n      const content = icon.value !== null\n        ? [\n            h('div', {\n              key: 'icon',\n              class: 'q-radio__icon-container absolute-full flex flex-center no-wrap'\n            }, [\n              h(QIcon, {\n                class: 'q-radio__icon',\n                name: icon.value\n              })\n            ])\n          ]\n        : [ svg ]\n\n      props.disable !== true && injectFormInput(\n        content,\n        'unshift',\n        ' q-radio__native q-ma-none q-pa-none'\n      )\n\n      const child = [\n        h('div', {\n          class: innerClass.value,\n          style: sizeStyle.value,\n          'aria-hidden': 'true'\n        }, content)\n      ]\n\n      if (refocusTargetEl.value !== null) {\n        child.push(refocusTargetEl.value)\n      }\n\n      const label = props.label !== void 0\n        ? hMergeSlot(slots.default, [ props.label ])\n        : hSlot(slots.default)\n\n      label !== void 0 && child.push(\n        h('div', {\n          class: 'q-radio__label q-anchor--skip'\n        }, label)\n      )\n\n      return h('div', {\n        ref: rootRef,\n        class: classes.value,\n        tabindex: tabindex.value,\n        role: 'radio',\n        'aria-label': props.label,\n        'aria-checked': isTrue.value === true ? 'true' : 'false',\n        'aria-disabled': props.disable === true ? 'true' : void 0,\n        onClick,\n        onKeydown,\n        onKeyup\n      }, child)\n    }\n  }\n})\n",
+      "start": 1703982896426,
+      "end": 1703982896507,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896507,
+      "end": 1703982896507,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896507,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896508,
+      "end": 1703982896508,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896508,
+      "end": 1703982896509,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    }
+  ]
+}

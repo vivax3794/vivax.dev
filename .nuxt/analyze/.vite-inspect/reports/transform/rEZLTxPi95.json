@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/spinner/QSpinnerIos.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h } from 'vue'\n\nimport useSpinner, { useSpinnerProps } from './use-spinner.js'\n\nimport { createComponent } from '../../utils/private/create.js'\n\nconst svg = [\n  h('g', {\n    'stroke-width': '4',\n    'stroke-linecap': 'round'\n  }, [\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(180)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '1;.85;.7;.65;.55;.45;.35;.25;.15;.1;0;1',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(210)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '0;1;.85;.7;.65;.55;.45;.35;.25;.15;.1;0',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(240)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.1;0;1;.85;.7;.65;.55;.45;.35;.25;.15;.1',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(270)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.15;.1;0;1;.85;.7;.65;.55;.45;.35;.25;.15',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(300)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.25;.15;.1;0;1;.85;.7;.65;.55;.45;.35;.25',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(330)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.35;.25;.15;.1;0;1;.85;.7;.65;.55;.45;.35',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(0)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.45;.35;.25;.15;.1;0;1;.85;.7;.65;.55;.45',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(30)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.55;.45;.35;.25;.15;.1;0;1;.85;.7;.65;.55',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(60)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.65;.55;.45;.35;.25;.15;.1;0;1;.85;.7;.65',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(90)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.7;.65;.55;.45;.35;.25;.15;.1;0;1;.85;.7',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(120)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '.85;.7;.65;.55;.45;.35;.25;.15;.1;0;1;.85',\n        repeatCount: 'indefinite'\n      })\n    ]),\n    h('line', {\n      y1: '17',\n      y2: '29',\n      transform: 'translate(32,32) rotate(150)'\n    }, [\n      h('animate', {\n        attributeName: 'stroke-opacity',\n        dur: '750ms',\n        values: '1;.85;.7;.65;.55;.45;.35;.25;.15;.1;0;1',\n        repeatCount: 'indefinite'\n      })\n    ])\n  ])\n]\n\nexport default createComponent({\n  name: 'QSpinnerIos',\n\n  props: useSpinnerProps,\n\n  setup (props) {\n    const { cSize, classes } = useSpinner(props)\n\n    return () => h('svg', {\n      class: classes.value,\n      width: cSize.value,\n      height: cSize.value,\n      stroke: 'currentColor',\n      fill: 'currentColor',\n      viewBox: '0 0 64 64'\n    }, svg)\n  }\n})\n",
+      "start": 1703982896549,
+      "end": 1703982896606,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896606,
+      "end": 1703982896606,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896607,
+      "end": 1703982896607,
+      "order": "normal"
+    }
+  ]
+}

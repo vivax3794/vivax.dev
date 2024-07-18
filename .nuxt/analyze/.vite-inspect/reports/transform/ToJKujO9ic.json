@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/private/use-validate.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { ref, computed, watch, onBeforeUnmount, getCurrentInstance } from 'vue'\n\nimport useFormChild from '../use-form-child.js'\nimport { testPattern } from '../../utils/patterns.js'\nimport debounce from '../../utils/debounce.js'\nimport { injectProp } from '../../utils/private/inject-obj-prop.js'\n\nconst lazyRulesValues = [ true, false, 'ondemand' ]\n\nexport const useValidateProps = {\n  modelValue: {},\n\n  error: {\n    type: Boolean,\n    default: null\n  },\n  errorMessage: String,\n  noErrorIcon: Boolean,\n\n  rules: Array,\n  reactiveRules: Boolean,\n  lazyRules: {\n    type: [ Boolean, String ],\n    default: false, // statement unneeded but avoids future vue implementation changes\n    validator: v => lazyRulesValues.includes(v)\n  }\n}\n\nexport default function (focused, innerLoading) {\n  const { props, proxy } = getCurrentInstance()\n\n  const innerError = ref(false)\n  const innerErrorMessage = ref(null)\n  const isDirtyModel = ref(null)\n\n  useFormChild({ validate, resetValidation })\n\n  let validateIndex = 0, unwatchRules\n\n  const hasRules = computed(() =>\n    props.rules !== void 0\n    && props.rules !== null\n    && props.rules.length !== 0\n  )\n\n  const canDebounceValidate = computed(() => (\n    props.disable !== true\n    && hasRules.value === true\n    // Should not have a validation in progress already;\n    // It might mean that focus switched to submit btn and\n    // QForm's submit() has been called already (ENTER key)\n    && innerLoading.value === false\n  ))\n\n  const hasError = computed(() =>\n    props.error === true || innerError.value === true\n  )\n\n  const errorMessage = computed(() => (\n    typeof props.errorMessage === 'string' && props.errorMessage.length !== 0\n      ? props.errorMessage\n      : innerErrorMessage.value\n  ))\n\n  watch(() => props.modelValue, () => {\n    isDirtyModel.value = true\n\n    if (\n      canDebounceValidate.value === true\n      // trigger validation if not using any kind of lazy-rules\n      && props.lazyRules === false\n    ) {\n      debouncedValidate()\n    }\n  })\n\n  watch(() => props.reactiveRules, val => {\n    if (val === true) {\n      if (unwatchRules === void 0) {\n        unwatchRules = watch(() => props.rules, () => {\n          if (\n            canDebounceValidate.value === true\n            && isDirtyModel.value === true\n            && props.lazyRules !== 'ondemand'\n          ) {\n            debouncedValidate()\n          }\n        }, { immediate: true })\n      }\n    }\n    else if (unwatchRules !== void 0) {\n      unwatchRules()\n      unwatchRules = void 0\n    }\n  }, { immediate: true })\n\n  watch(() => props.lazyRules, val => {\n    if (\n      val === false\n      && canDebounceValidate.value === true\n      && isDirtyModel.value === true\n    ) {\n      debouncedValidate()\n    }\n  })\n\n  watch(focused, val => {\n    if (val === true) {\n      if (isDirtyModel.value === null) {\n        isDirtyModel.value = props.lazyRules === true\n      }\n    }\n    else if (\n      canDebounceValidate.value === true\n      && (\n        // props.lazyRules can also be 'ondemand',\n        // hence the following form:\n        props.lazyRules === false\n        || (props.lazyRules === true && isDirtyModel.value === true)\n      )\n    ) {\n      debouncedValidate()\n    }\n  })\n\n  function resetValidation () {\n    validateIndex++\n    innerLoading.value = false\n    isDirtyModel.value = null\n    innerError.value = false\n    innerErrorMessage.value = null\n    debouncedValidate.cancel()\n  }\n\n  /*\n   * Return value\n   *   - true (validation succeeded)\n   *   - false (validation failed)\n   *   - Promise (pending async validation)\n   */\n  function validate (val = props.modelValue) {\n    if (\n      props.disable === true\n      || hasRules.value === false\n    ) {\n      return true\n    }\n\n    const index = ++validateIndex\n\n    const setDirty = innerLoading.value !== true\n      ? () => { isDirtyModel.value = true }\n      : () => {}\n\n    const update = (err, msg) => {\n      err === true && setDirty()\n\n      innerError.value = err\n      innerErrorMessage.value = msg || null\n      innerLoading.value = false\n    }\n\n    const promises = []\n\n    for (let i = 0; i < props.rules.length; i++) {\n      const rule = props.rules[ i ]\n      let res\n\n      if (typeof rule === 'function') {\n        res = rule(val, testPattern)\n      }\n      else if (typeof rule === 'string' && testPattern[ rule ] !== void 0) {\n        res = testPattern[ rule ](val)\n      }\n\n      if (res === false || typeof res === 'string') {\n        update(true, res)\n        return false\n      }\n      else if (res !== true && res !== void 0) {\n        promises.push(res)\n      }\n    }\n\n    if (promises.length === 0) {\n      update(false)\n      return true\n    }\n\n    innerLoading.value = true\n\n    return Promise.all(promises).then(\n      res => {\n        if (res === void 0 || Array.isArray(res) === false || res.length === 0) {\n          index === validateIndex && update(false)\n          return true\n        }\n\n        const msg = res.find(r => r === false || typeof r === 'string')\n        index === validateIndex && update(msg !== void 0, msg)\n        return msg === void 0\n      },\n      e => {\n        if (index === validateIndex) {\n          console.error(e)\n          update(true)\n        }\n\n        return false\n      }\n    )\n  }\n\n  const debouncedValidate = debounce(validate, 0)\n\n  onBeforeUnmount(() => {\n    unwatchRules !== void 0 && unwatchRules()\n    debouncedValidate.cancel()\n  })\n\n  // expose public methods & props\n  Object.assign(proxy, { resetValidation, validate })\n  injectProp(proxy, 'hasError', () => hasError.value)\n\n  return {\n    isDirtyModel,\n    hasRules,\n    hasError,\n    errorMessage,\n\n    validate,\n    resetValidation\n  }\n}\n",
+      "start": 1703982897568,
+      "end": 1703982897640,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897640,
+      "end": 1703982897640,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897640,
+      "end": 1703982897641,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897641,
+      "end": 1703982897641,
+      "order": "normal"
+    }
+  ]
+}

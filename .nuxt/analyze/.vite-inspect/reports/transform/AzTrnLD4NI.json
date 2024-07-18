@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/dialog/QDialog.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, onBeforeUnmount, Transition, getCurrentInstance } from 'vue'\n\nimport useHistory from '../../composables/private/use-history.js'\nimport useTimeout from '../../composables/private/use-timeout.js'\nimport useTick from '../../composables/private/use-tick.js'\nimport useModelToggle, { useModelToggleProps, useModelToggleEmits } from '../../composables/private/use-model-toggle.js'\nimport useTransition, { useTransitionProps } from '../../composables/private/use-transition.js'\nimport usePortal from '../../composables/private/use-portal.js'\nimport usePreventScroll from '../../composables/private/use-prevent-scroll.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { childHasFocus } from '../../utils/dom.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { addEscapeKey, removeEscapeKey } from '../../utils/private/escape-key.js'\nimport { addFocusout, removeFocusout } from '../../utils/private/focusout.js'\nimport { addFocusFn } from '../../utils/private/focus-manager.js'\n\nlet maximizedModals = 0\n\nconst positionClass = {\n  standard: 'fixed-full flex-center',\n  top: 'fixed-top justify-center',\n  bottom: 'fixed-bottom justify-center',\n  right: 'fixed-right items-center',\n  left: 'fixed-left items-center'\n}\n\nconst defaultTransitions = {\n  standard: [ 'scale', 'scale' ],\n  top: [ 'slide-down', 'slide-up' ],\n  bottom: [ 'slide-up', 'slide-down' ],\n  right: [ 'slide-left', 'slide-right' ],\n  left: [ 'slide-right', 'slide-left' ]\n}\n\nexport default createComponent({\n  name: 'QDialog',\n\n  inheritAttrs: false,\n\n  props: {\n    ...useModelToggleProps,\n    ...useTransitionProps,\n\n    transitionShow: String, // override useTransitionProps\n    transitionHide: String, // override useTransitionProps\n\n    persistent: Boolean,\n    autoClose: Boolean,\n    allowFocusOutside: Boolean,\n\n    noEscDismiss: Boolean,\n    noBackdropDismiss: Boolean,\n    noRouteDismiss: Boolean,\n    noRefocus: Boolean,\n    noFocus: Boolean,\n    noShake: Boolean,\n\n    seamless: Boolean,\n\n    maximized: Boolean,\n    fullWidth: Boolean,\n    fullHeight: Boolean,\n\n    square: Boolean,\n\n    position: {\n      type: String,\n      default: 'standard',\n      validator: val => val === 'standard'\n        || [ 'top', 'bottom', 'left', 'right' ].includes(val)\n    }\n  },\n\n  emits: [\n    ...useModelToggleEmits,\n    'shake', 'click', 'escapeKey'\n  ],\n\n  setup (props, { slots, emit, attrs }) {\n    const vm = getCurrentInstance()\n\n    const innerRef = ref(null)\n    const showing = ref(false)\n    const animating = ref(false)\n\n    let shakeTimeout = null, refocusTarget = null, isMaximized, avoidAutoClose\n\n    const hideOnRouteChange = computed(() =>\n      props.persistent !== true\n      && props.noRouteDismiss !== true\n      && props.seamless !== true\n    )\n\n    const { preventBodyScroll } = usePreventScroll()\n    const { registerTimeout } = useTimeout()\n    const { registerTick, removeTick } = useTick()\n\n    const { transitionProps, transitionStyle } = useTransition(\n      props,\n      () => defaultTransitions[ props.position ][ 0 ],\n      () => defaultTransitions[ props.position ][ 1 ]\n    )\n\n    const { showPortal, hidePortal, portalIsAccessible, renderPortal } = usePortal(\n      vm, innerRef, renderPortalContent, 'dialog'\n    )\n\n    const { hide } = useModelToggle({\n      showing,\n      hideOnRouteChange,\n      handleShow,\n      handleHide,\n      processOnMount: true\n    })\n\n    const { addToHistory, removeFromHistory } = useHistory(showing, hide, hideOnRouteChange)\n\n    const classes = computed(() =>\n      'q-dialog__inner flex no-pointer-events'\n      + ` q-dialog__inner--${ props.maximized === true ? 'maximized' : 'minimized' }`\n      + ` q-dialog__inner--${ props.position } ${ positionClass[ props.position ] }`\n      + (animating.value === true ? ' q-dialog__inner--animating' : '')\n      + (props.fullWidth === true ? ' q-dialog__inner--fullwidth' : '')\n      + (props.fullHeight === true ? ' q-dialog__inner--fullheight' : '')\n      + (props.square === true ? ' q-dialog__inner--square' : '')\n    )\n\n    const useBackdrop = computed(() => showing.value === true && props.seamless !== true)\n\n    const onEvents = computed(() => (\n      props.autoClose === true\n        ? { onClick: onAutoClose }\n        : {}\n    ))\n\n    const rootClasses = computed(() => [\n      'q-dialog fullscreen no-pointer-events '\n        + `q-dialog--${ useBackdrop.value === true ? 'modal' : 'seamless' }`,\n      attrs.class\n    ])\n\n    watch(() => props.maximized, state => {\n      showing.value === true && updateMaximized(state)\n    })\n\n    watch(useBackdrop, val => {\n      preventBodyScroll(val)\n\n      if (val === true) {\n        addFocusout(onFocusChange)\n        addEscapeKey(onEscapeKey)\n      }\n      else {\n        removeFocusout(onFocusChange)\n        removeEscapeKey(onEscapeKey)\n      }\n    })\n\n    function handleShow (evt) {\n      addToHistory()\n\n      refocusTarget = props.noRefocus === false && document.activeElement !== null\n        ? document.activeElement\n        : null\n\n      updateMaximized(props.maximized)\n      showPortal()\n      animating.value = true\n\n      if (props.noFocus !== true) {\n        document.activeElement !== null && document.activeElement.blur()\n        registerTick(focus)\n      }\n      else {\n        removeTick()\n      }\n\n      // should removeTimeout() if this gets removed\n      registerTimeout(() => {\n        if (vm.proxy.$q.platform.is.ios === true) {\n          if (props.seamless !== true && document.activeElement) {\n            const\n              { top, bottom } = document.activeElement.getBoundingClientRect(),\n              { innerHeight } = window,\n              height = window.visualViewport !== void 0\n                ? window.visualViewport.height\n                : innerHeight\n\n            if (top > 0 && bottom > height / 2) {\n              document.scrollingElement.scrollTop = Math.min(\n                document.scrollingElement.scrollHeight - height,\n                bottom >= innerHeight\n                  ? Infinity\n                  : Math.ceil(document.scrollingElement.scrollTop + bottom - height / 2)\n              )\n            }\n\n            document.activeElement.scrollIntoView()\n          }\n\n          // required in order to avoid the \"double-tap needed\" issue\n          avoidAutoClose = true\n          innerRef.value.click()\n          avoidAutoClose = false\n        }\n\n        showPortal(true) // done showing portal\n        animating.value = false\n        emit('show', evt)\n      }, props.transitionDuration)\n    }\n\n    function handleHide (evt) {\n      removeTick()\n      removeFromHistory()\n      cleanup(true)\n      animating.value = true\n      hidePortal()\n\n      if (refocusTarget !== null) {\n        ((evt && evt.type.indexOf('key') === 0\n          ? refocusTarget.closest('[tabindex]:not([tabindex^=\"-\"])')\n          : void 0\n        ) || refocusTarget).focus()\n        refocusTarget = null\n      }\n\n      // should removeTimeout() if this gets removed\n      registerTimeout(() => {\n        hidePortal(true) // done hiding, now destroy\n        animating.value = false\n        emit('hide', evt)\n      }, props.transitionDuration)\n    }\n\n    function focus (selector) {\n      addFocusFn(() => {\n        let node = innerRef.value\n\n        if (node === null || node.contains(document.activeElement) === true) {\n          return\n        }\n\n        node = (selector !== '' ? node.querySelector(selector) : null)\n          || node.querySelector('[autofocus][tabindex], [data-autofocus][tabindex]')\n          || node.querySelector('[autofocus] [tabindex], [data-autofocus] [tabindex]')\n          || node.querySelector('[autofocus], [data-autofocus]')\n          || node\n        node.focus({ preventScroll: true })\n      })\n    }\n\n    function shake (focusTarget) {\n      if (focusTarget && typeof focusTarget.focus === 'function') {\n        focusTarget.focus({ preventScroll: true })\n      }\n      else {\n        focus()\n      }\n\n      emit('shake')\n\n      const node = innerRef.value\n\n      if (node !== null) {\n        node.classList.remove('q-animate--scale')\n        node.classList.add('q-animate--scale')\n        shakeTimeout !== null && clearTimeout(shakeTimeout)\n        shakeTimeout = setTimeout(() => {\n          shakeTimeout = null\n          if (innerRef.value !== null) {\n            node.classList.remove('q-animate--scale')\n            // some platforms (like desktop Chrome)\n            // require calling focus() again\n            focus()\n          }\n        }, 170)\n      }\n    }\n\n    function onEscapeKey () {\n      if (props.seamless !== true) {\n        if (props.persistent === true || props.noEscDismiss === true) {\n          props.maximized !== true && props.noShake !== true && shake()\n        }\n        else {\n          emit('escapeKey')\n          hide()\n        }\n      }\n    }\n\n    function cleanup (hiding) {\n      if (shakeTimeout !== null) {\n        clearTimeout(shakeTimeout)\n        shakeTimeout = null\n      }\n\n      if (hiding === true || showing.value === true) {\n        updateMaximized(false)\n\n        if (props.seamless !== true) {\n          preventBodyScroll(false)\n          removeFocusout(onFocusChange)\n          removeEscapeKey(onEscapeKey)\n        }\n      }\n\n      if (hiding !== true) {\n        refocusTarget = null\n      }\n    }\n\n    function updateMaximized (active) {\n      if (active === true) {\n        if (isMaximized !== true) {\n          maximizedModals < 1 && document.body.classList.add('q-body--dialog')\n          maximizedModals++\n\n          isMaximized = true\n        }\n      }\n      else if (isMaximized === true) {\n        if (maximizedModals < 2) {\n          document.body.classList.remove('q-body--dialog')\n        }\n\n        maximizedModals--\n        isMaximized = false\n      }\n    }\n\n    function onAutoClose (e) {\n      if (avoidAutoClose !== true) {\n        hide(e)\n        emit('click', e)\n      }\n    }\n\n    function onBackdropClick (e) {\n      if (props.persistent !== true && props.noBackdropDismiss !== true) {\n        hide(e)\n      }\n      else if (props.noShake !== true) {\n        shake()\n      }\n    }\n\n    function onFocusChange (evt) {\n      // the focus is not in a vue child component\n      if (\n        props.allowFocusOutside !== true\n        && portalIsAccessible.value === true\n        && childHasFocus(innerRef.value, evt.target) !== true\n      ) {\n        focus('[tabindex]:not([tabindex=\"-1\"])')\n      }\n    }\n\n    Object.assign(vm.proxy, {\n      // expose public methods\n      focus, shake,\n\n      // private but needed by QSelect\n      __updateRefocusTarget (target) {\n        refocusTarget = target || null\n      }\n    })\n\n    onBeforeUnmount(cleanup)\n\n    function renderPortalContent () {\n      return h('div', {\n        role: 'dialog',\n        'aria-modal': useBackdrop.value === true ? 'true' : 'false',\n        ...attrs,\n        class: rootClasses.value\n      }, [\n        h(Transition, {\n          name: 'q-transition--fade',\n          appear: true\n        }, () => (\n          useBackdrop.value === true\n            ? h('div', {\n              class: 'q-dialog__backdrop fixed-full',\n              style: transitionStyle.value,\n              'aria-hidden': 'true',\n              tabindex: -1,\n              onClick: onBackdropClick\n            })\n            : null\n        )),\n\n        h(\n          Transition,\n          transitionProps.value,\n          () => (\n            showing.value === true\n              ? h('div', {\n                ref: innerRef,\n                class: classes.value,\n                style: transitionStyle.value,\n                tabindex: -1,\n                ...onEvents.value\n              }, hSlot(slots.default))\n              : null\n          )\n        )\n      ])\n    }\n\n    return renderPortal\n  }\n})\n",
+      "start": 1703982896204,
+      "end": 1703982896294,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896294,
+      "end": 1703982896294,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896298,
+      "end": 1703982896298,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896298,
+      "end": 1703982896299,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896299,
+      "end": 1703982896299,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896299,
+      "end": 1703982896300,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896300,
+      "end": 1703982896300,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896300,
+      "end": 1703982896300,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896300,
+      "end": 1703982896300,
+      "order": "normal"
+    }
+  ]
+}

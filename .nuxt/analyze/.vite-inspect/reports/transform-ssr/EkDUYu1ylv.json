@@ -1,0 +1,294 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/pages/index.vue?macro=true",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "<template>\n    <div>\n        TODO: Some cute robot art with \"Hello World :D\"\n        <QSkeleton type=\"rect\" width=\"80%\" height=\"50vh\" class=\"vi-center\"></QSkeleton>\n        <p class=\"text-center text-h4\">\n            I am vivax, an <NuxtLink to=\"/art\">artist</NuxtLink> and <NuxtLink to=\"/projects\">programmer</NuxtLink>. <br />\n            I do everything from webdev to gamedev. <br />\n            Please check out my <NuxtLink to=\"/blog\">blog</NuxtLink> and <a href=\"https://github.com/vivax3794\">GitHub</a>\n        </p>\n    </div>\n</template>\n",
+      "start": 1703982900569,
+      "end": 1703982900621,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982900621,
+      "end": 1703982900621,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "result": "const _sfc_main = {}\nimport { resolveComponent as _resolveComponent, withCtx as _withCtx, createTextVNode as _createTextVNode } from \"vue\"\nimport { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs) {\n  const _component_QSkeleton = _resolveComponent(\"QSkeleton\")\n  const _component_NuxtLink = _resolveComponent(\"NuxtLink\")\n\n  _push(`<div${_ssrRenderAttrs(_attrs)}> TODO: Some cute robot art with &quot;Hello World :D&quot; `)\n  _push(_ssrRenderComponent(_component_QSkeleton, {\n    type: \"rect\",\n    width: \"80%\",\n    height: \"50vh\",\n    class: \"vi-center\"\n  }, null, _parent))\n  _push(`<p class=\"text-center text-h4\"> I am vivax, an `)\n  _push(_ssrRenderComponent(_component_NuxtLink, { to: \"/art\" }, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`artist`)\n      } else {\n        return [\n          _createTextVNode(\"artist\")\n        ]\n      }\n    }),\n    _: 1\n  }, _parent))\n  _push(` and `)\n  _push(_ssrRenderComponent(_component_NuxtLink, { to: \"/projects\" }, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`programmer`)\n      } else {\n        return [\n          _createTextVNode(\"programmer\")\n        ]\n      }\n    }),\n    _: 1\n  }, _parent))\n  _push(`. <br> I do everything from webdev to gamedev. <br> Please check out my `)\n  _push(_ssrRenderComponent(_component_NuxtLink, { to: \"/blog\" }, {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`blog`)\n      } else {\n        return [\n          _createTextVNode(\"blog\")\n        ]\n      }\n    }),\n    _: 1\n  }, _parent))\n  _push(` and <a href=\"https://github.com/vivax3794\">GitHub</a></p></div>`)\n}\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"pages/index.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender]])",
+      "start": 1703982900621,
+      "end": 1703982900622,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "/home/vivax/coding/vivax.dev/pages/index.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;;;;EAAA,aAAA,gBAAA;EAAA,MAAA;IAGmB,IAAI,EAAC,MAAM;IAAC,KAAK,EAAC,KAAK;IAAC,MAAM,EAAC,MAAM;IAAC,KAAK,EAAC,WAAW;;EAH1E;EAAA,MAAA,2CAKqC,EAAE,EAAC,MAAM;IAL9C,kBAK2B,CAAqC;UALhE;QAAA;;;UAAA,iBAK+C,QAAM;;;;IALrD,GAAA;;EAAA;EAAA,MAAA,2CAK+E,EAAE,EAAC,WAAW;IAL7F,kBAKqE,CAA8C;UALnH;QAAA;;;UAAA,iBAK8F,YAAU;;;;IALxG,GAAA;;EAAA;EAAA,MAAA,2CAO0C,EAAE,EAAC,OAAO;IAPpD,kBAOgC,CAAoC;UAPpE;QAAA;;;UAAA,iBAOqD,MAAI;;;;IAPzD,GAAA;;EAAA",
+        "sourcesContent": [
+          "<template>\n    <div>\n        TODO: Some cute robot art with \"Hello World :D\"\n        <QSkeleton type=\"rect\" width=\"80%\" height=\"50vh\" class=\"vi-center\"></QSkeleton>\n        <p class=\"text-center text-h4\">\n            I am vivax, an <NuxtLink to=\"/art\">artist</NuxtLink> and <NuxtLink to=\"/projects\">programmer</NuxtLink>. <br />\n            I do everything from webdev to gamedev. <br />\n            Please check out my <NuxtLink to=\"/blog\">blog</NuxtLink> and <a href=\"https://github.com/vivax3794\">GitHub</a>\n        </p>\n    </div>\n</template>\n"
+        ]
+      }
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982900622,
+      "end": 1703982900622,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900622,
+      "end": 1703982900622,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900622,
+      "end": 1703982900622,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982900622,
+      "end": 1703982900622,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982900622,
+      "end": 1703982900622,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982900622,
+      "end": 1703982900622,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900622,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982900623,
+      "end": 1703982900623,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "result": "\nconst __nuxt_page_meta = null\nexport default __nuxt_page_meta\n",
+      "start": 1703982900623,
+      "end": 1703982900624,
+      "order": "post",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          ""
+        ],
+        "names": [],
+        "mappings": "AAAA;AAAA;AAAA;AAAA"
+      }
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "result": "\nconst __nuxt_page_meta = null\nexport default __nuxt_page_meta\n",
+      "start": 1703982900623,
+      "end": 1703982900624,
+      "order": "post",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          ""
+        ],
+        "names": [],
+        "mappings": "AAAA;AAAA;AAAA;AAAA"
+      }
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982900624,
+      "end": 1703982900624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-template",
+      "start": 1703982900624,
+      "end": 1703982900624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982900624,
+      "end": 1703982900624,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982900624,
+      "end": 1703982900624,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982900624,
+      "end": 1703982900624,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982900624,
+      "end": 1703982900624,
+      "order": "normal"
+    }
+  ]
+}

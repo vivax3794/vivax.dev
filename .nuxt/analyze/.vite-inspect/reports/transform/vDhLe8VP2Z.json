@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/table/table-sort.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { computed } from 'vue'\n\nimport { sortDate } from '../../utils/private/sort.js'\nimport { isNumber, isDate, isObject } from '../../utils/is.js'\n\nexport const useTableSortProps = {\n  sortMethod: Function,\n  binaryStateSort: Boolean,\n  columnSortOrder: {\n    type: String,\n    validator: v => v === 'ad' || v === 'da',\n    default: 'ad'\n  }\n}\n\nexport function useTableSort (props, computedPagination, colList, setPagination) {\n  const columnToSort = computed(() => {\n    const { sortBy } = computedPagination.value\n\n    return sortBy\n      ? colList.value.find(def => def.name === sortBy) || null\n      : null\n  })\n\n  const computedSortMethod = computed(() => (\n    props.sortMethod !== void 0\n      ? props.sortMethod\n      : (data, sortBy, descending) => {\n          const col = colList.value.find(def => def.name === sortBy)\n          if (col === void 0 || col.field === void 0) {\n            return data\n          }\n\n          const\n            dir = descending === true ? -1 : 1,\n            val = typeof col.field === 'function'\n              ? v => col.field(v)\n              : v => v[ col.field ]\n\n          return data.sort((a, b) => {\n            let\n              A = val(a),\n              B = val(b)\n\n            if (col.rawSort !== void 0) {\n              return col.rawSort(A, B, a, b) * dir\n            }\n            if (A === null || A === void 0) {\n              return -1 * dir\n            }\n            if (B === null || B === void 0) {\n              return 1 * dir\n            }\n            if (col.sort !== void 0) {\n              // gets called without rows that have null/undefined as value\n              // due to the above two statements\n              return col.sort(A, B, a, b) * dir\n            }\n            if (isNumber(A) === true && isNumber(B) === true) {\n              return (A - B) * dir\n            }\n            if (isDate(A) === true && isDate(B) === true) {\n              return sortDate(A, B) * dir\n            }\n            if (typeof A === 'boolean' && typeof B === 'boolean') {\n              return (A - B) * dir\n            }\n\n            [ A, B ] = [ A, B ].map(s => (s + '').toLocaleString().toLowerCase())\n\n            return A < B\n              ? -1 * dir\n              : (A === B ? 0 : dir)\n          })\n        }\n  ))\n\n  function sort (col /* String(col name) or Object(col definition) */) {\n    let sortOrder = props.columnSortOrder\n\n    if (isObject(col) === true) {\n      if (col.sortOrder) {\n        sortOrder = col.sortOrder\n      }\n\n      col = col.name\n    }\n    else {\n      const def = colList.value.find(def => def.name === col)\n      if (def !== void 0 && def.sortOrder) {\n        sortOrder = def.sortOrder\n      }\n    }\n\n    let { sortBy, descending } = computedPagination.value\n\n    if (sortBy !== col) {\n      sortBy = col\n      descending = sortOrder === 'da'\n    }\n    else if (props.binaryStateSort === true) {\n      descending = !descending\n    }\n    else if (descending === true) {\n      if (sortOrder === 'ad') {\n        sortBy = null\n      }\n      else {\n        descending = false\n      }\n    }\n    else { // ascending\n      if (sortOrder === 'ad') {\n        descending = true\n      }\n      else {\n        sortBy = null\n      }\n    }\n\n    setPagination({ sortBy, descending, page: 1 })\n  }\n\n  return {\n    columnToSort,\n    computedSortMethod,\n    sort\n  }\n}\n",
+      "start": 1703982897352,
+      "end": 1703982897419,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897419,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897420,
+      "end": 1703982897420,
+      "order": "normal"
+    }
+  ]
+}

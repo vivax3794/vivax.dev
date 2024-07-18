@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/slider/QSlider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, getCurrentInstance } from 'vue'\n\nimport { useFormAttrs } from '../../composables/private/use-form.js'\n\nimport useSlider, {\n  useSliderProps,\n  useSliderEmits,\n  keyCodes\n} from './use-slider.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { between } from '../../utils/format.js'\nimport { stopAndPrevent } from '../../utils/event.js'\n\nconst getNodeData = () => ({})\n\nexport default createComponent({\n  name: 'QSlider',\n\n  props: {\n    ...useSliderProps,\n\n    modelValue: {\n      required: true,\n      default: null,\n      validator: v => typeof v === 'number' || v === null\n    },\n\n    labelValue: [ String, Number ]\n  },\n\n  emits: useSliderEmits,\n\n  setup (props, { emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const { state, methods } = useSlider({\n      updateValue, updatePosition, getDragging,\n      formAttrs: useFormAttrs(props)\n    })\n\n    const rootRef = ref(null)\n    const curRatio = ref(0)\n    const model = ref(0)\n\n    function normalizeModel () {\n      model.value = props.modelValue === null\n        ? state.innerMin.value\n        : between(props.modelValue, state.innerMin.value, state.innerMax.value)\n    }\n\n    watch(\n      () => `${ props.modelValue }|${ state.innerMin.value }|${ state.innerMax.value }`,\n      normalizeModel\n    )\n\n    normalizeModel()\n\n    const modelRatio = computed(() => methods.convertModelToRatio(model.value))\n    const ratio = computed(() => (state.active.value === true ? curRatio.value : modelRatio.value))\n\n    const selectionBarStyle = computed(() => {\n      const acc = {\n        [ state.positionProp.value ]: `${ 100 * state.innerMinRatio.value }%`,\n        [ state.sizeProp.value ]: `${ 100 * (ratio.value - state.innerMinRatio.value) }%`\n      }\n      if (props.selectionImg !== void 0) {\n        acc.backgroundImage = `url(${ props.selectionImg }) !important`\n      }\n      return acc\n    })\n\n    const getThumb = methods.getThumbRenderFn({\n      focusValue: true,\n      getNodeData,\n      ratio,\n      label: computed(() => (\n        props.labelValue !== void 0\n          ? props.labelValue\n          : model.value\n      )),\n      thumbColor: computed(() => props.thumbColor || props.color),\n      labelColor: computed(() => props.labelColor),\n      labelTextColor: computed(() => props.labelTextColor)\n    })\n\n    const trackContainerEvents = computed(() => {\n      if (state.editable.value !== true) {\n        return {}\n      }\n\n      return $q.platform.is.mobile === true\n        ? { onClick: methods.onMobileClick }\n        : {\n            onMousedown: methods.onActivate,\n            onFocus,\n            onBlur: methods.onBlur,\n            onKeydown,\n            onKeyup: methods.onKeyup\n          }\n    })\n\n    function updateValue (change) {\n      if (model.value !== props.modelValue) {\n        emit('update:modelValue', model.value)\n      }\n      change === true && emit('change', model.value)\n    }\n\n    function getDragging () {\n      return rootRef.value.getBoundingClientRect()\n    }\n\n    function updatePosition (event, dragging = state.dragging.value) {\n      const ratio = methods.getDraggingRatio(event, dragging)\n\n      model.value = methods.convertRatioToModel(ratio)\n\n      curRatio.value = props.snap !== true || props.step === 0\n        ? ratio\n        : methods.convertModelToRatio(model.value)\n    }\n\n    function onFocus () {\n      state.focus.value = true\n    }\n\n    function onKeydown (evt) {\n      if (!keyCodes.includes(evt.keyCode)) {\n        return\n      }\n\n      stopAndPrevent(evt)\n\n      const\n        stepVal = ([ 34, 33 ].includes(evt.keyCode) ? 10 : 1) * state.keyStep.value,\n        offset = (\n          ([ 34, 37, 40 ].includes(evt.keyCode) ? -1 : 1)\n          * (state.isReversed.value === true ? -1 : 1)\n          * (props.vertical === true ? -1 : 1) * stepVal\n        )\n\n      model.value = between(\n        state.roundValueFn.value(model.value + offset),\n        state.innerMin.value,\n        state.innerMax.value\n      )\n\n      updateValue()\n    }\n\n    return () => {\n      const content = methods.getContent(\n        selectionBarStyle,\n        state.tabindex,\n        trackContainerEvents,\n        node => { node.push(getThumb()) }\n      )\n\n      return h('div', {\n        ref: rootRef,\n        class: state.classes.value + (props.modelValue === null ? ' q-slider--no-value' : ''),\n        ...state.attributes.value,\n        'aria-valuenow': props.modelValue\n      }, content)\n    }\n  }\n})\n",
+      "start": 1703982896474,
+      "end": 1703982896553,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896553,
+      "end": 1703982896553,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896554,
+      "end": 1703982896554,
+      "order": "normal"
+    }
+  ]
+}

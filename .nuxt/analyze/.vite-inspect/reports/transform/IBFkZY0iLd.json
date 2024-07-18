@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/history.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { client } from './plugins/Platform.js'\nimport { noop } from './utils/event.js'\n\nconst getTrue = () => true\n\nfunction filterInvalidPath (path) {\n  return typeof path === 'string'\n    && path !== ''\n    && path !== '/'\n    && path !== '#/'\n}\n\nfunction normalizeExitPath (path) {\n  path.startsWith('#') === true && (path = path.substring(1))\n  path.startsWith('/') === false && (path = '/' + path)\n  path.endsWith('/') === true && (path = path.substring(0, path.length - 1))\n  return '#' + path\n}\n\nfunction getShouldExitFn (cfg) {\n  if (cfg.backButtonExit === false) {\n    return () => false\n  }\n\n  if (cfg.backButtonExit === '*') {\n    return getTrue\n  }\n\n  // Add default root path\n  const exitPaths = [ '#/' ]\n\n  // Add custom exit paths\n  Array.isArray(cfg.backButtonExit) === true && exitPaths.push(\n    ...cfg.backButtonExit.filter(filterInvalidPath).map(normalizeExitPath)\n  )\n\n  return () => exitPaths.includes(window.location.hash)\n}\n\nexport default {\n  __history: [],\n  add: noop,\n  remove: noop,\n\n  install ({ $q }) {\n    if (__QUASAR_SSR_SERVER__ || this.__installed === true) { return }\n\n    const { cordova, capacitor } = client.is\n\n    if (cordova !== true && capacitor !== true) {\n      return\n    }\n\n    const qConf = $q.config[ cordova === true ? 'cordova' : 'capacitor' ]\n\n    if (qConf !== void 0 && qConf.backButton === false) {\n      return\n    }\n\n    // if the '@capacitor/app' plugin is not installed\n    // then we got nothing to do\n    if (\n      // if we're on Capacitor mode\n      capacitor === true\n      // and it's also not in Capacitor's main instance\n      && (window.Capacitor === void 0 || window.Capacitor.Plugins.App === void 0)\n    ) {\n      return\n    }\n\n    this.add = entry => {\n      if (entry.condition === void 0) {\n        entry.condition = getTrue\n      }\n      this.__history.push(entry)\n    }\n\n    this.remove = entry => {\n      const index = this.__history.indexOf(entry)\n      if (index >= 0) {\n        this.__history.splice(index, 1)\n      }\n    }\n\n    const shouldExit = getShouldExitFn(\n      Object.assign(\n        { backButtonExit: true },\n        qConf\n      )\n    )\n\n    const backHandler = () => {\n      if (this.__history.length) {\n        const entry = this.__history[ this.__history.length - 1 ]\n\n        if (entry.condition() === true) {\n          this.__history.pop()\n          entry.handler()\n        }\n      }\n      else if (shouldExit() === true) {\n        navigator.app.exitApp()\n      }\n      else {\n        window.history.back()\n      }\n    }\n\n    if (cordova === true) {\n      document.addEventListener('deviceready', () => {\n        document.addEventListener('backbutton', backHandler, false)\n      })\n    }\n    else {\n      window.Capacitor.Plugins.App.addListener('backButton', backHandler)\n    }\n  }\n}\n",
+      "start": 1703982896852,
+      "end": 1703982896891,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896891,
+      "end": 1703982896891,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896896,
+      "end": 1703982896896,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896896,
+      "end": 1703982896896,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896896,
+      "end": 1703982896896,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896896,
+      "end": 1703982896896,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { client } from \"./plugins/Platform.js\";\nimport { noop } from \"./utils/event.js\";\nconst getTrue = () => true;\nfunction filterInvalidPath(path) {\n  return typeof path === \"string\" && path !== \"\" && path !== \"/\" && path !== \"#/\";\n}\nfunction normalizeExitPath(path) {\n  path.startsWith(\"#\") === true && (path = path.substring(1));\n  path.startsWith(\"/\") === false && (path = \"/\" + path);\n  path.endsWith(\"/\") === true && (path = path.substring(0, path.length - 1));\n  return \"#\" + path;\n}\nfunction getShouldExitFn(cfg) {\n  if (cfg.backButtonExit === false) {\n    return () => false;\n  }\n  if (cfg.backButtonExit === \"*\") {\n    return getTrue;\n  }\n  const exitPaths = [\"#/\"];\n  Array.isArray(cfg.backButtonExit) === true && exitPaths.push(\n    ...cfg.backButtonExit.filter(filterInvalidPath).map(normalizeExitPath)\n  );\n  return () => exitPaths.includes(window.location.hash);\n}\nexport default {\n  __history: [],\n  add: noop,\n  remove: noop,\n  install({ $q }) {\n    if (this.__installed === true) {\n      return;\n    }\n    const { cordova, capacitor } = client.is;\n    if (cordova !== true && capacitor !== true) {\n      return;\n    }\n    const qConf = $q.config[cordova === true ? \"cordova\" : \"capacitor\"];\n    if (qConf !== void 0 && qConf.backButton === false) {\n      return;\n    }\n    if (\n      // if we're on Capacitor mode\n      capacitor === true && (window.Capacitor === void 0 || window.Capacitor.Plugins.App === void 0)\n    ) {\n      return;\n    }\n    this.add = (entry) => {\n      if (entry.condition === void 0) {\n        entry.condition = getTrue;\n      }\n      this.__history.push(entry);\n    };\n    this.remove = (entry) => {\n      const index = this.__history.indexOf(entry);\n      if (index >= 0) {\n        this.__history.splice(index, 1);\n      }\n    };\n    const shouldExit = getShouldExitFn(\n      Object.assign(\n        { backButtonExit: true },\n        qConf\n      )\n    );\n    const backHandler = () => {\n      if (this.__history.length) {\n        const entry = this.__history[this.__history.length - 1];\n        if (entry.condition() === true) {\n          this.__history.pop();\n          entry.handler();\n        }\n      } else if (shouldExit() === true) {\n        navigator.app.exitApp();\n      } else {\n        window.history.back();\n      }\n    };\n    if (cordova === true) {\n      document.addEventListener(\"deviceready\", () => {\n        document.addEventListener(\"backbutton\", backHandler, false);\n      });\n    } else {\n      window.Capacitor.Plugins.App.addListener(\"backButton\", backHandler);\n    }\n  }\n};\n",
+      "start": 1703982896896,
+      "end": 1703982896978,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896978,
+      "end": 1703982896978,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896978,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896979,
+      "end": 1703982896979,
+      "order": "normal"
+    }
+  ]
+}

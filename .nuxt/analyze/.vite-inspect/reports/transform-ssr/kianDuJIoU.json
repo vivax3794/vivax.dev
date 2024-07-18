@@ -1,0 +1,281 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/@quasar/extras/material-icons/material-icons.css",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "@font-face {\n  font-family: 'Material Icons';\n  font-style: normal;\n  font-weight: 400;\n  font-display: block;\n  src: url('./web-font/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2') format('woff2'), url('./web-font/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.woff') format('woff');\n}\n\n.material-icons {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  display: inline-block;\n  line-height: 1;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n\n  /* Support for IE. */\n  font-feature-settings: 'liga';\n}\n",
+      "start": 1703982899744,
+      "end": 1703982899800,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982899800,
+      "end": 1703982899800,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982899800,
+      "end": 1703982899800,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982899800,
+      "end": 1703982899800,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982899800,
+      "end": 1703982899800,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982899800,
+      "end": 1703982899800,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982899800,
+      "end": 1703982899800,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982899800,
+      "end": 1703982899800,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "result": "@font-face{font-display:block;font-family:Material Icons;font-style:normal;font-weight:400;src:url(__VITE_ASSET__hpTSIw8Q__) format(\"woff2\"),url(__VITE_ASSET__ei6PHx5N__) format(\"woff\")}.material-icons{display:inline-block;font-family:Material Icons;font-style:normal;font-weight:400;letter-spacing:normal;line-height:1;text-transform:none;word-wrap:normal;direction:ltr;white-space:nowrap;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:\"liga\"}",
+      "start": 1703982899800,
+      "end": 1703982900365,
+      "order": "normal",
+      "sourcemaps": {
+        "file": "/home/vivax/coding/vivax.dev/node_modules/@quasar/extras/material-icons/material-icons.css",
+        "mappings": "AAAA,WAIE,kBAAmB,CAHnB,0BAA6B,CAC7B,iBAAkB,CAClB,eAAgB,CAEhB,8FACF,CAEA,gBAIE,oBAAqB,CAHrB,0BAA6B,CAE7B,iBAAkB,CADlB,eAAmB,CAKnB,qBAAsB,CAFtB,aAAc,CACd,mBAAoB,CAEpB,gBAAiB,CAEjB,aAAc,CADd,kBAAmB,CAInB,kCAAmC,CAEnC,iCAAkC,CAGlC,iCAAkC,CAGlC,4BACF",
+        "names": [],
+        "sources": [
+          "/home/vivax/coding/vivax.dev/node_modules/@quasar/extras/material-icons/material-icons.css"
+        ],
+        "sourcesContent": [
+          "@font-face {\n  font-family: 'Material Icons';\n  font-style: normal;\n  font-weight: 400;\n  font-display: block;\n  src: url('./web-font/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2') format('woff2'), url('./web-font/flUhRq6tzZclQEJ-Vdg-IuiaDsNa.woff') format('woff');\n}\n\n.material-icons {\n  font-family: 'Material Icons';\n  font-weight: normal;\n  font-style: normal;\n  display: inline-block;\n  line-height: 1;\n  text-transform: none;\n  letter-spacing: normal;\n  word-wrap: normal;\n  white-space: nowrap;\n  direction: ltr;\n\n  /* Support for all WebKit browsers. */\n  -webkit-font-smoothing: antialiased;\n  /* Support for Safari and Chrome. */\n  text-rendering: optimizeLegibility;\n\n  /* Support for Firefox. */\n  -moz-osx-font-smoothing: grayscale;\n\n  /* Support for IE. */\n  font-feature-settings: 'liga';\n}\n"
+        ],
+        "version": 3
+      }
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "result": "",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal",
+      "sourcemaps": {
+        "mappings": ""
+      }
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-template",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982900365,
+      "end": 1703982900365,
+      "order": "normal"
+    }
+  ]
+}

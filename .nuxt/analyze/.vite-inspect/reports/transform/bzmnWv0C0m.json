@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/private/global-dialog.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, nextTick } from 'vue'\n\nimport { createChildApp } from '../../install-quasar.js'\nimport { createGlobalNode, removeGlobalNode } from './global-nodes.js'\n\nconst ssrAPI = {\n  onOk: () => ssrAPI,\n  onCancel: () => ssrAPI,\n  onDismiss: () => ssrAPI,\n  hide: () => ssrAPI,\n  update: () => ssrAPI\n}\n\nexport function merge (target, source) {\n  for (const key in source) {\n    if (key !== 'spinner' && Object(source[ key ]) === source[ key ]) {\n      target[ key ] = Object(target[ key ]) !== target[ key ]\n        ? {}\n        : { ...target[ key ] }\n\n      merge(target[ key ], source[ key ])\n    }\n    else {\n      target[ key ] = source[ key ]\n    }\n  }\n}\n\nexport default function (DefaultComponent, supportsCustomComponent, parentApp) {\n  return pluginProps => {\n    if (__QUASAR_SSR_SERVER__) { return ssrAPI }\n\n    let DialogComponent, props\n    const isCustom = supportsCustomComponent === true\n      && pluginProps.component !== void 0\n\n    if (isCustom === true) {\n      const { component, componentProps } = pluginProps\n\n      DialogComponent = (typeof component === 'string')\n        ? parentApp.component(component)\n        : component\n\n      props = componentProps || {}\n    }\n    else {\n      const { class: klass, style, ...otherProps } = pluginProps\n\n      DialogComponent = DefaultComponent\n      props = otherProps\n      klass !== void 0 && (otherProps.cardClass = klass)\n      style !== void 0 && (otherProps.cardStyle = style)\n    }\n\n    let vm, emittedOK = false\n    const dialogRef = ref(null)\n    const el = createGlobalNode(false, 'dialog')\n\n    const applyState = cmd => {\n      if (dialogRef.value !== null && dialogRef.value[ cmd ] !== void 0) {\n        dialogRef.value[ cmd ]()\n        return\n      }\n\n      const target = vm.$.subTree\n\n      if (target && target.component) {\n        // account for \"script setup\" way of declaring component\n        if (target.component.proxy && target.component.proxy[ cmd ]) {\n          target.component.proxy[ cmd ]()\n          return\n        }\n\n        // account for \"script setup\" + async component way of declaring component\n        if (\n          target.component.subTree\n          && target.component.subTree.component\n          && target.component.subTree.component.proxy\n          && target.component.subTree.component.proxy[ cmd ]\n        ) {\n          target.component.subTree.component.proxy[ cmd ]()\n          return\n        }\n      }\n\n      console.error('[Quasar] Incorrectly defined Dialog component')\n    }\n\n    const\n      okFns = [],\n      cancelFns = [],\n      API = {\n        onOk (fn) {\n          okFns.push(fn)\n          return API\n        },\n        onCancel (fn) {\n          cancelFns.push(fn)\n          return API\n        },\n        onDismiss (fn) {\n          okFns.push(fn)\n          cancelFns.push(fn)\n          return API\n        },\n        hide () {\n          applyState('hide')\n          return API\n        },\n        update (componentProps) {\n          if (vm !== null) {\n            if (isCustom === true) {\n              Object.assign(props, componentProps)\n            }\n            else {\n              const { class: klass, style, ...cfg } = componentProps\n\n              klass !== void 0 && (cfg.cardClass = klass)\n              style !== void 0 && (cfg.cardStyle = style)\n              merge(props, cfg)\n            }\n\n            vm.$forceUpdate()\n          }\n\n          return API\n        }\n      }\n\n    const onOk = data => {\n      emittedOK = true\n      okFns.forEach(fn => { fn(data) })\n    }\n\n    const onHide = () => {\n      app.unmount(el)\n      removeGlobalNode(el)\n      app = null\n      vm = null\n\n      if (emittedOK !== true) {\n        cancelFns.forEach(fn => { fn() })\n      }\n    }\n\n    let app = createChildApp({\n      name: 'QGlobalDialog',\n      setup: () => () => h(DialogComponent, {\n        ...props,\n        ref: dialogRef,\n        onOk,\n        onHide,\n        onVnodeMounted (...args) {\n          if (typeof props.onVnodeMounted === 'function') {\n            props.onVnodeMounted(...args)\n          }\n\n          nextTick(() => applyState('show'))\n        }\n      })\n    }, parentApp)\n\n    vm = app.mount(el)\n\n    return API\n  }\n}\n",
+      "start": 1703982897411,
+      "end": 1703982897478,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897479,
+      "end": 1703982897479,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897479,
+      "end": 1703982897479,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, ref, nextTick } from \"vue\";\nimport { createChildApp } from \"../../install-quasar.js\";\nimport { createGlobalNode, removeGlobalNode } from \"./global-nodes.js\";\nconst ssrAPI = {\n  onOk: () => ssrAPI,\n  onCancel: () => ssrAPI,\n  onDismiss: () => ssrAPI,\n  hide: () => ssrAPI,\n  update: () => ssrAPI\n};\nexport function merge(target, source) {\n  for (const key in source) {\n    if (key !== \"spinner\" && Object(source[key]) === source[key]) {\n      target[key] = Object(target[key]) !== target[key] ? {} : { ...target[key] };\n      merge(target[key], source[key]);\n    } else {\n      target[key] = source[key];\n    }\n  }\n}\nexport default function(DefaultComponent, supportsCustomComponent, parentApp) {\n  return (pluginProps) => {\n    if (false) {\n      return ssrAPI;\n    }\n    let DialogComponent, props;\n    const isCustom = supportsCustomComponent === true && pluginProps.component !== void 0;\n    if (isCustom === true) {\n      const { component, componentProps } = pluginProps;\n      DialogComponent = typeof component === \"string\" ? parentApp.component(component) : component;\n      props = componentProps || {};\n    } else {\n      const { class: klass, style, ...otherProps } = pluginProps;\n      DialogComponent = DefaultComponent;\n      props = otherProps;\n      klass !== void 0 && (otherProps.cardClass = klass);\n      style !== void 0 && (otherProps.cardStyle = style);\n    }\n    let vm, emittedOK = false;\n    const dialogRef = ref(null);\n    const el = createGlobalNode(false, \"dialog\");\n    const applyState = (cmd) => {\n      if (dialogRef.value !== null && dialogRef.value[cmd] !== void 0) {\n        dialogRef.value[cmd]();\n        return;\n      }\n      const target = vm.$.subTree;\n      if (target && target.component) {\n        if (target.component.proxy && target.component.proxy[cmd]) {\n          target.component.proxy[cmd]();\n          return;\n        }\n        if (target.component.subTree && target.component.subTree.component && target.component.subTree.component.proxy && target.component.subTree.component.proxy[cmd]) {\n          target.component.subTree.component.proxy[cmd]();\n          return;\n        }\n      }\n      console.error(\"[Quasar] Incorrectly defined Dialog component\");\n    };\n    const okFns = [], cancelFns = [], API = {\n      onOk(fn) {\n        okFns.push(fn);\n        return API;\n      },\n      onCancel(fn) {\n        cancelFns.push(fn);\n        return API;\n      },\n      onDismiss(fn) {\n        okFns.push(fn);\n        cancelFns.push(fn);\n        return API;\n      },\n      hide() {\n        applyState(\"hide\");\n        return API;\n      },\n      update(componentProps) {\n        if (vm !== null) {\n          if (isCustom === true) {\n            Object.assign(props, componentProps);\n          } else {\n            const { class: klass, style, ...cfg } = componentProps;\n            klass !== void 0 && (cfg.cardClass = klass);\n            style !== void 0 && (cfg.cardStyle = style);\n            merge(props, cfg);\n          }\n          vm.$forceUpdate();\n        }\n        return API;\n      }\n    };\n    const onOk = (data) => {\n      emittedOK = true;\n      okFns.forEach((fn) => {\n        fn(data);\n      });\n    };\n    const onHide = () => {\n      app.unmount(el);\n      removeGlobalNode(el);\n      app = null;\n      vm = null;\n      if (emittedOK !== true) {\n        cancelFns.forEach((fn) => {\n          fn();\n        });\n      }\n    };\n    let app = createChildApp({\n      name: \"QGlobalDialog\",\n      setup: () => () => h(DialogComponent, {\n        ...props,\n        ref: dialogRef,\n        onOk,\n        onHide,\n        onVnodeMounted(...args) {\n          if (typeof props.onVnodeMounted === \"function\") {\n            props.onVnodeMounted(...args);\n          }\n          nextTick(() => applyState(\"show\"));\n        }\n      })\n    }, parentApp);\n    vm = app.mount(el);\n    return API;\n  };\n}\n",
+      "start": 1703982897479,
+      "end": 1703982897603,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897603,
+      "end": 1703982897604,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "normal"
+    }
+  ]
+}

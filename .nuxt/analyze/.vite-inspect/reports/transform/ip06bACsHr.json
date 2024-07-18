@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/fab/use-fab.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { computed } from 'vue'\n\nconst labelPositions = [ 'top', 'right', 'bottom', 'left' ]\n\nexport const useFabProps = {\n  type: {\n    type: String,\n    default: 'a'\n  },\n\n  outline: Boolean,\n  push: Boolean,\n  flat: Boolean,\n  unelevated: Boolean,\n\n  color: String,\n  textColor: String,\n  glossy: Boolean,\n\n  square: Boolean,\n  padding: String,\n\n  label: {\n    type: [ String, Number ],\n    default: ''\n  },\n  labelPosition: {\n    type: String,\n    default: 'right',\n    validator: v => labelPositions.includes(v)\n  },\n  externalLabel: Boolean,\n  hideLabel: {\n    type: Boolean\n  },\n  labelClass: [ Array, String, Object ],\n  labelStyle: [ Array, String, Object ],\n\n  disable: Boolean,\n\n  tabindex: [ Number, String ]\n}\n\nexport default function (props, showing) {\n  return {\n    formClass: computed(() =>\n      `q-fab--form-${ props.square === true ? 'square' : 'rounded' }`\n    ),\n\n    stacked: computed(() =>\n      props.externalLabel === false\n      && [ 'top', 'bottom' ].includes(props.labelPosition)\n    ),\n\n    labelProps: computed(() => {\n      if (props.externalLabel === true) {\n        const hideLabel = props.hideLabel === null\n          ? showing.value === false\n          : props.hideLabel\n\n        return {\n          action: 'push',\n          data: {\n            class: [\n              props.labelClass,\n              'q-fab__label q-tooltip--style q-fab__label--external'\n              + ` q-fab__label--external-${ props.labelPosition }`\n              + (hideLabel === true ? ' q-fab__label--external-hidden' : '')\n            ],\n            style: props.labelStyle\n          }\n        }\n      }\n\n      return {\n        action: [ 'left', 'top' ].includes(props.labelPosition)\n          ? 'unshift'\n          : 'push',\n        data: {\n          class: [\n            props.labelClass,\n            `q-fab__label q-fab__label--internal q-fab__label--internal-${ props.labelPosition }`\n            + (props.hideLabel === true ? ' q-fab__label--internal-hidden' : '')\n          ],\n          style: props.labelStyle\n        }\n      }\n    })\n  }\n}\n",
+      "start": 1703982897300,
+      "end": 1703982897345,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897345,
+      "end": 1703982897345,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    }
+  ]
+}

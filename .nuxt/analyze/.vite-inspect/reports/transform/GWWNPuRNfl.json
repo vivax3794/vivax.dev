@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/layout/QLayout.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, reactive, computed, watch, provide, onUnmounted, getCurrentInstance } from 'vue'\n\nimport { isRuntimeSsrPreHydration } from '../../plugins/Platform.js'\n\nimport QScrollObserver from '../scroll-observer/QScrollObserver.js'\nimport QResizeObserver from '../resize-observer/QResizeObserver.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { getScrollbarWidth } from '../../utils/scroll.js'\nimport { hMergeSlot } from '../../utils/private/render.js'\nimport { layoutKey } from '../../utils/private/symbols.js'\n\nexport default createComponent({\n  name: 'QLayout',\n\n  props: {\n    container: Boolean,\n    view: {\n      type: String,\n      default: 'hhh lpr fff',\n      validator: v => /^(h|l)h(h|r) lpr (f|l)f(f|r)$/.test(v.toLowerCase())\n    },\n\n    onScroll: Function,\n    onScrollHeight: Function,\n    onResize: Function\n  },\n\n  setup (props, { slots, emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const rootRef = ref(null)\n\n    // page related\n    const height = ref($q.screen.height)\n    const width = ref(props.container === true ? 0 : $q.screen.width)\n    const scroll = ref({ position: 0, direction: 'down', inflectionPoint: 0 })\n\n    // container only prop\n    const containerHeight = ref(0)\n    const scrollbarWidth = ref(isRuntimeSsrPreHydration.value === true ? 0 : getScrollbarWidth())\n\n    const classes = computed(() =>\n      'q-layout q-layout--'\n      + (props.container === true ? 'containerized' : 'standard')\n    )\n\n    const style = computed(() => (\n      props.container === false\n        ? { minHeight: $q.screen.height + 'px' }\n        : null\n    ))\n\n    // used by container only\n    const targetStyle = computed(() => (\n      scrollbarWidth.value !== 0\n        ? { [ $q.lang.rtl === true ? 'left' : 'right' ]: `${ scrollbarWidth.value }px` }\n        : null\n    ))\n\n    const targetChildStyle = computed(() => (\n      scrollbarWidth.value !== 0\n        ? {\n            [ $q.lang.rtl === true ? 'right' : 'left' ]: 0,\n            [ $q.lang.rtl === true ? 'left' : 'right' ]: `-${ scrollbarWidth.value }px`,\n            width: `calc(100% + ${ scrollbarWidth.value }px)`\n          }\n        : null\n    ))\n\n    function onPageScroll (data) {\n      if (props.container === true || document.qScrollPrevented !== true) {\n        const info = {\n          position: data.position.top,\n          direction: data.direction,\n          directionChanged: data.directionChanged,\n          inflectionPoint: data.inflectionPoint.top,\n          delta: data.delta.top\n        }\n\n        scroll.value = info\n        props.onScroll !== void 0 && emit('scroll', info)\n      }\n    }\n\n    function onPageResize (data) {\n      const { height: newHeight, width: newWidth } = data\n      let resized = false\n\n      if (height.value !== newHeight) {\n        resized = true\n        height.value = newHeight\n        props.onScrollHeight !== void 0 && emit('scrollHeight', newHeight)\n        updateScrollbarWidth()\n      }\n      if (width.value !== newWidth) {\n        resized = true\n        width.value = newWidth\n      }\n\n      if (resized === true && props.onResize !== void 0) {\n        emit('resize', data)\n      }\n    }\n\n    function onContainerResize ({ height }) {\n      if (containerHeight.value !== height) {\n        containerHeight.value = height\n        updateScrollbarWidth()\n      }\n    }\n\n    function updateScrollbarWidth () {\n      if (props.container === true) {\n        const width = height.value > containerHeight.value\n          ? getScrollbarWidth()\n          : 0\n\n        if (scrollbarWidth.value !== width) {\n          scrollbarWidth.value = width\n        }\n      }\n    }\n\n    let animateTimer = null\n\n    const $layout = {\n      instances: {},\n      view: computed(() => props.view),\n      isContainer: computed(() => props.container),\n\n      rootRef,\n\n      height,\n      containerHeight,\n      scrollbarWidth,\n      totalWidth: computed(() => width.value + scrollbarWidth.value),\n\n      rows: computed(() => {\n        const rows = props.view.toLowerCase().split(' ')\n        return {\n          top: rows[ 0 ].split(''),\n          middle: rows[ 1 ].split(''),\n          bottom: rows[ 2 ].split('')\n        }\n      }),\n\n      header: reactive({ size: 0, offset: 0, space: false }),\n      right: reactive({ size: 300, offset: 0, space: false }),\n      footer: reactive({ size: 0, offset: 0, space: false }),\n      left: reactive({ size: 300, offset: 0, space: false }),\n\n      scroll,\n\n      animate () {\n        if (animateTimer !== null) {\n          clearTimeout(animateTimer)\n        }\n        else {\n          document.body.classList.add('q-body--layout-animate')\n        }\n\n        animateTimer = setTimeout(() => {\n          animateTimer = null\n          document.body.classList.remove('q-body--layout-animate')\n        }, 155)\n      },\n\n      update (part, prop, val) {\n        $layout[ part ][ prop ] = val\n      }\n    }\n\n    provide(layoutKey, $layout)\n\n    // prevent scrollbar flicker while resizing window height\n    // if no page scrollbar is already present\n    if (__QUASAR_SSR_SERVER__ !== true && getScrollbarWidth() > 0) {\n      let timer = null\n      const el = document.body\n\n      function restoreScrollbar () {\n        timer = null\n        el.classList.remove('hide-scrollbar')\n      }\n\n      function hideScrollbar () {\n        if (timer === null) {\n          // if it has no scrollbar then there's nothing to do\n\n          if (el.scrollHeight > $q.screen.height) {\n            return\n          }\n\n          el.classList.add('hide-scrollbar')\n        }\n        else {\n          clearTimeout(timer)\n        }\n\n        timer = setTimeout(restoreScrollbar, 300)\n      }\n\n      function updateScrollEvent (action) {\n        if (timer !== null && action === 'remove') {\n          clearTimeout(timer)\n          restoreScrollbar()\n        }\n\n        window[ `${ action }EventListener` ]('resize', hideScrollbar)\n      }\n\n      watch(\n        () => (props.container !== true ? 'add' : 'remove'),\n        updateScrollEvent\n      )\n\n      props.container !== true && updateScrollEvent('add')\n\n      onUnmounted(() => {\n        updateScrollEvent('remove')\n      })\n    }\n\n    return () => {\n      const content = hMergeSlot(slots.default, [\n        h(QScrollObserver, { onScroll: onPageScroll }),\n        h(QResizeObserver, { onResize: onPageResize })\n      ])\n\n      const layout = h('div', {\n        class: classes.value,\n        style: style.value,\n        ref: props.container === true ? void 0 : rootRef,\n        tabindex: -1\n      }, content)\n\n      if (props.container === true) {\n        return h('div', {\n          class: 'q-layout-container overflow-hidden',\n          ref: rootRef\n        }, [\n          h(QResizeObserver, { onResize: onContainerResize }),\n          h('div', {\n            class: 'absolute-full',\n            style: targetStyle.value\n          }, [\n            h('div', {\n              class: 'scroll',\n              style: targetChildStyle.value\n            }, [ layout ])\n          ])\n        ])\n      }\n\n      return layout\n    }\n  }\n})\n",
+      "start": 1703982896343,
+      "end": 1703982896466,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896466,
+      "end": 1703982896466,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, ref, reactive, computed, watch, provide, onUnmounted, getCurrentInstance } from \"vue\";\nimport { isRuntimeSsrPreHydration } from \"../../plugins/Platform.js\";\nimport QScrollObserver from \"../scroll-observer/QScrollObserver.js\";\nimport QResizeObserver from \"../resize-observer/QResizeObserver.js\";\nimport { createComponent } from \"../../utils/private/create.js\";\nimport { getScrollbarWidth } from \"../../utils/scroll.js\";\nimport { hMergeSlot } from \"../../utils/private/render.js\";\nimport { layoutKey } from \"../../utils/private/symbols.js\";\nexport default createComponent({\n  name: \"QLayout\",\n  props: {\n    container: Boolean,\n    view: {\n      type: String,\n      default: \"hhh lpr fff\",\n      validator: (v) => /^(h|l)h(h|r) lpr (f|l)f(f|r)$/.test(v.toLowerCase())\n    },\n    onScroll: Function,\n    onScrollHeight: Function,\n    onResize: Function\n  },\n  setup(props, { slots, emit }) {\n    const { proxy: { $q } } = getCurrentInstance();\n    const rootRef = ref(null);\n    const height = ref($q.screen.height);\n    const width = ref(props.container === true ? 0 : $q.screen.width);\n    const scroll = ref({ position: 0, direction: \"down\", inflectionPoint: 0 });\n    const containerHeight = ref(0);\n    const scrollbarWidth = ref(isRuntimeSsrPreHydration.value === true ? 0 : getScrollbarWidth());\n    const classes = computed(\n      () => \"q-layout q-layout--\" + (props.container === true ? \"containerized\" : \"standard\")\n    );\n    const style = computed(() => props.container === false ? { minHeight: $q.screen.height + \"px\" } : null);\n    const targetStyle = computed(() => scrollbarWidth.value !== 0 ? { [$q.lang.rtl === true ? \"left\" : \"right\"]: `${scrollbarWidth.value}px` } : null);\n    const targetChildStyle = computed(() => scrollbarWidth.value !== 0 ? {\n      [$q.lang.rtl === true ? \"right\" : \"left\"]: 0,\n      [$q.lang.rtl === true ? \"left\" : \"right\"]: `-${scrollbarWidth.value}px`,\n      width: `calc(100% + ${scrollbarWidth.value}px)`\n    } : null);\n    function onPageScroll(data) {\n      if (props.container === true || document.qScrollPrevented !== true) {\n        const info = {\n          position: data.position.top,\n          direction: data.direction,\n          directionChanged: data.directionChanged,\n          inflectionPoint: data.inflectionPoint.top,\n          delta: data.delta.top\n        };\n        scroll.value = info;\n        props.onScroll !== void 0 && emit(\"scroll\", info);\n      }\n    }\n    function onPageResize(data) {\n      const { height: newHeight, width: newWidth } = data;\n      let resized = false;\n      if (height.value !== newHeight) {\n        resized = true;\n        height.value = newHeight;\n        props.onScrollHeight !== void 0 && emit(\"scrollHeight\", newHeight);\n        updateScrollbarWidth();\n      }\n      if (width.value !== newWidth) {\n        resized = true;\n        width.value = newWidth;\n      }\n      if (resized === true && props.onResize !== void 0) {\n        emit(\"resize\", data);\n      }\n    }\n    function onContainerResize({ height: height2 }) {\n      if (containerHeight.value !== height2) {\n        containerHeight.value = height2;\n        updateScrollbarWidth();\n      }\n    }\n    function updateScrollbarWidth() {\n      if (props.container === true) {\n        const width2 = height.value > containerHeight.value ? getScrollbarWidth() : 0;\n        if (scrollbarWidth.value !== width2) {\n          scrollbarWidth.value = width2;\n        }\n      }\n    }\n    let animateTimer = null;\n    const $layout = {\n      instances: {},\n      view: computed(() => props.view),\n      isContainer: computed(() => props.container),\n      rootRef,\n      height,\n      containerHeight,\n      scrollbarWidth,\n      totalWidth: computed(() => width.value + scrollbarWidth.value),\n      rows: computed(() => {\n        const rows = props.view.toLowerCase().split(\" \");\n        return {\n          top: rows[0].split(\"\"),\n          middle: rows[1].split(\"\"),\n          bottom: rows[2].split(\"\")\n        };\n      }),\n      header: reactive({ size: 0, offset: 0, space: false }),\n      right: reactive({ size: 300, offset: 0, space: false }),\n      footer: reactive({ size: 0, offset: 0, space: false }),\n      left: reactive({ size: 300, offset: 0, space: false }),\n      scroll,\n      animate() {\n        if (animateTimer !== null) {\n          clearTimeout(animateTimer);\n        } else {\n          document.body.classList.add(\"q-body--layout-animate\");\n        }\n        animateTimer = setTimeout(() => {\n          animateTimer = null;\n          document.body.classList.remove(\"q-body--layout-animate\");\n        }, 155);\n      },\n      update(part, prop, val) {\n        $layout[part][prop] = val;\n      }\n    };\n    provide(layoutKey, $layout);\n    if (getScrollbarWidth() > 0) {\n      let restoreScrollbar = function() {\n        timer = null;\n        el.classList.remove(\"hide-scrollbar\");\n      }, hideScrollbar = function() {\n        if (timer === null) {\n          if (el.scrollHeight > $q.screen.height) {\n            return;\n          }\n          el.classList.add(\"hide-scrollbar\");\n        } else {\n          clearTimeout(timer);\n        }\n        timer = setTimeout(restoreScrollbar, 300);\n      }, updateScrollEvent = function(action) {\n        if (timer !== null && action === \"remove\") {\n          clearTimeout(timer);\n          restoreScrollbar();\n        }\n        window[`${action}EventListener`](\"resize\", hideScrollbar);\n      };\n      let timer = null;\n      const el = document.body;\n      watch(\n        () => props.container !== true ? \"add\" : \"remove\",\n        updateScrollEvent\n      );\n      props.container !== true && updateScrollEvent(\"add\");\n      onUnmounted(() => {\n        updateScrollEvent(\"remove\");\n      });\n    }\n    return () => {\n      const content = hMergeSlot(slots.default, [\n        h(QScrollObserver, { onScroll: onPageScroll }),\n        h(QResizeObserver, { onResize: onPageResize })\n      ]);\n      const layout = h(\"div\", {\n        class: classes.value,\n        style: style.value,\n        ref: props.container === true ? void 0 : rootRef,\n        tabindex: -1\n      }, content);\n      if (props.container === true) {\n        return h(\"div\", {\n          class: \"q-layout-container overflow-hidden\",\n          ref: rootRef\n        }, [\n          h(QResizeObserver, { onResize: onContainerResize }),\n          h(\"div\", {\n            class: \"absolute-full\",\n            style: targetStyle.value\n          }, [\n            h(\"div\", {\n              class: \"scroll\",\n              style: targetChildStyle.value\n            }, [layout])\n          ])\n        ]);\n      }\n      return layout;\n    };\n  }\n});\n",
+      "start": 1703982896466,
+      "end": 1703982896489,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896489,
+      "end": 1703982896489,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896489,
+      "end": 1703982896489,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896489,
+      "end": 1703982896489,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896489,
+      "end": 1703982896489,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896490,
+      "end": 1703982896491,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896491,
+      "end": 1703982896491,
+      "order": "normal"
+    }
+  ]
+}

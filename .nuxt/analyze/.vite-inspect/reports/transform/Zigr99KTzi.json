@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/timeline/QTimelineEntry.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, inject } from 'vue'\n\nimport QIcon from '../icon/QIcon.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot, hUniqueSlot } from '../../utils/private/render.js'\nimport { timelineKey, emptyRenderFn } from '../../utils/private/symbols.js'\n\nexport default createComponent({\n  name: 'QTimelineEntry',\n\n  props: {\n    heading: Boolean,\n    tag: {\n      type: String,\n      default: 'h3'\n    },\n    side: {\n      type: String,\n      default: 'right',\n      validator: v => [ 'left', 'right' ].includes(v)\n    },\n\n    icon: String,\n    avatar: String,\n\n    color: String,\n\n    title: String,\n    subtitle: String,\n    body: String\n  },\n\n  setup (props, { slots }) {\n    const $timeline = inject(timelineKey, emptyRenderFn)\n    if ($timeline === emptyRenderFn) {\n      console.error('QTimelineEntry needs to be child of QTimeline')\n      return emptyRenderFn\n    }\n\n    const classes = computed(() =>\n      `q-timeline__entry q-timeline__entry--${ props.side }`\n      + (props.icon !== void 0 || props.avatar !== void 0 ? ' q-timeline__entry--icon' : '')\n    )\n\n    const dotClass = computed(() =>\n      `q-timeline__dot text-${ props.color || $timeline.color }`\n    )\n\n    const reverse = computed(() =>\n      $timeline.layout === 'comfortable' && $timeline.side === 'left'\n    )\n\n    return () => {\n      const child = hUniqueSlot(slots.default, [])\n\n      if (props.body !== void 0) {\n        child.unshift(props.body)\n      }\n\n      if (props.heading === true) {\n        const content = [\n          h('div'),\n          h('div'),\n          h(\n            props.tag,\n            { class: 'q-timeline__heading-title' },\n            child\n          )\n        ]\n\n        return h('div', {\n          class: 'q-timeline__heading'\n        }, reverse.value === true ? content.reverse() : content)\n      }\n\n      let dot\n\n      if (props.icon !== void 0) {\n        dot = [\n          h(QIcon, {\n            class: 'row items-center justify-center',\n            name: props.icon\n          })\n        ]\n      }\n      else if (props.avatar !== void 0) {\n        dot = [\n          h('img', {\n            class: 'q-timeline__dot-img',\n            src: props.avatar\n          })\n        ]\n      }\n\n      const content = [\n        h('div', { class: 'q-timeline__subtitle' }, [\n          h('span', {}, hSlot(slots.subtitle, [ props.subtitle ]))\n        ]),\n\n        h('div', { class: dotClass.value }, dot),\n\n        h('div', { class: 'q-timeline__content' }, [\n          h('h6', { class: 'q-timeline__title' }, hSlot(slots.title, [ props.title ]))\n        ].concat(child))\n      ]\n\n      return h('li', {\n        class: classes.value\n      }, reverse.value === true ? content.reverse() : content)\n    }\n  }\n})\n",
+      "start": 1703982896610,
+      "end": 1703982896652,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896652,
+      "end": 1703982896652,
+      "order": "normal"
+    }
+  ]
+}

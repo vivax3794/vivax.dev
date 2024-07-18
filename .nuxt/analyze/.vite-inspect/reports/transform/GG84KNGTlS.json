@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/rating/QRating.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, onBeforeUpdate, getCurrentInstance } from 'vue'\n\nimport QIcon from '../icon/QIcon.js'\n\nimport useSize, { useSizeProps } from '../../composables/private/use-size.js'\nimport { useFormProps, useFormAttrs, useFormInject } from '../../composables/private/use-form.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stopAndPrevent } from '../../utils/event.js'\nimport { between } from '../../utils/format.js'\nimport { hMergeSlot } from '../../utils/private/render.js'\n\nexport default createComponent({\n  name: 'QRating',\n\n  props: {\n    ...useSizeProps,\n    ...useFormProps,\n\n    modelValue: {\n      type: Number,\n      required: true\n    },\n\n    max: {\n      type: [ String, Number ],\n      default: 5\n    },\n\n    icon: [ String, Array ],\n    iconHalf: [ String, Array ],\n    iconSelected: [ String, Array ],\n\n    iconAriaLabel: [ String, Array ],\n\n    color: [ String, Array ],\n    colorHalf: [ String, Array ],\n    colorSelected: [ String, Array ],\n\n    noReset: Boolean,\n    noDimming: Boolean,\n\n    readonly: Boolean,\n    disable: Boolean\n  },\n\n  emits: [ 'update:modelValue' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const sizeStyle = useSize(props)\n    const formAttrs = useFormAttrs(props)\n    const injectFormInput = useFormInject(formAttrs)\n\n    const mouseModel = ref(0)\n\n    let iconRefs = {}\n\n    const editable = computed(() =>\n      props.readonly !== true && props.disable !== true\n    )\n\n    const classes = computed(() =>\n      'q-rating row inline items-center'\n      + ` q-rating--${ editable.value === true ? '' : 'non-' }editable`\n      + (props.noDimming === true ? ' q-rating--no-dimming' : '')\n      + (props.disable === true ? ' disabled' : '')\n      + (\n        props.color !== void 0 && Array.isArray(props.color) === false\n          ? ` text-${ props.color }`\n          : ''\n      )\n    )\n\n    const iconData = computed(() => {\n      const\n        iconLen = Array.isArray(props.icon) === true ? props.icon.length : 0,\n        selIconLen = Array.isArray(props.iconSelected) === true ? props.iconSelected.length : 0,\n        halfIconLen = Array.isArray(props.iconHalf) === true ? props.iconHalf.length : 0,\n        colorLen = Array.isArray(props.color) === true ? props.color.length : 0,\n        selColorLen = Array.isArray(props.colorSelected) === true ? props.colorSelected.length : 0,\n        halfColorLen = Array.isArray(props.colorHalf) === true ? props.colorHalf.length : 0\n\n      return {\n        iconLen,\n        icon: iconLen > 0 ? props.icon[ iconLen - 1 ] : props.icon,\n        selIconLen,\n        selIcon: selIconLen > 0 ? props.iconSelected[ selIconLen - 1 ] : props.iconSelected,\n        halfIconLen,\n        halfIcon: halfIconLen > 0 ? props.iconHalf[ selIconLen - 1 ] : props.iconHalf,\n        colorLen,\n        color: colorLen > 0 ? props.color[ colorLen - 1 ] : props.color,\n        selColorLen,\n        selColor: selColorLen > 0 ? props.colorSelected[ selColorLen - 1 ] : props.colorSelected,\n        halfColorLen,\n        halfColor: halfColorLen > 0 ? props.colorHalf[ halfColorLen - 1 ] : props.colorHalf\n      }\n    })\n\n    const iconLabel = computed(() => {\n      if (typeof props.iconAriaLabel === 'string') {\n        const label = props.iconAriaLabel.length !== 0 ? `${ props.iconAriaLabel } ` : ''\n        return i => `${ label }${ i }`\n      }\n\n      if (Array.isArray(props.iconAriaLabel) === true) {\n        const iMax = props.iconAriaLabel.length\n\n        if (iMax > 0) {\n          return i => props.iconAriaLabel[ Math.min(i, iMax) - 1 ]\n        }\n      }\n\n      return (i, label) => `${ label } ${ i }`\n    })\n\n    const stars = computed(() => {\n      const\n        acc = [],\n        icons = iconData.value,\n        ceil = Math.ceil(props.modelValue),\n        tabindex = editable.value === true ? 0 : null\n\n      const halfIndex = props.iconHalf === void 0 || ceil === props.modelValue\n        ? -1\n        : ceil\n\n      for (let i = 1; i <= props.max; i++) {\n        const\n          active = (mouseModel.value === 0 && props.modelValue >= i) || (mouseModel.value > 0 && mouseModel.value >= i),\n          half = halfIndex === i && mouseModel.value < i,\n          exSelected = mouseModel.value > 0 && (half === true ? ceil : props.modelValue) >= i && mouseModel.value < i,\n          color = half === true\n            ? (i <= icons.halfColorLen ? props.colorHalf[ i - 1 ] : icons.halfColor)\n            : (\n                icons.selColor !== void 0 && active === true\n                  ? (i <= icons.selColorLen ? props.colorSelected[ i - 1 ] : icons.selColor)\n                  : (i <= icons.colorLen ? props.color[ i - 1 ] : icons.color)\n              ),\n          name = (\n            half === true\n              ? (i <= icons.halfIconLen ? props.iconHalf[ i - 1 ] : icons.halfIcon)\n              : (\n                  icons.selIcon !== void 0 && (active === true || exSelected === true)\n                    ? (i <= icons.selIconLen ? props.iconSelected[ i - 1 ] : icons.selIcon)\n                    : (i <= icons.iconLen ? props.icon[ i - 1 ] : icons.icon)\n                )\n          ) || $q.iconSet.rating.icon\n\n        acc.push({\n          name: (\n            half === true\n              ? (i <= icons.halfIconLen ? props.iconHalf[ i - 1 ] : icons.halfIcon)\n              : (\n                  icons.selIcon !== void 0 && (active === true || exSelected === true)\n                    ? (i <= icons.selIconLen ? props.iconSelected[ i - 1 ] : icons.selIcon)\n                    : (i <= icons.iconLen ? props.icon[ i - 1 ] : icons.icon)\n                )\n          ) || $q.iconSet.rating.icon,\n\n          attrs: {\n            tabindex,\n            role: 'radio',\n            'aria-checked': props.modelValue === i ? 'true' : 'false',\n            'aria-label': iconLabel.value(i, name)\n          },\n\n          iconClass: 'q-rating__icon'\n            + (active === true || half === true ? ' q-rating__icon--active' : '')\n            + (exSelected === true ? ' q-rating__icon--exselected' : '')\n            + (mouseModel.value === i ? ' q-rating__icon--hovered' : '')\n            + (color !== void 0 ? ` text-${ color }` : '')\n        })\n      }\n\n      return acc\n    })\n\n    const attributes = computed(() => {\n      const attrs = { role: 'radiogroup' }\n\n      if (props.disable === true) {\n        attrs[ 'aria-disabled' ] = 'true'\n      }\n      if (props.readonly === true) {\n        attrs[ 'aria-readonly' ] = 'true'\n      }\n\n      return attrs\n    })\n\n    function set (value) {\n      if (editable.value === true) {\n        const\n          model = between(parseInt(value, 10), 1, parseInt(props.max, 10)),\n          newVal = props.noReset !== true && props.modelValue === model ? 0 : model\n\n        newVal !== props.modelValue && emit('update:modelValue', newVal)\n        mouseModel.value = 0\n      }\n    }\n\n    function setHoverValue (value) {\n      if (editable.value === true) {\n        mouseModel.value = value\n      }\n    }\n\n    function onKeyup (e, i) {\n      switch (e.keyCode) {\n        case 13:\n        case 32:\n          set(i)\n          return stopAndPrevent(e)\n        case 37: // LEFT ARROW\n        case 40: // DOWN ARROW\n          if (iconRefs[ `rt${ i - 1 }` ]) {\n            iconRefs[ `rt${ i - 1 }` ].focus()\n          }\n          return stopAndPrevent(e)\n        case 39: // RIGHT ARROW\n        case 38: // UP ARROW\n          if (iconRefs[ `rt${ i + 1 }` ]) {\n            iconRefs[ `rt${ i + 1 }` ].focus()\n          }\n          return stopAndPrevent(e)\n      }\n    }\n\n    function resetMouseModel () {\n      mouseModel.value = 0\n    }\n\n    onBeforeUpdate(() => {\n      iconRefs = {}\n    })\n\n    return () => {\n      const child = []\n\n      stars.value.forEach(({ iconClass, name, attrs }, index) => {\n        const i = index + 1\n\n        child.push(\n          h('div', {\n            key: i,\n            ref: el => { iconRefs[ `rt${ i }` ] = el },\n            class: 'q-rating__icon-container flex flex-center',\n            ...attrs,\n            onClick () { set(i) },\n            onMouseover () { setHoverValue(i) },\n            onMouseout: resetMouseModel,\n            onFocus () { setHoverValue(i) },\n            onBlur: resetMouseModel,\n            onKeyup (e) { onKeyup(e, i) }\n          }, hMergeSlot(\n            slots[ `tip-${ i }` ],\n            [ h(QIcon, { class: iconClass, name }) ]\n          ))\n        )\n      })\n\n      if (props.name !== void 0 && props.disable !== true) {\n        injectFormInput(child, 'push')\n      }\n\n      return h('div', {\n        class: classes.value,\n        style: sizeStyle.value,\n        ...attributes.value\n      }, child)\n    }\n  }\n})\n",
+      "start": 1703982896429,
+      "end": 1703982896510,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896511,
+      "end": 1703982896511,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896511,
+      "end": 1703982896512,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896512,
+      "end": 1703982896512,
+      "order": "normal"
+    }
+  ]
+}

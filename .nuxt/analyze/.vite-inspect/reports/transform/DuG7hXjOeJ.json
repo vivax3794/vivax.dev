@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/uploader/xhr-uploader-plugin.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { ref, computed } from 'vue'\n\nfunction getFn (prop) {\n  return typeof prop === 'function'\n    ? prop\n    : () => prop\n}\n\nconst props = {\n  url: [ Function, String ],\n  method: {\n    type: [ Function, String ],\n    default: 'POST'\n  },\n  fieldName: {\n    type: [ Function, String ],\n    default: () => {\n      return file => file.name\n    }\n  },\n  headers: [ Function, Array ],\n  formFields: [ Function, Array ],\n  withCredentials: [ Function, Boolean ],\n  sendRaw: [ Function, Boolean ],\n\n  batch: [ Function, Boolean ],\n  factory: Function\n}\n\nconst emits = [ 'factoryFailed', 'uploaded', 'failed', 'uploading' ]\n\nfunction injectPlugin ({ props, emit, helpers }) {\n  const xhrs = ref([])\n  const promises = ref([])\n  const workingThreads = ref(0)\n\n  const xhrProps = computed(() => ({\n    url: getFn(props.url),\n    method: getFn(props.method),\n    headers: getFn(props.headers),\n    formFields: getFn(props.formFields),\n    fieldName: getFn(props.fieldName),\n    withCredentials: getFn(props.withCredentials),\n    sendRaw: getFn(props.sendRaw),\n    batch: getFn(props.batch)\n  }))\n\n  const isUploading = computed(() => workingThreads.value > 0)\n  const isBusy = computed(() => promises.value.length !== 0)\n\n  let abortPromises\n\n  function abort () {\n    xhrs.value.forEach(x => { x.abort() })\n\n    if (promises.value.length !== 0) {\n      abortPromises = true\n    }\n  }\n\n  function upload () {\n    const queue = helpers.queuedFiles.value.slice(0)\n    helpers.queuedFiles.value = []\n\n    if (xhrProps.value.batch(queue)) {\n      runFactory(queue)\n    }\n    else {\n      queue.forEach(file => {\n        runFactory([ file ])\n      })\n    }\n  }\n\n  function runFactory (files) {\n    workingThreads.value++\n\n    if (typeof props.factory !== 'function') {\n      performUpload(files, {})\n      return\n    }\n\n    const res = props.factory(files)\n\n    if (!res) {\n      emit(\n        'factoryFailed',\n        new Error('QUploader: factory() does not return properly'),\n        files\n      )\n      workingThreads.value--\n    }\n    else if (typeof res.catch === 'function' && typeof res.then === 'function') {\n      promises.value.push(res)\n\n      const failed = err => {\n        if (helpers.isAlive() === true) {\n          promises.value = promises.value.filter(p => p !== res)\n\n          if (promises.value.length === 0) {\n            abortPromises = false\n          }\n\n          helpers.queuedFiles.value = helpers.queuedFiles.value.concat(files)\n          files.forEach(f => { helpers.updateFileStatus(f, 'failed') })\n\n          emit('factoryFailed', err, files)\n          workingThreads.value--\n        }\n      }\n\n      res.then(factory => {\n        if (abortPromises === true) {\n          failed(new Error('Aborted'))\n        }\n        else if (helpers.isAlive() === true) {\n          promises.value = promises.value.filter(p => p !== res)\n          performUpload(files, factory)\n        }\n      }).catch(failed)\n    }\n    else {\n      performUpload(files, res || {})\n    }\n  }\n\n  function performUpload (files, factory) {\n    const\n      form = new FormData(),\n      xhr = new XMLHttpRequest()\n\n    const getProp = (name, arg) => {\n      return factory[ name ] !== void 0\n        ? getFn(factory[ name ])(arg)\n        : xhrProps.value[ name ](arg)\n    }\n\n    const url = getProp('url', files)\n\n    if (!url) {\n      console.error('q-uploader: invalid or no URL specified')\n      workingThreads.value--\n      return\n    }\n\n    const fields = getProp('formFields', files)\n    fields !== void 0 && fields.forEach(field => {\n      form.append(field.name, field.value)\n    })\n\n    let\n      uploadIndex = 0,\n      uploadIndexSize = 0,\n      localUploadedSize = 0,\n      maxUploadSize = 0,\n      aborted\n\n    xhr.upload.addEventListener('progress', e => {\n      if (aborted === true) { return }\n\n      const loaded = Math.min(maxUploadSize, e.loaded)\n\n      helpers.uploadedSize.value += loaded - localUploadedSize\n      localUploadedSize = loaded\n\n      let size = localUploadedSize - uploadIndexSize\n      for (let i = uploadIndex; size > 0 && i < files.length; i++) {\n        const\n          file = files[ i ],\n          uploaded = size > file.size\n\n        if (uploaded) {\n          size -= file.size\n          uploadIndex++\n          uploadIndexSize += file.size\n          helpers.updateFileStatus(file, 'uploading', file.size)\n        }\n        else {\n          helpers.updateFileStatus(file, 'uploading', size)\n          return\n        }\n      }\n    }, false)\n\n    xhr.onreadystatechange = () => {\n      if (xhr.readyState < 4) {\n        return\n      }\n\n      if (xhr.status && xhr.status < 400) {\n        helpers.uploadedFiles.value = helpers.uploadedFiles.value.concat(files)\n        files.forEach(f => { helpers.updateFileStatus(f, 'uploaded') })\n        emit('uploaded', { files, xhr })\n      }\n      else {\n        aborted = true\n        helpers.uploadedSize.value -= localUploadedSize\n        helpers.queuedFiles.value = helpers.queuedFiles.value.concat(files)\n        files.forEach(f => { helpers.updateFileStatus(f, 'failed') })\n        emit('failed', { files, xhr })\n      }\n\n      workingThreads.value--\n      xhrs.value = xhrs.value.filter(x => x !== xhr)\n    }\n\n    xhr.open(\n      getProp('method', files),\n      url\n    )\n\n    if (getProp('withCredentials', files) === true) {\n      xhr.withCredentials = true\n    }\n\n    const headers = getProp('headers', files)\n    headers !== void 0 && headers.forEach(head => {\n      xhr.setRequestHeader(head.name, head.value)\n    })\n\n    const sendRaw = getProp('sendRaw', files)\n\n    files.forEach(file => {\n      helpers.updateFileStatus(file, 'uploading', 0)\n      if (sendRaw !== true) {\n        form.append(getProp('fieldName', file), file, file.name)\n      }\n      file.xhr = xhr\n      file.__abort = () => { xhr.abort() }\n      maxUploadSize += file.size\n    })\n\n    emit('uploading', { files, xhr })\n    xhrs.value.push(xhr)\n\n    if (sendRaw === true) {\n      xhr.send(new Blob(files))\n    }\n    else {\n      xhr.send(form)\n    }\n  }\n\n  return {\n    isUploading,\n    isBusy,\n\n    abort,\n    upload\n  }\n}\n\nexport default {\n  name: 'QUploader',\n  props,\n  emits,\n  injectPlugin\n}\n",
+      "start": 1703982897388,
+      "end": 1703982897446,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897446,
+      "end": 1703982897446,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897446,
+      "end": 1703982897447,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897447,
+      "end": 1703982897447,
+      "order": "normal"
+    }
+  ]
+}

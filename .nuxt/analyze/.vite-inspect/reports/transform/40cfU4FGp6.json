@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/directives/Mutation.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { createDirective } from '../utils/private/create.js'\nimport getSSRProps from '../utils/private/noop-ssr-directive-transform.js'\n\nconst defaultCfg = {\n  childList: true,\n  subtree: true,\n  attributes: true,\n  characterData: true,\n  attributeOldValue: true,\n  characterDataOldValue: true\n}\n\nfunction update (el, ctx, value) {\n  ctx.handler = value\n  ctx.observer !== void 0 && ctx.observer.disconnect()\n\n  ctx.observer = new MutationObserver(list => {\n    if (typeof ctx.handler === 'function') {\n      const res = ctx.handler(list)\n      if (res === false || ctx.once === true) {\n        destroy(el)\n      }\n    }\n  })\n\n  ctx.observer.observe(el, ctx.opts)\n}\n\nfunction destroy (el) {\n  const ctx = el.__qmutation\n\n  if (ctx !== void 0) {\n    ctx.observer !== void 0 && ctx.observer.disconnect()\n    delete el.__qmutation\n  }\n}\n\nexport default createDirective(__QUASAR_SSR_SERVER__\n  ? { name: 'mutation', getSSRProps }\n  : {\n      name: 'mutation',\n\n      mounted (el, { modifiers: { once, ...mod }, value }) {\n        const ctx = {\n          once,\n          opts: Object.keys(mod).length === 0\n            ? defaultCfg\n            : mod\n        }\n\n        update(el, ctx, value)\n\n        el.__qmutation = ctx\n      },\n\n      updated (el, { oldValue, value }) {\n        const ctx = el.__qmutation\n        if (ctx !== void 0 && oldValue !== value) {\n          update(el, ctx, value)\n        }\n      },\n\n      beforeUnmount: destroy\n    }\n)\n",
+      "start": 1703982896642,
+      "end": 1703982896705,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896705,
+      "end": 1703982896705,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896705,
+      "end": 1703982896706,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896706,
+      "end": 1703982896706,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { createDirective } from \"../utils/private/create.js\";\nimport getSSRProps from \"../utils/private/noop-ssr-directive-transform.js\";\nconst defaultCfg = {\n  childList: true,\n  subtree: true,\n  attributes: true,\n  characterData: true,\n  attributeOldValue: true,\n  characterDataOldValue: true\n};\nfunction update(el, ctx, value) {\n  ctx.handler = value;\n  ctx.observer !== void 0 && ctx.observer.disconnect();\n  ctx.observer = new MutationObserver((list) => {\n    if (typeof ctx.handler === \"function\") {\n      const res = ctx.handler(list);\n      if (res === false || ctx.once === true) {\n        destroy(el);\n      }\n    }\n  });\n  ctx.observer.observe(el, ctx.opts);\n}\nfunction destroy(el) {\n  const ctx = el.__qmutation;\n  if (ctx !== void 0) {\n    ctx.observer !== void 0 && ctx.observer.disconnect();\n    delete el.__qmutation;\n  }\n}\nexport default createDirective(\n  false ? { name: \"mutation\", getSSRProps } : {\n    name: \"mutation\",\n    mounted(el, { modifiers: { once, ...mod }, value }) {\n      const ctx = {\n        once,\n        opts: Object.keys(mod).length === 0 ? defaultCfg : mod\n      };\n      update(el, ctx, value);\n      el.__qmutation = ctx;\n    },\n    updated(el, { oldValue, value }) {\n      const ctx = el.__qmutation;\n      if (ctx !== void 0 && oldValue !== value) {\n        update(el, ctx, value);\n      }\n    },\n    beforeUnmount: destroy\n  }\n);\n",
+      "start": 1703982896706,
+      "end": 1703982896711,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896712,
+      "end": 1703982896713,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "normal"
+    }
+  ]
+}

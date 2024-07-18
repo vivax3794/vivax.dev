@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/slider/use-slider.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, onBeforeUnmount, getCurrentInstance } from 'vue'\n\nimport TouchPan from '../../directives/TouchPan.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport { useFormProps, useFormInject } from '../../composables/private/use-form.js'\n\nimport { between } from '../../utils/format.js'\nimport { position } from '../../utils/event.js'\nimport { isNumber, isObject } from '../../utils/is.js'\nimport { hDir } from '../../utils/private/render.js'\n\nconst markerPrefixClass = 'q-slider__marker-labels'\nconst defaultMarkerConvertFn = v => ({ value: v })\nconst defaultMarkerLabelRenderFn = ({ marker }) => h('div', {\n  key: marker.value,\n  style: marker.style,\n  class: marker.classes\n}, marker.label)\n\n// PGDOWN, LEFT, DOWN, PGUP, RIGHT, UP\nexport const keyCodes = [ 34, 37, 40, 33, 39, 38 ]\n\nexport const useSliderProps = {\n  ...useDarkProps,\n  ...useFormProps,\n\n  min: {\n    type: Number,\n    default: 0\n  },\n  max: {\n    type: Number,\n    default: 100\n  },\n  innerMin: Number,\n  innerMax: Number,\n\n  step: {\n    type: Number,\n    default: 1,\n    validator: v => v >= 0\n  },\n\n  snap: Boolean,\n\n  vertical: Boolean,\n  reverse: Boolean,\n\n  hideSelection: Boolean,\n\n  color: String,\n  markerLabelsClass: String,\n\n  label: Boolean,\n  labelColor: String,\n  labelTextColor: String,\n  labelAlways: Boolean,\n  switchLabelSide: Boolean,\n\n  markers: [ Boolean, Number ],\n  markerLabels: [ Boolean, Array, Object, Function ],\n  switchMarkerLabelsSide: Boolean,\n\n  trackImg: String,\n  trackColor: String,\n  innerTrackImg: String,\n  innerTrackColor: String,\n  selectionColor: String,\n  selectionImg: String,\n\n  thumbSize: {\n    type: String,\n    default: '20px'\n  },\n  trackSize: {\n    type: String,\n    default: '4px'\n  },\n\n  disable: Boolean,\n  readonly: Boolean,\n  dense: Boolean,\n\n  tabindex: [ String, Number ],\n\n  thumbColor: String,\n  thumbPath: {\n    type: String,\n    default: 'M 4, 10 a 6,6 0 1,0 12,0 a 6,6 0 1,0 -12,0'\n  }\n}\n\nexport const useSliderEmits = [ 'pan', 'update:modelValue', 'change' ]\n\nexport default function ({ updateValue, updatePosition, getDragging, formAttrs }) {\n  const { props, emit, slots, proxy: { $q } } = getCurrentInstance()\n  const isDark = useDark(props, $q)\n\n  const injectFormInput = useFormInject(formAttrs)\n\n  const active = ref(false)\n  const preventFocus = ref(false)\n  const focus = ref(false)\n  const dragging = ref(false)\n\n  const axis = computed(() => (props.vertical === true ? '--v' : '--h'))\n  const labelSide = computed(() => '-' + (props.switchLabelSide === true ? 'switched' : 'standard'))\n\n  const isReversed = computed(() => (\n    props.vertical === true\n      ? props.reverse === true\n      : props.reverse !== ($q.lang.rtl === true)\n  ))\n\n  const innerMin = computed(() => (\n    isNaN(props.innerMin) === true || props.innerMin < props.min\n      ? props.min\n      : props.innerMin\n  ))\n  const innerMax = computed(() => (\n    isNaN(props.innerMax) === true || props.innerMax > props.max\n      ? props.max\n      : props.innerMax\n  ))\n\n  const editable = computed(() => (\n    props.disable !== true && props.readonly !== true\n    && innerMin.value < innerMax.value\n  ))\n\n  const roundValueFn = computed(() => {\n    if (props.step === 0) {\n      return v => v\n    }\n\n    const decimals = (String(props.step).trim().split('.')[ 1 ] || '').length\n    return v => parseFloat(v.toFixed(decimals))\n  })\n\n  const keyStep = computed(() => (props.step === 0 ? 1 : props.step))\n  const tabindex = computed(() => (editable.value === true ? props.tabindex || 0 : -1))\n\n  const trackLen = computed(() => props.max - props.min)\n  const innerBarLen = computed(() => innerMax.value - innerMin.value)\n\n  const innerMinRatio = computed(() => convertModelToRatio(innerMin.value))\n  const innerMaxRatio = computed(() => convertModelToRatio(innerMax.value))\n\n  const positionProp = computed(() => (\n    props.vertical === true\n      ? (isReversed.value === true ? 'bottom' : 'top')\n      : (isReversed.value === true ? 'right' : 'left')\n  ))\n\n  const sizeProp = computed(() => (props.vertical === true ? 'height' : 'width'))\n  const thicknessProp = computed(() => (props.vertical === true ? 'width' : 'height'))\n  const orientation = computed(() => (props.vertical === true ? 'vertical' : 'horizontal'))\n\n  const attributes = computed(() => {\n    const acc = {\n      role: 'slider',\n      'aria-valuemin': innerMin.value,\n      'aria-valuemax': innerMax.value,\n      'aria-orientation': orientation.value,\n      'data-step': props.step\n    }\n\n    if (props.disable === true) {\n      acc[ 'aria-disabled' ] = 'true'\n    }\n    else if (props.readonly === true) {\n      acc[ 'aria-readonly' ] = 'true'\n    }\n\n    return acc\n  })\n\n  const classes = computed(() =>\n    `q-slider q-slider${ axis.value } q-slider--${ active.value === true ? '' : 'in' }active inline no-wrap `\n    + (props.vertical === true ? 'row' : 'column')\n    + (props.disable === true ? ' disabled' : ' q-slider--enabled' + (editable.value === true ? ' q-slider--editable' : ''))\n    + (focus.value === 'both' ? ' q-slider--focus' : '')\n    + (props.label || props.labelAlways === true ? ' q-slider--label' : '')\n    + (props.labelAlways === true ? ' q-slider--label-always' : '')\n    + (isDark.value === true ? ' q-slider--dark' : '')\n    + (props.dense === true ? ' q-slider--dense q-slider--dense' + axis.value : '')\n  )\n\n  function getPositionClass (name) {\n    const cls = 'q-slider__' + name\n    return `${ cls } ${ cls }${ axis.value } ${ cls }${ axis.value }${ labelSide.value }`\n  }\n  function getAxisClass (name) {\n    const cls = 'q-slider__' + name\n    return `${ cls } ${ cls }${ axis.value }`\n  }\n\n  const selectionBarClass = computed(() => {\n    const color = props.selectionColor || props.color\n    return 'q-slider__selection absolute'\n      + (color !== void 0 ? ` text-${ color }` : '')\n  })\n  const markerClass = computed(() => getAxisClass('markers') + ' absolute overflow-hidden')\n  const trackContainerClass = computed(() => getAxisClass('track-container'))\n  const pinClass = computed(() => getPositionClass('pin'))\n  const labelClass = computed(() => getPositionClass('label'))\n  const textContainerClass = computed(() => getPositionClass('text-container'))\n  const markerLabelsContainerClass = computed(() =>\n    getPositionClass('marker-labels-container')\n    + (props.markerLabelsClass !== void 0 ? ` ${ props.markerLabelsClass }` : '')\n  )\n\n  const trackClass = computed(() =>\n    'q-slider__track relative-position no-outline'\n    + (props.trackColor !== void 0 ? ` bg-${ props.trackColor }` : '')\n  )\n  const trackStyle = computed(() => {\n    const acc = { [ thicknessProp.value ]: props.trackSize }\n    if (props.trackImg !== void 0) {\n      acc.backgroundImage = `url(${ props.trackImg }) !important`\n    }\n    return acc\n  })\n\n  const innerBarClass = computed(() =>\n    'q-slider__inner absolute'\n    + (props.innerTrackColor !== void 0 ? ` bg-${ props.innerTrackColor }` : '')\n  )\n  const innerBarStyle = computed(() => {\n    const innerDiff = innerMaxRatio.value - innerMinRatio.value\n    const acc = {\n      [ positionProp.value ]: `${ 100 * innerMinRatio.value }%`,\n      [ sizeProp.value ]: innerDiff === 0\n        ? '2px'\n        : `${ 100 * innerDiff }%`\n    }\n    if (props.innerTrackImg !== void 0) {\n      acc.backgroundImage = `url(${ props.innerTrackImg }) !important`\n    }\n    return acc\n  })\n\n  function convertRatioToModel (ratio) {\n    const { min, max, step } = props\n    let model = min + ratio * (max - min)\n\n    if (step > 0) {\n      const modulo = (model - innerMin.value) % step\n      model += (Math.abs(modulo) >= step / 2 ? (modulo < 0 ? -1 : 1) * step : 0) - modulo\n    }\n\n    model = roundValueFn.value(model)\n\n    return between(model, innerMin.value, innerMax.value)\n  }\n\n  function convertModelToRatio (model) {\n    return trackLen.value === 0\n      ? 0\n      : (model - props.min) / trackLen.value\n  }\n\n  function getDraggingRatio (evt, dragging) {\n    const\n      pos = position(evt),\n      val = props.vertical === true\n        ? between((pos.top - dragging.top) / dragging.height, 0, 1)\n        : between((pos.left - dragging.left) / dragging.width, 0, 1)\n\n    return between(\n      isReversed.value === true ? 1.0 - val : val,\n      innerMinRatio.value,\n      innerMaxRatio.value\n    )\n  }\n\n  const markerStep = computed(() => (\n    isNumber(props.markers) === true ? props.markers : keyStep.value)\n  )\n\n  const markerTicks = computed(() => {\n    const acc = []\n    const step = markerStep.value\n    const max = props.max\n\n    let value = props.min\n    do {\n      acc.push(value)\n      value += step\n    } while (value < max)\n\n    acc.push(max)\n    return acc\n  })\n\n  const markerLabelClass = computed(() => {\n    const prefix = ` ${ markerPrefixClass }${ axis.value }-`\n    return markerPrefixClass\n      + `${ prefix }${ props.switchMarkerLabelsSide === true ? 'switched' : 'standard' }`\n      + `${ prefix }${ isReversed.value === true ? 'rtl' : 'ltr' }`\n  })\n\n  const markerLabelsList = computed(() => {\n    if (props.markerLabels === false) { return null }\n\n    return getMarkerList(props.markerLabels).map((entry, index) => ({\n      index,\n      value: entry.value,\n      label: entry.label || entry.value,\n      classes: markerLabelClass.value\n        + (entry.classes !== void 0 ? ' ' + entry.classes : ''),\n      style: {\n        ...getMarkerLabelStyle(entry.value),\n        ...(entry.style || {})\n      }\n    }))\n  })\n\n  const markerScope = computed(() => ({\n    markerList: markerLabelsList.value,\n    markerMap: markerLabelsMap.value,\n    classes: markerLabelClass.value, // TODO ts definition\n    getStyle: getMarkerLabelStyle\n  }))\n\n  const markerStyle = computed(() => {\n    const size = innerBarLen.value === 0\n      ? '2px'\n      : 100 * markerStep.value / innerBarLen.value\n\n    return {\n      ...innerBarStyle.value,\n      backgroundSize: props.vertical === true\n        ? `2px ${ size }%`\n        : `${ size }% 2px`\n    }\n  })\n\n  function getMarkerList (def) {\n    if (def === false) { return null }\n\n    if (def === true) {\n      return markerTicks.value.map(defaultMarkerConvertFn)\n    }\n\n    if (typeof def === 'function') {\n      return markerTicks.value.map(value => {\n        const item = def(value)\n        return isObject(item) === true ? { ...item, value } : { value, label: item }\n      })\n    }\n\n    const filterFn = ({ value }) => value >= props.min && value <= props.max\n\n    if (Array.isArray(def) === true) {\n      return def\n        .map(item => (isObject(item) === true ? item : { value: item }))\n        .filter(filterFn)\n    }\n\n    return Object.keys(def).map(key => {\n      const item = def[ key ]\n      const value = Number(key)\n      return isObject(item) === true ? { ...item, value } : { value, label: item }\n    }).filter(filterFn)\n  }\n\n  function getMarkerLabelStyle (val) {\n    return { [ positionProp.value ]: `${ 100 * (val - props.min) / trackLen.value }%` }\n  }\n\n  const markerLabelsMap = computed(() => {\n    if (props.markerLabels === false) { return null }\n\n    const acc = {}\n    markerLabelsList.value.forEach(entry => {\n      acc[ entry.value ] = entry\n    })\n    return acc\n  })\n\n  function getMarkerLabelsContent () {\n    if (slots[ 'marker-label-group' ] !== void 0) {\n      return slots[ 'marker-label-group' ](markerScope.value)\n    }\n\n    const fn = slots[ 'marker-label' ] || defaultMarkerLabelRenderFn\n    return markerLabelsList.value.map(marker => fn({\n      marker,\n      ...markerScope.value\n    }))\n  }\n\n  const panDirective = computed(() => {\n    // if editable.value === true\n    return [ [\n      TouchPan,\n      onPan,\n      void 0,\n      {\n        [ orientation.value ]: true,\n        prevent: true,\n        stop: true,\n        mouse: true,\n        mouseAllDir: true\n      }\n    ] ]\n  })\n\n  function onPan (event) {\n    if (event.isFinal === true) {\n      if (dragging.value !== void 0) {\n        updatePosition(event.evt)\n        // only if touch, because we also have mousedown/up:\n        event.touch === true && updateValue(true)\n        dragging.value = void 0\n        emit('pan', 'end')\n      }\n      active.value = false\n      focus.value = false\n    }\n    else if (event.isFirst === true) {\n      dragging.value = getDragging(event.evt)\n      updatePosition(event.evt)\n      updateValue()\n      active.value = true\n      emit('pan', 'start')\n    }\n    else {\n      updatePosition(event.evt)\n      updateValue()\n    }\n  }\n\n  function onBlur () {\n    focus.value = false\n  }\n\n  function onActivate (evt) {\n    updatePosition(evt, getDragging(evt))\n    updateValue()\n\n    preventFocus.value = true\n    active.value = true\n\n    document.addEventListener('mouseup', onDeactivate, true)\n  }\n\n  function onDeactivate () {\n    preventFocus.value = false\n    active.value = false\n\n    updateValue(true)\n    onBlur()\n\n    document.removeEventListener('mouseup', onDeactivate, true)\n  }\n\n  function onMobileClick (evt) {\n    updatePosition(evt, getDragging(evt))\n    updateValue(true)\n  }\n\n  function onKeyup (evt) {\n    if (keyCodes.includes(evt.keyCode)) {\n      updateValue(true)\n    }\n  }\n\n  function getTextContainerStyle (ratio) {\n    if (props.vertical === true) { return null }\n\n    const p = $q.lang.rtl !== props.reverse ? 1 - ratio : ratio\n    return {\n      transform: `translateX(calc(${ 2 * p - 1 } * ${ props.thumbSize } / 2 + ${ 50 - 100 * p }%))`\n    }\n  }\n\n  function getThumbRenderFn (thumb) {\n    const focusClass = computed(() => (\n      preventFocus.value === false && (focus.value === thumb.focusValue || focus.value === 'both')\n        ? ' q-slider--focus'\n        : ''\n    ))\n\n    const classes = computed(() =>\n      `q-slider__thumb q-slider__thumb${ axis.value } q-slider__thumb${ axis.value }-${ isReversed.value === true ? 'rtl' : 'ltr' } absolute non-selectable`\n      + focusClass.value\n      + (thumb.thumbColor.value !== void 0 ? ` text-${ thumb.thumbColor.value }` : '')\n    )\n\n    const style = computed(() => ({\n      width: props.thumbSize,\n      height: props.thumbSize,\n      [ positionProp.value ]: `${ 100 * thumb.ratio.value }%`,\n      zIndex: focus.value === thumb.focusValue ? 2 : void 0\n    }))\n\n    const pinColor = computed(() => (\n      thumb.labelColor.value !== void 0\n        ? ` text-${ thumb.labelColor.value }`\n        : ''\n    ))\n\n    const textContainerStyle = computed(() => getTextContainerStyle(thumb.ratio.value))\n\n    const textClass = computed(() => (\n      'q-slider__text'\n      + (thumb.labelTextColor.value !== void 0 ? ` text-${ thumb.labelTextColor.value }` : '')\n    ))\n\n    return () => {\n      const thumbContent = [\n        h('svg', {\n          class: 'q-slider__thumb-shape absolute-full',\n          viewBox: '0 0 20 20',\n          'aria-hidden': 'true'\n        }, [\n          h('path', { d: props.thumbPath })\n        ]),\n\n        h('div', { class: 'q-slider__focus-ring fit' })\n      ]\n\n      if (props.label === true || props.labelAlways === true) {\n        thumbContent.push(\n          h('div', {\n            class: pinClass.value + ' absolute fit no-pointer-events' + pinColor.value\n          }, [\n            h('div', {\n              class: labelClass.value,\n              style: { minWidth: props.thumbSize }\n            }, [\n              h('div', {\n                class: textContainerClass.value,\n                style: textContainerStyle.value\n              }, [\n                h('span', { class: textClass.value }, thumb.label.value)\n              ])\n            ])\n          ])\n        )\n\n        if (props.name !== void 0 && props.disable !== true) {\n          injectFormInput(thumbContent, 'push')\n        }\n      }\n\n      return h('div', {\n        class: classes.value,\n        style: style.value,\n        ...thumb.getNodeData()\n      }, thumbContent)\n    }\n  }\n\n  function getContent (selectionBarStyle, trackContainerTabindex, trackContainerEvents, injectThumb) {\n    const trackContent = []\n\n    props.innerTrackColor !== 'transparent' && trackContent.push(\n      h('div', {\n        key: 'inner',\n        class: innerBarClass.value,\n        style: innerBarStyle.value\n      })\n    )\n\n    props.selectionColor !== 'transparent' && trackContent.push(\n      h('div', {\n        key: 'selection',\n        class: selectionBarClass.value,\n        style: selectionBarStyle.value\n      })\n    )\n\n    props.markers !== false && trackContent.push(\n      h('div', {\n        key: 'marker',\n        class: markerClass.value,\n        style: markerStyle.value\n      })\n    )\n\n    injectThumb(trackContent)\n\n    const content = [\n      hDir(\n        'div',\n        {\n          key: 'trackC',\n          class: trackContainerClass.value,\n          tabindex: trackContainerTabindex.value,\n          ...trackContainerEvents.value\n        },\n        [\n          h('div', {\n            class: trackClass.value,\n            style: trackStyle.value\n          }, trackContent)\n        ],\n        'slide',\n        editable.value, () => panDirective.value\n      )\n    ]\n\n    if (props.markerLabels !== false) {\n      const action = props.switchMarkerLabelsSide === true\n        ? 'unshift'\n        : 'push'\n\n      content[ action ](\n        h('div', {\n          key: 'markerL',\n          class: markerLabelsContainerClass.value\n        }, getMarkerLabelsContent())\n      )\n    }\n\n    return content\n  }\n\n  onBeforeUnmount(() => {\n    document.removeEventListener('mouseup', onDeactivate, true)\n  })\n\n  return {\n    state: {\n      active,\n      focus,\n      preventFocus,\n      dragging,\n\n      editable,\n      classes,\n      tabindex,\n      attributes,\n\n      roundValueFn,\n      keyStep,\n      trackLen,\n      innerMin,\n      innerMinRatio,\n      innerMax,\n      innerMaxRatio,\n      positionProp,\n      sizeProp,\n      isReversed\n    },\n\n    methods: {\n      onActivate,\n      onMobileClick,\n      onBlur,\n      onKeyup,\n      getContent,\n      getThumbRenderFn,\n      convertRatioToModel,\n      convertModelToRatio,\n      getDraggingRatio\n    }\n  }\n}\n",
+      "start": 1703982897345,
+      "end": 1703982897413,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897413,
+      "end": 1703982897413,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897413,
+      "end": 1703982897416,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897416,
+      "end": 1703982897416,
+      "order": "normal"
+    }
+  ]
+}

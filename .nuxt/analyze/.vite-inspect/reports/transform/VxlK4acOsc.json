@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/virtual-scroll/QVirtualScroll.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, onBeforeMount, onMounted, onBeforeUnmount, onActivated, onDeactivated } from 'vue'\n\nimport QList from '../item/QList.js'\nimport QMarkupTable from '../markup-table/QMarkupTable.js'\nimport getTableMiddle from '../table/get-table-middle.js'\n\nimport { useVirtualScroll, useVirtualScrollProps } from './use-virtual-scroll.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { getScrollTarget } from '../../utils/scroll.js'\nimport { listenOpts } from '../../utils/event.js'\nimport { hMergeSlot } from '../../utils/private/render.js'\n\nconst comps = {\n  list: QList,\n  table: QMarkupTable\n}\n\nconst typeOptions = [ 'list', 'table', '__qtable' ]\n\nexport default createComponent({\n  name: 'QVirtualScroll',\n\n  props: {\n    ...useVirtualScrollProps,\n\n    type: {\n      type: String,\n      default: 'list',\n      validator: v => typeOptions.includes(v)\n    },\n\n    items: {\n      type: Array,\n      default: () => []\n    },\n\n    itemsFn: Function,\n    itemsSize: Number,\n\n    scrollTarget: {\n      default: void 0\n    }\n  },\n\n  setup (props, { slots, attrs }) {\n    let localScrollTarget\n    const rootRef = ref(null)\n\n    const virtualScrollLength = computed(() => (\n      props.itemsSize >= 0 && props.itemsFn !== void 0\n        ? parseInt(props.itemsSize, 10)\n        : (Array.isArray(props.items) ? props.items.length : 0)\n    ))\n\n    const {\n      virtualScrollSliceRange,\n      localResetVirtualScroll,\n      padVirtualScroll,\n      onVirtualScrollEvt\n    } = useVirtualScroll({\n      virtualScrollLength, getVirtualScrollTarget, getVirtualScrollEl\n    })\n\n    const virtualScrollScope = computed(() => {\n      if (virtualScrollLength.value === 0) {\n        return []\n      }\n\n      const mapFn = (item, i) => ({\n        index: virtualScrollSliceRange.value.from + i,\n        item\n      })\n\n      return props.itemsFn === void 0\n        ? props.items.slice(virtualScrollSliceRange.value.from, virtualScrollSliceRange.value.to).map(mapFn)\n        : props.itemsFn(virtualScrollSliceRange.value.from, virtualScrollSliceRange.value.to - virtualScrollSliceRange.value.from).map(mapFn)\n    })\n\n    const classes = computed(() =>\n      'q-virtual-scroll q-virtual-scroll' + (props.virtualScrollHorizontal === true ? '--horizontal' : '--vertical')\n      + (props.scrollTarget !== void 0 ? '' : ' scroll')\n    )\n\n    const attributes = computed(() => (\n      props.scrollTarget !== void 0 ? {} : { tabindex: 0 }\n    ))\n\n    watch(virtualScrollLength, () => {\n      localResetVirtualScroll()\n    })\n\n    watch(() => props.scrollTarget, () => {\n      unconfigureScrollTarget()\n      configureScrollTarget()\n    })\n\n    function getVirtualScrollEl () {\n      return rootRef.value.$el || rootRef.value\n    }\n\n    function getVirtualScrollTarget () {\n      return localScrollTarget\n    }\n\n    function configureScrollTarget () {\n      localScrollTarget = getScrollTarget(getVirtualScrollEl(), props.scrollTarget)\n      localScrollTarget.addEventListener('scroll', onVirtualScrollEvt, listenOpts.passive)\n    }\n\n    function unconfigureScrollTarget () {\n      if (localScrollTarget !== void 0) {\n        localScrollTarget.removeEventListener('scroll', onVirtualScrollEvt, listenOpts.passive)\n        localScrollTarget = void 0\n      }\n    }\n\n    function __getVirtualChildren () {\n      let child = padVirtualScroll(\n        props.type === 'list' ? 'div' : 'tbody',\n        virtualScrollScope.value.map(slots.default)\n      )\n\n      if (slots.before !== void 0) {\n        child = slots.before().concat(child)\n      }\n\n      return hMergeSlot(slots.after, child)\n    }\n\n    onBeforeMount(() => {\n      localResetVirtualScroll()\n    })\n\n    onMounted(() => {\n      configureScrollTarget()\n    })\n\n    onActivated(() => {\n      configureScrollTarget()\n    })\n\n    onDeactivated(() => {\n      unconfigureScrollTarget()\n    })\n\n    onBeforeUnmount(() => {\n      unconfigureScrollTarget()\n    })\n\n    return () => {\n      if (slots.default === void 0) {\n        console.error('QVirtualScroll: default scoped slot is required for rendering')\n        return\n      }\n\n      return props.type === '__qtable'\n        ? getTableMiddle(\n          { ref: rootRef, class: 'q-table__middle ' + classes.value },\n          __getVirtualChildren()\n        )\n        : h(comps[ props.type ], {\n          ...attrs,\n          ref: rootRef,\n          class: [ attrs.class, classes.value ],\n          ...attributes.value\n        }, __getVirtualChildren)\n    }\n  }\n})\n",
+      "start": 1703982896627,
+      "end": 1703982896689,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896689,
+      "end": 1703982896689,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896690,
+      "end": 1703982896690,
+      "order": "normal"
+    }
+  ]
+}

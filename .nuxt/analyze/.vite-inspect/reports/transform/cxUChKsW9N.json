@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/private/position-engine.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { getScrollbarWidth } from '../scroll.js'\nimport { client } from '../../plugins/Platform.js'\n\nlet vpLeft, vpTop\n\nexport function validatePosition (pos) {\n  const parts = pos.split(' ')\n  if (parts.length !== 2) {\n    return false\n  }\n  if ([ 'top', 'center', 'bottom' ].includes(parts[ 0 ]) !== true) {\n    console.error('Anchor/Self position must start with one of top/center/bottom')\n    return false\n  }\n  if ([ 'left', 'middle', 'right', 'start', 'end' ].includes(parts[ 1 ]) !== true) {\n    console.error('Anchor/Self position must end with one of left/middle/right/start/end')\n    return false\n  }\n  return true\n}\n\nexport function validateOffset (val) {\n  if (!val) { return true }\n  if (val.length !== 2) { return false }\n  if (typeof val[ 0 ] !== 'number' || typeof val[ 1 ] !== 'number') {\n    return false\n  }\n  return true\n}\n\nconst horizontalPos = {\n  'start#ltr': 'left',\n  'start#rtl': 'right',\n  'end#ltr': 'right',\n  'end#rtl': 'left'\n}\n\n;[ 'left', 'middle', 'right' ].forEach(pos => {\n  horizontalPos[ `${ pos }#ltr` ] = pos\n  horizontalPos[ `${ pos }#rtl` ] = pos\n})\n\nexport function parsePosition (pos, rtl) {\n  const parts = pos.split(' ')\n  return {\n    vertical: parts[ 0 ],\n    horizontal: horizontalPos[ `${ parts[ 1 ] }#${ rtl === true ? 'rtl' : 'ltr' }` ]\n  }\n}\n\nexport function getAnchorProps (el, offset) {\n  let { top, left, right, bottom, width, height } = el.getBoundingClientRect()\n\n  if (offset !== void 0) {\n    top -= offset[ 1 ]\n    left -= offset[ 0 ]\n    bottom += offset[ 1 ]\n    right += offset[ 0 ]\n\n    width += offset[ 0 ]\n    height += offset[ 1 ]\n  }\n\n  return {\n    top, bottom, height,\n    left, right, width,\n    middle: left + (right - left) / 2,\n    center: top + (bottom - top) / 2\n  }\n}\n\nfunction getAbsoluteAnchorProps (el, absoluteOffset, offset) {\n  let { top, left } = el.getBoundingClientRect()\n\n  top += absoluteOffset.top\n  left += absoluteOffset.left\n\n  if (offset !== void 0) {\n    top += offset[ 1 ]\n    left += offset[ 0 ]\n  }\n\n  return {\n    top, bottom: top + 1, height: 1,\n    left, right: left + 1, width: 1,\n    middle: left,\n    center: top\n  }\n}\n\nfunction getTargetProps (width, height) {\n  return {\n    top: 0,\n    center: height / 2,\n    bottom: height,\n    left: 0,\n    middle: width / 2,\n    right: width\n  }\n}\n\nfunction getTopLeftProps (anchorProps, targetProps, anchorOrigin, selfOrigin) {\n  return {\n    top: anchorProps[ anchorOrigin.vertical ] - targetProps[ selfOrigin.vertical ],\n    left: anchorProps[ anchorOrigin.horizontal ] - targetProps[ selfOrigin.horizontal ]\n  }\n}\n\nexport function setPosition (cfg, retryNumber = 0) {\n  if (\n    cfg.targetEl === null\n    || cfg.anchorEl === null\n    || retryNumber > 5 // we should try only a few times\n  ) {\n    return\n  }\n\n  // some browsers report zero height or width because\n  // we are trying too early to get these dimensions\n  if (cfg.targetEl.offsetHeight === 0 || cfg.targetEl.offsetWidth === 0) {\n    setTimeout(() => {\n      setPosition(cfg, retryNumber + 1)\n    }, 10)\n    return\n  }\n\n  const {\n    targetEl,\n    offset,\n    anchorEl,\n    anchorOrigin,\n    selfOrigin,\n    absoluteOffset,\n    fit,\n    cover,\n    maxHeight,\n    maxWidth\n  } = cfg\n\n  if (client.is.ios === true && window.visualViewport !== void 0) {\n    // uses the q-position-engine CSS class\n\n    const el = document.body.style\n    const { offsetLeft: left, offsetTop: top } = window.visualViewport\n\n    if (left !== vpLeft) {\n      el.setProperty('--q-pe-left', left + 'px')\n      vpLeft = left\n    }\n    if (top !== vpTop) {\n      el.setProperty('--q-pe-top', top + 'px')\n      vpTop = top\n    }\n  }\n\n  // scroll position might change\n  // if max-height/-width changes, so we\n  // need to restore it after we calculate\n  // the new positioning\n  const { scrollLeft, scrollTop } = targetEl\n\n  const anchorProps = absoluteOffset === void 0\n    ? getAnchorProps(anchorEl, cover === true ? [ 0, 0 ] : offset)\n    : getAbsoluteAnchorProps(anchorEl, absoluteOffset, offset)\n\n  // we \"reset\" the critical CSS properties\n  // so we can take an accurate measurement\n  Object.assign(targetEl.style, {\n    top: 0,\n    left: 0,\n    minWidth: null,\n    minHeight: null,\n    maxWidth: maxWidth || '100vw',\n    maxHeight: maxHeight || '100vh',\n    visibility: 'visible'\n  })\n\n  const { offsetWidth: origElWidth, offsetHeight: origElHeight } = targetEl\n  const { elWidth, elHeight } = fit === true || cover === true\n    ? { elWidth: Math.max(anchorProps.width, origElWidth), elHeight: cover === true ? Math.max(anchorProps.height, origElHeight) : origElHeight }\n    : { elWidth: origElWidth, elHeight: origElHeight }\n\n  let elStyle = { maxWidth, maxHeight }\n\n  if (fit === true || cover === true) {\n    elStyle.minWidth = anchorProps.width + 'px'\n    if (cover === true) {\n      elStyle.minHeight = anchorProps.height + 'px'\n    }\n  }\n\n  Object.assign(targetEl.style, elStyle)\n\n  const targetProps = getTargetProps(elWidth, elHeight)\n  let props = getTopLeftProps(anchorProps, targetProps, anchorOrigin, selfOrigin)\n\n  if (absoluteOffset === void 0 || offset === void 0) {\n    applyBoundaries(props, anchorProps, targetProps, anchorOrigin, selfOrigin)\n  }\n  else { // we have touch position or context menu with offset\n    const { top, left } = props // cache initial values\n\n    // apply initial boundaries\n    applyBoundaries(props, anchorProps, targetProps, anchorOrigin, selfOrigin)\n\n    let hasChanged = false\n\n    // did it flip vertically?\n    if (props.top !== top) {\n      hasChanged = true\n      const offsetY = 2 * offset[ 1 ]\n      anchorProps.center = anchorProps.top -= offsetY\n      anchorProps.bottom -= offsetY + 2\n    }\n\n    // did it flip horizontally?\n    if (props.left !== left) {\n      hasChanged = true\n      const offsetX = 2 * offset[ 0 ]\n      anchorProps.middle = anchorProps.left -= offsetX\n      anchorProps.right -= offsetX + 2\n    }\n\n    if (hasChanged === true) {\n      // re-calculate props with the new anchor\n      props = getTopLeftProps(anchorProps, targetProps, anchorOrigin, selfOrigin)\n\n      // and re-apply boundaries\n      applyBoundaries(props, anchorProps, targetProps, anchorOrigin, selfOrigin)\n    }\n  }\n\n  elStyle = {\n    top: props.top + 'px',\n    left: props.left + 'px'\n  }\n\n  if (props.maxHeight !== void 0) {\n    elStyle.maxHeight = props.maxHeight + 'px'\n\n    if (anchorProps.height > props.maxHeight) {\n      elStyle.minHeight = elStyle.maxHeight\n    }\n  }\n  if (props.maxWidth !== void 0) {\n    elStyle.maxWidth = props.maxWidth + 'px'\n\n    if (anchorProps.width > props.maxWidth) {\n      elStyle.minWidth = elStyle.maxWidth\n    }\n  }\n\n  Object.assign(targetEl.style, elStyle)\n\n  // restore scroll position\n  if (targetEl.scrollTop !== scrollTop) {\n    targetEl.scrollTop = scrollTop\n  }\n  if (targetEl.scrollLeft !== scrollLeft) {\n    targetEl.scrollLeft = scrollLeft\n  }\n}\n\nfunction applyBoundaries (props, anchorProps, targetProps, anchorOrigin, selfOrigin) {\n  const\n    currentHeight = targetProps.bottom,\n    currentWidth = targetProps.right,\n    margin = getScrollbarWidth(),\n    innerHeight = window.innerHeight - margin,\n    innerWidth = document.body.clientWidth\n\n  if (props.top < 0 || props.top + currentHeight > innerHeight) {\n    if (selfOrigin.vertical === 'center') {\n      props.top = anchorProps[ anchorOrigin.vertical ] > innerHeight / 2\n        ? Math.max(0, innerHeight - currentHeight)\n        : 0\n      props.maxHeight = Math.min(currentHeight, innerHeight)\n    }\n    else if (anchorProps[ anchorOrigin.vertical ] > innerHeight / 2) {\n      const anchorY = Math.min(\n        innerHeight,\n        anchorOrigin.vertical === 'center'\n          ? anchorProps.center\n          : (anchorOrigin.vertical === selfOrigin.vertical ? anchorProps.bottom : anchorProps.top)\n      )\n      props.maxHeight = Math.min(currentHeight, anchorY)\n      props.top = Math.max(0, anchorY - currentHeight)\n    }\n    else {\n      props.top = Math.max(0, anchorOrigin.vertical === 'center'\n        ? anchorProps.center\n        : (anchorOrigin.vertical === selfOrigin.vertical ? anchorProps.top : anchorProps.bottom)\n      )\n      props.maxHeight = Math.min(currentHeight, innerHeight - props.top)\n    }\n  }\n\n  if (props.left < 0 || props.left + currentWidth > innerWidth) {\n    props.maxWidth = Math.min(currentWidth, innerWidth)\n    if (selfOrigin.horizontal === 'middle') {\n      props.left = anchorProps[ anchorOrigin.horizontal ] > innerWidth / 2\n        ? Math.max(0, innerWidth - currentWidth)\n        : 0\n    }\n    else if (anchorProps[ anchorOrigin.horizontal ] > innerWidth / 2) {\n      const anchorX = Math.min(\n        innerWidth,\n        anchorOrigin.horizontal === 'middle'\n          ? anchorProps.middle\n          : (anchorOrigin.horizontal === selfOrigin.horizontal ? anchorProps.right : anchorProps.left)\n      )\n      props.maxWidth = Math.min(currentWidth, anchorX)\n      props.left = Math.max(0, anchorX - props.maxWidth)\n    }\n    else {\n      props.left = Math.max(0, anchorOrigin.horizontal === 'middle'\n        ? anchorProps.middle\n        : (anchorOrigin.horizontal === selfOrigin.horizontal ? anchorProps.left : anchorProps.right)\n      )\n      props.maxWidth = Math.min(currentWidth, innerWidth - props.left)\n    }\n  }\n}\n",
+      "start": 1703982897330,
+      "end": 1703982897388,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897388,
+      "end": 1703982897388,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897388,
+      "end": 1703982897389,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897389,
+      "end": 1703982897389,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897389,
+      "end": 1703982897390,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897390,
+      "end": 1703982897390,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897390,
+      "end": 1703982897390,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897390,
+      "end": 1703982897390,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897390,
+      "end": 1703982897390,
+      "order": "normal"
+    }
+  ]
+}

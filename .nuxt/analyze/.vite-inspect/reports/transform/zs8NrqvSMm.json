@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/colors.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "const reRGBA = /^rgb(a)?\\((\\d{1,3}),(\\d{1,3}),(\\d{1,3}),?([01]?\\.?\\d*?)?\\)$/\n\nexport function rgbToHex ({ r, g, b, a }) {\n  const alpha = a !== void 0\n\n  r = Math.round(r)\n  g = Math.round(g)\n  b = Math.round(b)\n\n  if (\n    r > 255\n    || g > 255\n    || b > 255\n    || (alpha && a > 100)\n  ) {\n    throw new TypeError('Expected 3 numbers below 256 (and optionally one below 100)')\n  }\n\n  a = alpha\n    ? (Math.round(255 * a / 100) | 1 << 8).toString(16).slice(1)\n    : ''\n\n  return '#' + ((b | g << 8 | r << 16) | 1 << 24).toString(16).slice(1) + a\n}\n\nexport function rgbToString ({ r, g, b, a }) {\n  return `rgb${ a !== void 0 ? 'a' : '' }(${ r },${ g },${ b }${ a !== void 0 ? ',' + (a / 100) : '' })`\n}\n\nexport function hexToRgb (hex) {\n  if (typeof hex !== 'string') {\n    throw new TypeError('Expected a string')\n  }\n\n  hex = hex.replace(/^#/, '')\n\n  if (hex.length === 3) {\n    hex = hex[ 0 ] + hex[ 0 ] + hex[ 1 ] + hex[ 1 ] + hex[ 2 ] + hex[ 2 ]\n  }\n  else if (hex.length === 4) {\n    hex = hex[ 0 ] + hex[ 0 ] + hex[ 1 ] + hex[ 1 ] + hex[ 2 ] + hex[ 2 ] + hex[ 3 ] + hex[ 3 ]\n  }\n\n  const num = parseInt(hex, 16)\n\n  return hex.length > 6\n    ? { r: num >> 24 & 255, g: num >> 16 & 255, b: num >> 8 & 255, a: Math.round((num & 255) / 2.55) }\n    : { r: num >> 16, g: num >> 8 & 255, b: num & 255 }\n}\n\nexport function hsvToRgb ({ h, s, v, a }) {\n  let r, g, b\n  s = s / 100\n  v = v / 100\n\n  h = h / 360\n  const\n    i = Math.floor(h * 6),\n    f = h * 6 - i,\n    p = v * (1 - s),\n    q = v * (1 - f * s),\n    t = v * (1 - (1 - f) * s)\n\n  switch (i % 6) {\n    case 0:\n      r = v\n      g = t\n      b = p\n      break\n    case 1:\n      r = q\n      g = v\n      b = p\n      break\n    case 2:\n      r = p\n      g = v\n      b = t\n      break\n    case 3:\n      r = p\n      g = q\n      b = v\n      break\n    case 4:\n      r = t\n      g = p\n      b = v\n      break\n    case 5:\n      r = v\n      g = p\n      b = q\n      break\n  }\n\n  return {\n    r: Math.round(r * 255),\n    g: Math.round(g * 255),\n    b: Math.round(b * 255),\n    a\n  }\n}\n\nexport function rgbToHsv ({ r, g, b, a }) {\n  const\n    max = Math.max(r, g, b),\n    min = Math.min(r, g, b),\n    d = max - min,\n    s = (max === 0 ? 0 : d / max),\n    v = max / 255\n  let h\n\n  switch (max) {\n    case min:\n      h = 0\n      break\n    case r:\n      h = (g - b) + d * (g < b ? 6 : 0)\n      h /= 6 * d\n      break\n    case g:\n      h = (b - r) + d * 2\n      h /= 6 * d\n      break\n    case b:\n      h = (r - g) + d * 4\n      h /= 6 * d\n      break\n  }\n\n  return {\n    h: Math.round(h * 360),\n    s: Math.round(s * 100),\n    v: Math.round(v * 100),\n    a\n  }\n}\n\nexport function textToRgb (str) {\n  if (typeof str !== 'string') {\n    throw new TypeError('Expected a string')\n  }\n\n  const color = str.replace(/ /g, '')\n\n  const m = reRGBA.exec(color)\n\n  if (m === null) {\n    return hexToRgb(color)\n  }\n\n  const rgb = {\n    r: Math.min(255, parseInt(m[ 2 ], 10)),\n    g: Math.min(255, parseInt(m[ 3 ], 10)),\n    b: Math.min(255, parseInt(m[ 4 ], 10))\n  }\n\n  if (m[ 1 ]) {\n    const alpha = parseFloat(m[ 5 ])\n    rgb.a = Math.min(1, isNaN(alpha) === true ? 1 : alpha) * 100\n  }\n\n  return rgb\n}\n\n/* works as darken if percent < 0 */\nexport function lighten (color, percent) {\n  if (typeof color !== 'string') {\n    throw new TypeError('Expected a string as color')\n  }\n  if (typeof percent !== 'number') {\n    throw new TypeError('Expected a numeric percent')\n  }\n\n  const rgb = textToRgb(color),\n    t = percent < 0 ? 0 : 255,\n    p = Math.abs(percent) / 100,\n    R = rgb.r,\n    G = rgb.g,\n    B = rgb.b\n\n  return '#' + (\n    0x1000000 + (Math.round((t - R) * p) + R) * 0x10000\n    + (Math.round((t - G) * p) + G) * 0x100\n    + (Math.round((t - B) * p) + B)\n  ).toString(16).slice(1)\n}\n\nexport function luminosity (color) {\n  if (typeof color !== 'string' && (!color || color.r === void 0)) {\n    throw new TypeError('Expected a string or a {r, g, b} object as color')\n  }\n\n  const\n    rgb = typeof color === 'string' ? textToRgb(color) : color,\n    r = rgb.r / 255,\n    g = rgb.g / 255,\n    b = rgb.b / 255,\n    R = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4),\n    G = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4),\n    B = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4)\n  return 0.2126 * R + 0.7152 * G + 0.0722 * B\n}\n\nexport function brightness (color) {\n  if (typeof color !== 'string' && (!color || color.r === void 0)) {\n    throw new TypeError('Expected a string or a {r, g, b} object as color')\n  }\n\n  const rgb = typeof color === 'string'\n    ? textToRgb(color)\n    : color\n\n  return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000\n}\n\nexport function blend (fgColor, bgColor) {\n  if (typeof fgColor !== 'string' && (!fgColor || fgColor.r === void 0)) {\n    throw new TypeError('Expected a string or a {r, g, b[, a]} object as fgColor')\n  }\n\n  if (typeof bgColor !== 'string' && (!bgColor || bgColor.r === void 0)) {\n    throw new TypeError('Expected a string or a {r, g, b[, a]} object as bgColor')\n  }\n\n  const\n    rgb1 = typeof fgColor === 'string' ? textToRgb(fgColor) : fgColor,\n    r1 = rgb1.r / 255,\n    g1 = rgb1.g / 255,\n    b1 = rgb1.b / 255,\n    a1 = rgb1.a !== void 0 ? rgb1.a / 100 : 1,\n    rgb2 = typeof bgColor === 'string' ? textToRgb(bgColor) : bgColor,\n    r2 = rgb2.r / 255,\n    g2 = rgb2.g / 255,\n    b2 = rgb2.b / 255,\n    a2 = rgb2.a !== void 0 ? rgb2.a / 100 : 1,\n    a = a1 + a2 * (1 - a1),\n    r = Math.round(((r1 * a1 + r2 * a2 * (1 - a1)) / a) * 255),\n    g = Math.round(((g1 * a1 + g2 * a2 * (1 - a1)) / a) * 255),\n    b = Math.round(((b1 * a1 + b2 * a2 * (1 - a1)) / a) * 255)\n\n  const ret = { r, g, b, a: Math.round(a * 100) }\n  return typeof fgColor === 'string'\n    ? rgbToHex(ret)\n    : ret\n}\n\nexport function changeAlpha (color, offset) {\n  if (typeof color !== 'string') {\n    throw new TypeError('Expected a string as color')\n  }\n\n  if (offset === void 0 || offset < -1 || offset > 1) {\n    throw new TypeError('Expected offset to be between -1 and 1')\n  }\n\n  const { r, g, b, a } = textToRgb(color)\n  const alpha = a !== void 0 ? a / 100 : 0\n\n  return rgbToHex({\n    r, g, b, a: Math.round(Math.min(1, Math.max(0, alpha + offset)) * 100)\n  })\n}\n\nexport function getPaletteColor (colorName) {\n  if (typeof colorName !== 'string') {\n    throw new TypeError('Expected a string as color')\n  }\n\n  const el = document.createElement('div')\n\n  el.className = `text-${ colorName } invisible fixed no-pointer-events`\n  document.body.appendChild(el)\n\n  const result = getComputedStyle(el).getPropertyValue('color')\n\n  el.remove()\n\n  return rgbToHex(textToRgb(result))\n}\n\nexport default {\n  rgbToHex,\n  hexToRgb,\n  hsvToRgb,\n  rgbToHsv,\n  textToRgb,\n  lighten,\n  luminosity,\n  brightness,\n  blend,\n  changeAlpha,\n  getPaletteColor\n}\n",
+      "start": 1703982896729,
+      "end": 1703982896790,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896790,
+      "end": 1703982896790,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896790,
+      "end": 1703982896790,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896790,
+      "end": 1703982896790,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896790,
+      "end": 1703982896790,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896790,
+      "end": 1703982896790,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896790,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896791,
+      "end": 1703982896791,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896791,
+      "end": 1703982896792,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896792,
+      "end": 1703982896792,
+      "order": "normal"
+    }
+  ]
+}

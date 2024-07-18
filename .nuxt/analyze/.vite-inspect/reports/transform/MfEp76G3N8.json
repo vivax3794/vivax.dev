@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/private/web-storage.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { noop } from '../event.js'\nimport { isDate, isRegexp } from '../is.js'\n\nfunction encode (value) {\n  if (isDate(value) === true) {\n    return '__q_date|' + value.toUTCString()\n  }\n  if (isRegexp(value) === true) {\n    return '__q_expr|' + value.source\n  }\n  if (typeof value === 'number') {\n    return '__q_numb|' + value\n  }\n  if (typeof value === 'boolean') {\n    return '__q_bool|' + (value ? '1' : '0')\n  }\n  if (typeof value === 'string') {\n    return '__q_strn|' + value\n  }\n  if (typeof value === 'function') {\n    return '__q_strn|' + value.toString()\n  }\n  if (value === Object(value)) {\n    return '__q_objt|' + JSON.stringify(value)\n  }\n\n  // hmm, we don't know what to do with it,\n  // so just return it as is\n  return value\n}\n\nfunction decode (value) {\n  const length = value.length\n  if (length < 9) {\n    // then it wasn't encoded by us\n    return value\n  }\n\n  const type = value.substring(0, 8)\n  const source = value.substring(9)\n\n  switch (type) {\n    case '__q_date':\n      return new Date(source)\n\n    case '__q_expr':\n      return new RegExp(source)\n\n    case '__q_numb':\n      return Number(source)\n\n    case '__q_bool':\n      return Boolean(source === '1')\n\n    case '__q_strn':\n      return '' + source\n\n    case '__q_objt':\n      return JSON.parse(source)\n\n    default:\n      // hmm, we reached here, we don't know the type,\n      // then it means it wasn't encoded by us, so just\n      // return whatever value it is\n      return value\n  }\n}\n\nexport function getEmptyStorage () {\n  const getVal = () => null\n\n  return {\n    has: () => false,\n    getLength: () => 0,\n    getItem: getVal,\n    getIndex: getVal,\n    getKey: getVal,\n    getAll: () => {},\n    getAllKeys: () => [],\n    set: noop,\n    remove: noop,\n    clear: noop,\n    isEmpty: () => true\n  }\n}\n\nexport function getStorage (type) {\n  const\n    webStorage = window[ type + 'Storage' ],\n    get = key => {\n      const item = webStorage.getItem(key)\n      return item\n        ? decode(item)\n        : null\n    }\n\n  return {\n    has: key => webStorage.getItem(key) !== null,\n    getLength: () => webStorage.length,\n    getItem: get,\n    getIndex: index => {\n      return index < webStorage.length\n        ? get(webStorage.key(index))\n        : null\n    },\n    getKey: index => {\n      return index < webStorage.length\n        ? webStorage.key(index)\n        : null\n    },\n    getAll: () => {\n      let key\n      const result = {}, len = webStorage.length\n\n      for (let i = 0; i < len; i++) {\n        key = webStorage.key(i)\n        result[ key ] = get(key)\n      }\n\n      return result\n    },\n    getAllKeys: () => {\n      const result = [], len = webStorage.length\n\n      for (let i = 0; i < len; i++) {\n        result.push(webStorage.key(i))\n      }\n\n      return result\n    },\n    set: (key, value) => { webStorage.setItem(key, encode(value)) },\n    remove: key => { webStorage.removeItem(key) },\n    clear: () => { webStorage.clear() },\n    isEmpty: () => webStorage.length === 0\n  }\n}\n",
+      "start": 1703982897417,
+      "end": 1703982897535,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897535,
+      "end": 1703982897535,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897535,
+      "end": 1703982897535,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897535,
+      "end": 1703982897535,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897535,
+      "end": 1703982897535,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897535,
+      "end": 1703982897535,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897536,
+      "end": 1703982897536,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897536,
+      "end": 1703982897537,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897537,
+      "end": 1703982897537,
+      "order": "normal"
+    }
+  ]
+}

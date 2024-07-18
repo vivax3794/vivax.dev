@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/directives/Intersection.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { createDirective } from '../utils/private/create.js'\nimport { isDeepEqual } from '../utils/is.js'\nimport getSSRProps from '../utils/private/noop-ssr-directive-transform.js'\n\nconst defaultCfg = {\n  threshold: 0,\n  root: null,\n  rootMargin: '0px'\n}\n\nfunction update (el, ctx, value) {\n  let handler, cfg, changed\n\n  if (typeof value === 'function') {\n    handler = value\n    cfg = defaultCfg\n    changed = ctx.cfg === void 0\n  }\n  else {\n    handler = value.handler\n    cfg = Object.assign({}, defaultCfg, value.cfg)\n    changed = ctx.cfg === void 0 || isDeepEqual(ctx.cfg, cfg) === false\n  }\n\n  if (ctx.handler !== handler) {\n    ctx.handler = handler\n  }\n\n  if (changed === true) {\n    ctx.cfg = cfg\n    ctx.observer !== void 0 && ctx.observer.unobserve(el)\n\n    ctx.observer = new IntersectionObserver(([ entry ]) => {\n      if (typeof ctx.handler === 'function') {\n        // if observed element is part of a vue transition\n        // then we need to be careful...\n        if (\n          entry.rootBounds === null\n          && document.body.contains(el) === true\n        ) {\n          ctx.observer.unobserve(el)\n          ctx.observer.observe(el)\n          return\n        }\n\n        const res = ctx.handler(entry, ctx.observer)\n\n        if (\n          res === false\n          || (ctx.once === true && entry.isIntersecting === true)\n        ) {\n          destroy(el)\n        }\n      }\n    }, cfg)\n\n    ctx.observer.observe(el)\n  }\n}\n\nfunction destroy (el) {\n  const ctx = el.__qvisible\n\n  if (ctx !== void 0) {\n    ctx.observer !== void 0 && ctx.observer.unobserve(el)\n    delete el.__qvisible\n  }\n}\n\nexport default createDirective(__QUASAR_SSR_SERVER__\n  ? { name: 'intersection', getSSRProps }\n  : {\n      name: 'intersection',\n\n      mounted (el, { modifiers, value }) {\n        const ctx = {\n          once: modifiers.once === true\n        }\n\n        update(el, ctx, value)\n\n        el.__qvisible = ctx\n      },\n\n      updated (el, binding) {\n        const ctx = el.__qvisible\n        ctx !== void 0 && update(el, ctx, binding.value)\n      },\n\n      beforeUnmount: destroy\n    }\n)\n",
+      "start": 1703982896629,
+      "end": 1703982896691,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896691,
+      "end": 1703982896691,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { createDirective } from \"../utils/private/create.js\";\nimport { isDeepEqual } from \"../utils/is.js\";\nimport getSSRProps from \"../utils/private/noop-ssr-directive-transform.js\";\nconst defaultCfg = {\n  threshold: 0,\n  root: null,\n  rootMargin: \"0px\"\n};\nfunction update(el, ctx, value) {\n  let handler, cfg, changed;\n  if (typeof value === \"function\") {\n    handler = value;\n    cfg = defaultCfg;\n    changed = ctx.cfg === void 0;\n  } else {\n    handler = value.handler;\n    cfg = Object.assign({}, defaultCfg, value.cfg);\n    changed = ctx.cfg === void 0 || isDeepEqual(ctx.cfg, cfg) === false;\n  }\n  if (ctx.handler !== handler) {\n    ctx.handler = handler;\n  }\n  if (changed === true) {\n    ctx.cfg = cfg;\n    ctx.observer !== void 0 && ctx.observer.unobserve(el);\n    ctx.observer = new IntersectionObserver(([entry]) => {\n      if (typeof ctx.handler === \"function\") {\n        if (entry.rootBounds === null && document.body.contains(el) === true) {\n          ctx.observer.unobserve(el);\n          ctx.observer.observe(el);\n          return;\n        }\n        const res = ctx.handler(entry, ctx.observer);\n        if (res === false || ctx.once === true && entry.isIntersecting === true) {\n          destroy(el);\n        }\n      }\n    }, cfg);\n    ctx.observer.observe(el);\n  }\n}\nfunction destroy(el) {\n  const ctx = el.__qvisible;\n  if (ctx !== void 0) {\n    ctx.observer !== void 0 && ctx.observer.unobserve(el);\n    delete el.__qvisible;\n  }\n}\nexport default createDirective(\n  false ? { name: \"intersection\", getSSRProps } : {\n    name: \"intersection\",\n    mounted(el, { modifiers, value }) {\n      const ctx = {\n        once: modifiers.once === true\n      };\n      update(el, ctx, value);\n      el.__qvisible = ctx;\n    },\n    updated(el, binding) {\n      const ctx = el.__qvisible;\n      ctx !== void 0 && update(el, ctx, binding.value);\n    },\n    beforeUnmount: destroy\n  }\n);\n",
+      "start": 1703982896691,
+      "end": 1703982896711,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896711,
+      "end": 1703982896711,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896711,
+      "end": 1703982896713,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896713,
+      "end": 1703982896713,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896714,
+      "end": 1703982896714,
+      "order": "normal"
+    }
+  ]
+}

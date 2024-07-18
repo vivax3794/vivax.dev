@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/table/table-pagination.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { ref, computed, watch, nextTick } from 'vue'\n\nfunction samePagination (oldPag, newPag) {\n  for (const prop in newPag) {\n    if (newPag[ prop ] !== oldPag[ prop ]) {\n      return false\n    }\n  }\n  return true\n}\n\nfunction fixPagination (p) {\n  if (p.page < 1) {\n    p.page = 1\n  }\n  if (p.rowsPerPage !== void 0 && p.rowsPerPage < 1) {\n    p.rowsPerPage = 0\n  }\n  return p\n}\n\nexport const useTablePaginationProps = {\n  pagination: Object,\n  rowsPerPageOptions: {\n    type: Array,\n    default: () => [ 5, 7, 10, 15, 20, 25, 50, 0 ]\n  },\n\n  'onUpdate:pagination': [ Function, Array ]\n}\n\nexport function useTablePaginationState (vm, getCellValue) {\n  const { props, emit } = vm\n\n  const innerPagination = ref(\n    Object.assign({\n      sortBy: null,\n      descending: false,\n      page: 1,\n      rowsPerPage: props.rowsPerPageOptions.length !== 0\n        ? props.rowsPerPageOptions[ 0 ]\n        : 5\n    }, props.pagination)\n  )\n\n  const computedPagination = computed(() => {\n    const pag = props[ 'onUpdate:pagination' ] !== void 0\n      ? { ...innerPagination.value, ...props.pagination }\n      : innerPagination.value\n\n    return fixPagination(pag)\n  })\n\n  const isServerSide = computed(() => computedPagination.value.rowsNumber !== void 0)\n\n  function sendServerRequest (pagination) {\n    requestServerInteraction({\n      pagination,\n      filter: props.filter\n    })\n  }\n\n  function requestServerInteraction (prop = {}) {\n    nextTick(() => {\n      emit('request', {\n        pagination: prop.pagination || computedPagination.value,\n        filter: prop.filter || props.filter,\n        getCellValue\n      })\n    })\n  }\n\n  function setPagination (val, forceServerRequest) {\n    const newPagination = fixPagination({\n      ...computedPagination.value,\n      ...val\n    })\n\n    if (samePagination(computedPagination.value, newPagination) === true) {\n      if (isServerSide.value === true && forceServerRequest === true) {\n        sendServerRequest(newPagination)\n      }\n      return\n    }\n\n    if (isServerSide.value === true) {\n      sendServerRequest(newPagination)\n      return\n    }\n\n    if (\n      props.pagination !== void 0\n      && props[ 'onUpdate:pagination' ] !== void 0\n    ) {\n      emit('update:pagination', newPagination)\n    }\n    else {\n      innerPagination.value = newPagination\n    }\n  }\n\n  return {\n    innerPagination,\n    computedPagination,\n    isServerSide,\n\n    requestServerInteraction,\n    setPagination\n  }\n}\n\nexport function useTablePagination (vm, innerPagination, computedPagination, isServerSide, setPagination, filteredSortedRowsNumber) {\n  const { props, emit, proxy: { $q } } = vm\n\n  const computedRowsNumber = computed(() => (\n    isServerSide.value === true\n      ? computedPagination.value.rowsNumber || 0\n      : filteredSortedRowsNumber.value\n  ))\n\n  const firstRowIndex = computed(() => {\n    const { page, rowsPerPage } = computedPagination.value\n    return (page - 1) * rowsPerPage\n  })\n\n  const lastRowIndex = computed(() => {\n    const { page, rowsPerPage } = computedPagination.value\n    return page * rowsPerPage\n  })\n\n  const isFirstPage = computed(() => computedPagination.value.page === 1)\n\n  const pagesNumber = computed(() => (\n    computedPagination.value.rowsPerPage === 0\n      ? 1\n      : Math.max(\n        1,\n        Math.ceil(computedRowsNumber.value / computedPagination.value.rowsPerPage)\n      )\n  ))\n\n  const isLastPage = computed(() => (\n    lastRowIndex.value === 0\n      ? true\n      : computedPagination.value.page >= pagesNumber.value\n  ))\n\n  const computedRowsPerPageOptions = computed(() => {\n    const opts = props.rowsPerPageOptions.includes(innerPagination.value.rowsPerPage)\n      ? props.rowsPerPageOptions\n      : [ innerPagination.value.rowsPerPage ].concat(props.rowsPerPageOptions)\n\n    return opts.map(count => ({\n      label: count === 0 ? $q.lang.table.allRows : '' + count,\n      value: count\n    }))\n  })\n\n  watch(pagesNumber, (lastPage, oldLastPage) => {\n    if (lastPage === oldLastPage) {\n      return\n    }\n\n    const currentPage = computedPagination.value.page\n    if (lastPage && !currentPage) {\n      setPagination({ page: 1 })\n    }\n    else if (lastPage < currentPage) {\n      setPagination({ page: lastPage })\n    }\n  })\n\n  function firstPage () {\n    setPagination({ page: 1 })\n  }\n\n  function prevPage () {\n    const { page } = computedPagination.value\n    if (page > 1) {\n      setPagination({ page: page - 1 })\n    }\n  }\n\n  function nextPage () {\n    const { page, rowsPerPage } = computedPagination.value\n    if (lastRowIndex.value > 0 && page * rowsPerPage < computedRowsNumber.value) {\n      setPagination({ page: page + 1 })\n    }\n  }\n\n  function lastPage () {\n    setPagination({ page: pagesNumber.value })\n  }\n\n  if (props[ 'onUpdate:pagination' ] !== void 0) {\n    emit('update:pagination', { ...computedPagination.value })\n  }\n\n  return {\n    firstRowIndex,\n    lastRowIndex,\n    isFirstPage,\n    isLastPage,\n    pagesNumber,\n    computedRowsPerPageOptions,\n    computedRowsNumber,\n\n    firstPage,\n    prevPage,\n    nextPage,\n    lastPage\n  }\n}\n",
+      "start": 1703982897355,
+      "end": 1703982897421,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897421,
+      "end": 1703982897421,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897422,
+      "end": 1703982897422,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897422,
+      "end": 1703982897423,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897423,
+      "end": 1703982897423,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897423,
+      "end": 1703982897423,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897423,
+      "end": 1703982897423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897423,
+      "end": 1703982897423,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897423,
+      "end": 1703982897423,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897424,
+      "end": 1703982897424,
+      "order": "normal"
+    }
+  ]
+}

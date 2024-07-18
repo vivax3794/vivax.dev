@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/btn/QBtn.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, Transition, onBeforeUnmount, withDirectives, getCurrentInstance } from 'vue'\n\nimport QIcon from '../icon/QIcon.js'\nimport QSpinner from '../spinner/QSpinner.js'\n\nimport Ripple from '../../directives/Ripple.js'\n\nimport useBtn, { useBtnProps } from './use-btn.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hMergeSlot } from '../../utils/private/render.js'\nimport { stop, prevent, stopAndPrevent, listenOpts } from '../../utils/event.js'\nimport { isKeyCode } from '../../utils/private/key-composition.js'\n\nconst { passiveCapture } = listenOpts\n\nlet\n  touchTarget = null,\n  keyboardTarget = null,\n  mouseTarget = null\n\nexport default createComponent({\n  name: 'QBtn',\n\n  props: {\n    ...useBtnProps,\n\n    percentage: Number,\n    darkPercentage: Boolean,\n\n    onTouchstart: [ Function, Array ]\n  },\n\n  emits: [ 'click', 'keydown', 'mousedown', 'keyup' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy } = getCurrentInstance()\n\n    const {\n      classes, style, innerClasses,\n      attributes,\n      hasLink, linkTag, navigateOnClick,\n      isActionable\n    } = useBtn(props)\n\n    const rootRef = ref(null)\n    const blurTargetRef = ref(null)\n\n    let localTouchTargetEl = null, avoidMouseRipple, mouseTimer = null\n\n    const hasLabel = computed(() =>\n      props.label !== void 0 && props.label !== null && props.label !== ''\n    )\n\n    const ripple = computed(() => (\n      props.disable === true || props.ripple === false\n        ? false\n        : {\n            keyCodes: hasLink.value === true ? [ 13, 32 ] : [ 13 ],\n            ...(props.ripple === true ? {} : props.ripple)\n          }\n    ))\n\n    const rippleProps = computed(() => ({ center: props.round }))\n\n    const percentageStyle = computed(() => {\n      const val = Math.max(0, Math.min(100, props.percentage))\n      return val > 0\n        ? { transition: 'transform 0.6s', transform: `translateX(${ val - 100 }%)` }\n        : {}\n    })\n\n    const onEvents = computed(() => {\n      if (props.loading === true) {\n        return {\n          onMousedown: onLoadingEvt,\n          onTouchstart: onLoadingEvt,\n          onClick: onLoadingEvt,\n          onKeydown: onLoadingEvt,\n          onKeyup: onLoadingEvt\n        }\n      }\n\n      if (isActionable.value === true) {\n        const acc = {\n          onClick,\n          onKeydown,\n          onMousedown\n        }\n\n        if (proxy.$q.platform.has.touch === true) {\n          const suffix = props.onTouchstart !== void 0\n            ? ''\n            : 'Passive'\n\n          acc[ `onTouchstart${ suffix }` ] = onTouchstart\n        }\n\n        return acc\n      }\n\n      return {\n        // needed; especially for disabled <a> tags\n        onClick: stopAndPrevent\n      }\n    })\n\n    const nodeProps = computed(() => ({\n      ref: rootRef,\n      class: 'q-btn q-btn-item non-selectable no-outline ' + classes.value,\n      style: style.value,\n      ...attributes.value,\n      ...onEvents.value\n    }))\n\n    function onClick (e) {\n      // is it already destroyed?\n      if (rootRef.value === null) { return }\n\n      if (e !== void 0) {\n        if (e.defaultPrevented === true) {\n          return\n        }\n\n        const el = document.activeElement\n        // focus button if it came from ENTER on form\n        // prevent the new submit (already done)\n        if (\n          props.type === 'submit'\n          && el !== document.body\n          && rootRef.value.contains(el) === false\n          // required for iOS and desktop Safari\n          && el.contains(rootRef.value) === false\n        ) {\n          rootRef.value.focus()\n\n          const onClickCleanup = () => {\n            document.removeEventListener('keydown', stopAndPrevent, true)\n            document.removeEventListener('keyup', onClickCleanup, passiveCapture)\n            rootRef.value !== null && rootRef.value.removeEventListener('blur', onClickCleanup, passiveCapture)\n          }\n\n          document.addEventListener('keydown', stopAndPrevent, true)\n          document.addEventListener('keyup', onClickCleanup, passiveCapture)\n          rootRef.value.addEventListener('blur', onClickCleanup, passiveCapture)\n        }\n      }\n\n      navigateOnClick(e)\n    }\n\n    function onKeydown (e) {\n      // is it already destroyed?\n      if (rootRef.value === null) { return }\n\n      emit('keydown', e)\n\n      if (isKeyCode(e, [ 13, 32 ]) === true && keyboardTarget !== rootRef.value) {\n        keyboardTarget !== null && cleanup()\n\n        if (e.defaultPrevented !== true) {\n          // focus external button if the focus helper was focused before\n          rootRef.value.focus()\n\n          keyboardTarget = rootRef.value\n          rootRef.value.classList.add('q-btn--active')\n          document.addEventListener('keyup', onPressEnd, true)\n          rootRef.value.addEventListener('blur', onPressEnd, passiveCapture)\n        }\n\n        stopAndPrevent(e)\n      }\n    }\n\n    function onTouchstart (e) {\n      // is it already destroyed?\n      if (rootRef.value === null) { return }\n\n      emit('touchstart', e)\n\n      if (e.defaultPrevented === true) { return }\n\n      if (touchTarget !== rootRef.value) {\n        touchTarget !== null && cleanup()\n        touchTarget = rootRef.value\n\n        localTouchTargetEl = e.target\n        localTouchTargetEl.addEventListener('touchcancel', onPressEnd, passiveCapture)\n        localTouchTargetEl.addEventListener('touchend', onPressEnd, passiveCapture)\n      }\n\n      // avoid duplicated mousedown event\n      // triggering another early ripple\n      avoidMouseRipple = true\n      mouseTimer !== null && clearTimeout(mouseTimer)\n      mouseTimer = setTimeout(() => {\n        mouseTimer = null\n        avoidMouseRipple = false\n      }, 200)\n    }\n\n    function onMousedown (e) {\n      // is it already destroyed?\n      if (rootRef.value === null) { return }\n\n      e.qSkipRipple = avoidMouseRipple === true\n      emit('mousedown', e)\n\n      if (e.defaultPrevented !== true && mouseTarget !== rootRef.value) {\n        mouseTarget !== null && cleanup()\n        mouseTarget = rootRef.value\n        rootRef.value.classList.add('q-btn--active')\n        document.addEventListener('mouseup', onPressEnd, passiveCapture)\n      }\n    }\n\n    function onPressEnd (e) {\n      // is it already destroyed?\n      if (rootRef.value === null) { return }\n\n      // needed for IE (because it emits blur when focusing button from focus helper)\n      if (e !== void 0 && e.type === 'blur' && document.activeElement === rootRef.value) {\n        return\n      }\n\n      if (e !== void 0 && e.type === 'keyup') {\n        if (keyboardTarget === rootRef.value && isKeyCode(e, [ 13, 32 ]) === true) {\n          // for click trigger\n          const evt = new MouseEvent('click', e)\n          evt.qKeyEvent = true\n          e.defaultPrevented === true && prevent(evt)\n          e.cancelBubble === true && stop(evt)\n          rootRef.value.dispatchEvent(evt)\n\n          stopAndPrevent(e)\n\n          // for ripple\n          e.qKeyEvent = true\n        }\n\n        emit('keyup', e)\n      }\n\n      cleanup()\n    }\n\n    function cleanup (destroying) {\n      const blurTarget = blurTargetRef.value\n\n      if (\n        destroying !== true\n        && (touchTarget === rootRef.value || mouseTarget === rootRef.value)\n        && blurTarget !== null\n        && blurTarget !== document.activeElement\n      ) {\n        blurTarget.setAttribute('tabindex', -1)\n        blurTarget.focus()\n      }\n\n      if (touchTarget === rootRef.value) {\n        if (localTouchTargetEl !== null) {\n          localTouchTargetEl.removeEventListener('touchcancel', onPressEnd, passiveCapture)\n          localTouchTargetEl.removeEventListener('touchend', onPressEnd, passiveCapture)\n        }\n        touchTarget = localTouchTargetEl = null\n      }\n\n      if (mouseTarget === rootRef.value) {\n        document.removeEventListener('mouseup', onPressEnd, passiveCapture)\n        mouseTarget = null\n      }\n\n      if (keyboardTarget === rootRef.value) {\n        document.removeEventListener('keyup', onPressEnd, true)\n        rootRef.value !== null && rootRef.value.removeEventListener('blur', onPressEnd, passiveCapture)\n        keyboardTarget = null\n      }\n\n      rootRef.value !== null && rootRef.value.classList.remove('q-btn--active')\n    }\n\n    function onLoadingEvt (evt) {\n      stopAndPrevent(evt)\n      evt.qSkipRipple = true\n    }\n\n    onBeforeUnmount(() => {\n      cleanup(true)\n    })\n\n    // expose public methods\n    Object.assign(proxy, { click: onClick })\n\n    return () => {\n      let inner = []\n\n      props.icon !== void 0 && inner.push(\n        h(QIcon, {\n          name: props.icon,\n          left: props.stack !== true && hasLabel.value === true,\n          role: 'img',\n          'aria-hidden': 'true'\n        })\n      )\n\n      hasLabel.value === true && inner.push(\n        h('span', { class: 'block' }, [ props.label ])\n      )\n\n      inner = hMergeSlot(slots.default, inner)\n\n      if (props.iconRight !== void 0 && props.round === false) {\n        inner.push(\n          h(QIcon, {\n            name: props.iconRight,\n            right: props.stack !== true && hasLabel.value === true,\n            role: 'img',\n            'aria-hidden': 'true'\n          })\n        )\n      }\n\n      const child = [\n        h('span', {\n          class: 'q-focus-helper',\n          ref: blurTargetRef\n        })\n      ]\n\n      if (props.loading === true && props.percentage !== void 0) {\n        child.push(\n          h('span', {\n            class: 'q-btn__progress absolute-full overflow-hidden' + (props.darkPercentage === true ? ' q-btn__progress--dark' : '')\n          }, [\n            h('span', {\n              class: 'q-btn__progress-indicator fit block',\n              style: percentageStyle.value\n            })\n          ])\n        )\n      }\n\n      child.push(\n        h('span', {\n          class: 'q-btn__content text-center col items-center q-anchor--skip ' + innerClasses.value\n        }, inner)\n      )\n\n      props.loading !== null && child.push(\n        h(Transition, {\n          name: 'q-transition--fade'\n        }, () => (\n          props.loading === true\n            ? [\n                h('span', {\n                  key: 'loading',\n                  class: 'absolute-full flex flex-center'\n                }, slots.loading !== void 0 ? slots.loading() : [ h(QSpinner) ])\n              ]\n            : null\n        ))\n      )\n\n      return withDirectives(\n        h(\n          linkTag.value,\n          nodeProps.value,\n          child\n        ),\n        [ [\n          Ripple,\n          ripple.value,\n          void 0,\n          rippleProps.value\n        ] ]\n      )\n    }\n  }\n})\n",
+      "start": 1703982896149,
+      "end": 1703982896255,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896255,
+      "end": 1703982896255,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896256,
+      "end": 1703982896256,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896256,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    }
+  ]
+}

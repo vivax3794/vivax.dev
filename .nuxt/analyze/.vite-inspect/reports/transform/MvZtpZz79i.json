@@ -1,0 +1,234 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/pages/art.vue?vue&type=script&setup=true&lang.ts",
+  "transforms": [
+    {
+      "name": "vite:vue",
+      "result": "import { defineComponent as _defineComponent } from 'vue'\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createVNode as _createVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\"\n\nconst _withScopeId = n => (_pushScopeId(\"data-v-e11f6c7e\"),n=n(),_popScopeId(),n)\nconst _hoisted_1 = { class: \"row justify-center\" }\nconst _hoisted_2 = { class: \"q-ma-md\" }\nconst _hoisted_3 = { class: \"card shadow-3\" }\nconst _hoisted_4 = { class: \"card-text absolute-bottom\" }\nconst _hoisted_5 = { class: \"text-h4 text-center\" }\nconst _hoisted_6 = [\"innerHTML\"]\n\ninterface ArtWork {\n    name: string,\n    path: string,\n    description: string,\n}\n\n\nexport default /*#__PURE__*/_defineComponent({\n  __name: 'art',\n  setup(__props) {\n\n\nconst ART_WORK: ArtWork[] = [\n    {\n        name: \"Fire\",\n        path: \"/art/Fire.png\",\n        description: \"This is the only time I have managed to draw fire. Not kidding, no clue how the hell I got it looking actually good, but I cant for the life of me replicate whatever the hell I did here.\"\n    },\n    {\n        name: \"Profile picture\",\n        path: \"/art/Villay.png\",\n        description: \"My avatar which is an OC from <a href='https://youtube.com/playlist?list=PLHovnlOusNLiJz3sm0d5i2Evwa2LDLdrg&si=mx2dsDQPpiO_1gP2'>murder drones</a>\"\n    },\n    {\n        name: \"PFP Christmas\",\n        path: \"/art/VillayChris.png\",\n        description: \"My PFP for christmas times.\"\n    },\n    {\n        name: \"Uzi\",\n        path: \"/art/UziTrace.png\",\n        description: \"My first digital drawing that wasnt pixel art! I did this after I got my drawing tablet, it is a traced drawing of <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman'>Uzi from murder drones</a>, specifically this <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman?file=Uzicutout.png'>reference picture</a>\"\n    },\n    // {\n    //     name: \"Random doddle\",\n    //     path: \"/art/UziDoddle.jpg\",\n    //     description: \"Sometimes I get bored in class, so I doddle a bit, liked this one of Uzi so here it is :P\"\n    // },\n    {\n        name: \"Rainbow pfp\",\n        path: \"/art/OldPfp.png\",\n        description: \"My old profile picture, which is a pixel art drawing of a IRL ball I won at a carnival. And no, I am not a part of LGBT, I just like rainbows. And yes I know there is a pixel missing, no I wont fix it.\"\n    },\n    {\n        name: \"Rainbow Duck\",\n        path: \"/art/Duck.png\",\n        description: \"A ducky version of my old pfp, because who doesnt like ducks.\"\n    },\n    {\n        name: \"Raid animation\",\n        path: \"/art/Raid.gif\",\n        description: \"Raid animation I use for my twitch channel, isnt it cute?\"\n    },\n];\n\nreturn (_ctx: any,_cache: any) => {\n  const _component_QImg = _resolveComponent(\"QImg\")!\n\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(ART_WORK, (art) => {\n      return _createElementVNode(\"div\", _hoisted_2, [\n        _createElementVNode(\"div\", _hoisted_3, [\n          _createVNode(_component_QImg, {\n            src: art.path,\n            class: \"image\"\n          }, null, 8, [\"src\"]),\n          _createElementVNode(\"div\", _hoisted_4, [\n            _createElementVNode(\"div\", _hoisted_5, _toDisplayString(art.name), 1),\n            _createElementVNode(\"div\", {\n              innerHTML: art.description,\n              class: \"text-subtitle1 text-center q-px-sm description\"\n            }, null, 8, _hoisted_6)\n          ])\n        ])\n      ])\n    }), 64))\n  ]))\n}\n}\n\n})",
+      "start": 1703982896950,
+      "end": 1703982896950
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896950,
+      "end": 1703982896950,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896950,
+      "end": 1703982896950,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896951,
+      "end": 1703982896951,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896951,
+      "end": 1703982896951,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896951,
+      "end": 1703982896951,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "result": "import { defineComponent as _defineComponent } from \"vue\";\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createVNode as _createVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\";\nconst _withScopeId = (n) => (_pushScopeId(\"data-v-e11f6c7e\"), n = n(), _popScopeId(), n);\nconst _hoisted_1 = { class: \"row justify-center\" };\nconst _hoisted_2 = { class: \"q-ma-md\" };\nconst _hoisted_3 = { class: \"card shadow-3\" };\nconst _hoisted_4 = { class: \"card-text absolute-bottom\" };\nconst _hoisted_5 = { class: \"text-h4 text-center\" };\nconst _hoisted_6 = [\"innerHTML\"];\nexport default /* @__PURE__ */ _defineComponent({\n  __name: \"art\",\n  setup(__props) {\n    const ART_WORK = [\n      {\n        name: \"Fire\",\n        path: \"/art/Fire.png\",\n        description: \"This is the only time I have managed to draw fire. Not kidding, no clue how the hell I got it looking actually good, but I cant for the life of me replicate whatever the hell I did here.\"\n      },\n      {\n        name: \"Profile picture\",\n        path: \"/art/Villay.png\",\n        description: \"My avatar which is an OC from <a href='https://youtube.com/playlist?list=PLHovnlOusNLiJz3sm0d5i2Evwa2LDLdrg&si=mx2dsDQPpiO_1gP2'>murder drones</a>\"\n      },\n      {\n        name: \"PFP Christmas\",\n        path: \"/art/VillayChris.png\",\n        description: \"My PFP for christmas times.\"\n      },\n      {\n        name: \"Uzi\",\n        path: \"/art/UziTrace.png\",\n        description: \"My first digital drawing that wasnt pixel art! I did this after I got my drawing tablet, it is a traced drawing of <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman'>Uzi from murder drones</a>, specifically this <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman?file=Uzicutout.png'>reference picture</a>\"\n      },\n      // {\n      //     name: \"Random doddle\",\n      //     path: \"/art/UziDoddle.jpg\",\n      //     description: \"Sometimes I get bored in class, so I doddle a bit, liked this one of Uzi so here it is :P\"\n      // },\n      {\n        name: \"Rainbow pfp\",\n        path: \"/art/OldPfp.png\",\n        description: \"My old profile picture, which is a pixel art drawing of a IRL ball I won at a carnival. And no, I am not a part of LGBT, I just like rainbows. And yes I know there is a pixel missing, no I wont fix it.\"\n      },\n      {\n        name: \"Rainbow Duck\",\n        path: \"/art/Duck.png\",\n        description: \"A ducky version of my old pfp, because who doesnt like ducks.\"\n      },\n      {\n        name: \"Raid animation\",\n        path: \"/art/Raid.gif\",\n        description: \"Raid animation I use for my twitch channel, isnt it cute?\"\n      }\n    ];\n    return (_ctx, _cache) => {\n      const _component_QImg = _resolveComponent(\"QImg\");\n      return _openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n        (_openBlock(), _createElementBlock(_Fragment, null, _renderList(ART_WORK, (art) => {\n          return _createElementVNode(\"div\", _hoisted_2, [\n            _createElementVNode(\"div\", _hoisted_3, [\n              _createVNode(_component_QImg, {\n                src: art.path,\n                class: \"image\"\n              }, null, 8, [\"src\"]),\n              _createElementVNode(\"div\", _hoisted_4, [\n                _createElementVNode(\"div\", _hoisted_5, _toDisplayString(art.name), 1),\n                _createElementVNode(\"div\", {\n                  innerHTML: art.description,\n                  class: \"text-subtitle1 text-center q-px-sm description\"\n                }, null, 8, _hoisted_6)\n              ])\n            ])\n          ]);\n        }), 64))\n      ]);\n    };\n  }\n});\n",
+      "start": 1703982896951,
+      "end": 1703982897035,
+      "order": "normal",
+      "sourcemaps": {
+        "version": 3,
+        "sources": [
+          "/home/vivax/coding/vivax.dev/pages/art.vue?vue&type=script&setup=true&lang.ts"
+        ],
+        "sourcesContent": [
+          "import { defineComponent as _defineComponent } from 'vue'\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createVNode as _createVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\"\n\nconst _withScopeId = n => (_pushScopeId(\"data-v-e11f6c7e\"),n=n(),_popScopeId(),n)\nconst _hoisted_1 = { class: \"row justify-center\" }\nconst _hoisted_2 = { class: \"q-ma-md\" }\nconst _hoisted_3 = { class: \"card shadow-3\" }\nconst _hoisted_4 = { class: \"card-text absolute-bottom\" }\nconst _hoisted_5 = { class: \"text-h4 text-center\" }\nconst _hoisted_6 = [\"innerHTML\"]\n\ninterface ArtWork {\n    name: string,\n    path: string,\n    description: string,\n}\n\n\nexport default /*#__PURE__*/_defineComponent({\n  __name: 'art',\n  setup(__props) {\n\n\nconst ART_WORK: ArtWork[] = [\n    {\n        name: \"Fire\",\n        path: \"/art/Fire.png\",\n        description: \"This is the only time I have managed to draw fire. Not kidding, no clue how the hell I got it looking actually good, but I cant for the life of me replicate whatever the hell I did here.\"\n    },\n    {\n        name: \"Profile picture\",\n        path: \"/art/Villay.png\",\n        description: \"My avatar which is an OC from <a href='https://youtube.com/playlist?list=PLHovnlOusNLiJz3sm0d5i2Evwa2LDLdrg&si=mx2dsDQPpiO_1gP2'>murder drones</a>\"\n    },\n    {\n        name: \"PFP Christmas\",\n        path: \"/art/VillayChris.png\",\n        description: \"My PFP for christmas times.\"\n    },\n    {\n        name: \"Uzi\",\n        path: \"/art/UziTrace.png\",\n        description: \"My first digital drawing that wasnt pixel art! I did this after I got my drawing tablet, it is a traced drawing of <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman'>Uzi from murder drones</a>, specifically this <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman?file=Uzicutout.png'>reference picture</a>\"\n    },\n    // {\n    //     name: \"Random doddle\",\n    //     path: \"/art/UziDoddle.jpg\",\n    //     description: \"Sometimes I get bored in class, so I doddle a bit, liked this one of Uzi so here it is :P\"\n    // },\n    {\n        name: \"Rainbow pfp\",\n        path: \"/art/OldPfp.png\",\n        description: \"My old profile picture, which is a pixel art drawing of a IRL ball I won at a carnival. And no, I am not a part of LGBT, I just like rainbows. And yes I know there is a pixel missing, no I wont fix it.\"\n    },\n    {\n        name: \"Rainbow Duck\",\n        path: \"/art/Duck.png\",\n        description: \"A ducky version of my old pfp, because who doesnt like ducks.\"\n    },\n    {\n        name: \"Raid animation\",\n        path: \"/art/Raid.gif\",\n        description: \"Raid animation I use for my twitch channel, isnt it cute?\"\n    },\n];\n\nreturn (_ctx: any,_cache: any) => {\n  const _component_QImg = _resolveComponent(\"QImg\")!\n\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n    (_openBlock(), _createElementBlock(_Fragment, null, _renderList(ART_WORK, (art) => {\n      return _createElementVNode(\"div\", _hoisted_2, [\n        _createElementVNode(\"div\", _hoisted_3, [\n          _createVNode(_component_QImg, {\n            src: art.path,\n            class: \"image\"\n          }, null, 8, [\"src\"]),\n          _createElementVNode(\"div\", _hoisted_4, [\n            _createElementVNode(\"div\", _hoisted_5, _toDisplayString(art.name), 1),\n            _createElementVNode(\"div\", {\n              innerHTML: art.description,\n              class: \"text-subtitle1 text-center q-px-sm description\"\n            }, null, 8, _hoisted_6)\n          ])\n        ])\n      ])\n    }), 64))\n  ]))\n}\n}\n\n})"
+        ],
+        "mappings": "AAAA,SAAS,mBAAmB,wBAAwB;AACpD,SAAS,cAAc,aAAa,YAAY,WAAW,aAAa,YAAY,sBAAsB,qBAAqB,oBAAoB,mBAAmB,eAAe,cAAc,mBAAmB,kBAAkB,sBAAsB,qBAAqB,eAAe,cAAc,cAAc,mBAAmB;AAEjV,MAAM,eAAe,QAAM,aAAa,iBAAiB,GAAE,IAAE,EAAE,GAAE,YAAY,GAAE;AAC/E,MAAM,aAAa,EAAE,OAAO,qBAAqB;AACjD,MAAM,aAAa,EAAE,OAAO,UAAU;AACtC,MAAM,aAAa,EAAE,OAAO,gBAAgB;AAC5C,MAAM,aAAa,EAAE,OAAO,4BAA4B;AACxD,MAAM,aAAa,EAAE,OAAO,sBAAsB;AAClD,MAAM,aAAa,CAAC,WAAW;AAS/B,eAA4B,iCAAiB;AAAA,EAC3C,QAAQ;AAAA,EACR,MAAM,SAAS;AAGjB,UAAM,WAAsB;AAAA,MACxB;AAAA,QACI,MAAM;AAAA,QACN,MAAM;AAAA,QACN,aAAa;AAAA,MACjB;AAAA,MACA;AAAA,QACI,MAAM;AAAA,QACN,MAAM;AAAA,QACN,aAAa;AAAA,MACjB;AAAA,MACA;AAAA,QACI,MAAM;AAAA,QACN,MAAM;AAAA,QACN,aAAa;AAAA,MACjB;AAAA,MACA;AAAA,QACI,MAAM;AAAA,QACN,MAAM;AAAA,QACN,aAAa;AAAA,MACjB;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,MAMA;AAAA,QACI,MAAM;AAAA,QACN,MAAM;AAAA,QACN,aAAa;AAAA,MACjB;AAAA,MACA;AAAA,QACI,MAAM;AAAA,QACN,MAAM;AAAA,QACN,aAAa;AAAA,MACjB;AAAA,MACA;AAAA,QACI,MAAM;AAAA,QACN,MAAM;AAAA,QACN,aAAa;AAAA,MACjB;AAAA,IACJ;AAEA,WAAO,CAAC,MAAU,WAAgB;AAChC,YAAM,kBAAkB,kBAAkB,MAAM;AAEhD,aAAQ,WAAW,GAAG,oBAAoB,OAAO,YAAY;AAAA,SAC1D,WAAW,GAAG,oBAAoB,WAAW,MAAM,YAAY,UAAU,CAAC,QAAQ;AACjF,iBAAO,oBAAoB,OAAO,YAAY;AAAA,YAC5C,oBAAoB,OAAO,YAAY;AAAA,cACrC,aAAa,iBAAiB;AAAA,gBAC5B,KAAK,IAAI;AAAA,gBACT,OAAO;AAAA,cACT,GAAG,MAAM,GAAG,CAAC,KAAK,CAAC;AAAA,cACnB,oBAAoB,OAAO,YAAY;AAAA,gBACrC,oBAAoB,OAAO,YAAY,iBAAiB,IAAI,IAAI,GAAG,CAAC;AAAA,gBACpE,oBAAoB,OAAO;AAAA,kBACzB,WAAW,IAAI;AAAA,kBACf,OAAO;AAAA,gBACT,GAAG,MAAM,GAAG,UAAU;AAAA,cACxB,CAAC;AAAA,YACH,CAAC;AAAA,UACH,CAAC;AAAA,QACH,CAAC,GAAG,EAAE;AAAA,MACR,CAAC;AAAA,IACH;AAAA,EACA;AAEA,CAAC;",
+        "names": []
+      }
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897035,
+      "end": 1703982897035,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897036,
+      "end": 1703982897036,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897036,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897037,
+      "end": 1703982897037,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897038,
+      "end": 1703982897043,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897044,
+      "end": 1703982897044,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897044,
+      "end": 1703982897046,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897046,
+      "end": 1703982897046,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897047,
+      "end": 1703982897047,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897047,
+      "end": 1703982897047,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "result": "import { default as __nuxt_component_0 } from \"/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/img/QImg.js\";\nimport { defineComponent as _defineComponent } from \"vue\";\nimport { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, resolveComponent as _resolveComponent, createVNode as _createVNode, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, pushScopeId as _pushScopeId, popScopeId as _popScopeId } from \"vue\";\nconst _withScopeId = (n) => (_pushScopeId(\"data-v-e11f6c7e\"), n = n(), _popScopeId(), n);\nconst _hoisted_1 = { class: \"row justify-center\" };\nconst _hoisted_2 = { class: \"q-ma-md\" };\nconst _hoisted_3 = { class: \"card shadow-3\" };\nconst _hoisted_4 = { class: \"card-text absolute-bottom\" };\nconst _hoisted_5 = { class: \"text-h4 text-center\" };\nconst _hoisted_6 = [\"innerHTML\"];\nexport default /* @__PURE__ */ _defineComponent({\n  __name: \"art\",\n  setup(__props) {\n    const ART_WORK = [\n      {\n        name: \"Fire\",\n        path: \"/art/Fire.png\",\n        description: \"This is the only time I have managed to draw fire. Not kidding, no clue how the hell I got it looking actually good, but I cant for the life of me replicate whatever the hell I did here.\"\n      },\n      {\n        name: \"Profile picture\",\n        path: \"/art/Villay.png\",\n        description: \"My avatar which is an OC from <a href='https://youtube.com/playlist?list=PLHovnlOusNLiJz3sm0d5i2Evwa2LDLdrg&si=mx2dsDQPpiO_1gP2'>murder drones</a>\"\n      },\n      {\n        name: \"PFP Christmas\",\n        path: \"/art/VillayChris.png\",\n        description: \"My PFP for christmas times.\"\n      },\n      {\n        name: \"Uzi\",\n        path: \"/art/UziTrace.png\",\n        description: \"My first digital drawing that wasnt pixel art! I did this after I got my drawing tablet, it is a traced drawing of <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman'>Uzi from murder drones</a>, specifically this <a href='https://murder-drones.fandom.com/wiki/Uzi_Doorman?file=Uzicutout.png'>reference picture</a>\"\n      },\n      // {\n      //     name: \"Random doddle\",\n      //     path: \"/art/UziDoddle.jpg\",\n      //     description: \"Sometimes I get bored in class, so I doddle a bit, liked this one of Uzi so here it is :P\"\n      // },\n      {\n        name: \"Rainbow pfp\",\n        path: \"/art/OldPfp.png\",\n        description: \"My old profile picture, which is a pixel art drawing of a IRL ball I won at a carnival. And no, I am not a part of LGBT, I just like rainbows. And yes I know there is a pixel missing, no I wont fix it.\"\n      },\n      {\n        name: \"Rainbow Duck\",\n        path: \"/art/Duck.png\",\n        description: \"A ducky version of my old pfp, because who doesnt like ducks.\"\n      },\n      {\n        name: \"Raid animation\",\n        path: \"/art/Raid.gif\",\n        description: \"Raid animation I use for my twitch channel, isnt it cute?\"\n      }\n    ];\n    return (_ctx, _cache) => {\n      const _component_QImg = __nuxt_component_0;\n      return _openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n        (_openBlock(), _createElementBlock(_Fragment, null, _renderList(ART_WORK, (art) => {\n          return _createElementVNode(\"div\", _hoisted_2, [\n            _createElementVNode(\"div\", _hoisted_3, [\n              _createVNode(_component_QImg, {\n                src: art.path,\n                class: \"image\"\n              }, null, 8, [\"src\"]),\n              _createElementVNode(\"div\", _hoisted_4, [\n                _createElementVNode(\"div\", _hoisted_5, _toDisplayString(art.name), 1),\n                _createElementVNode(\"div\", {\n                  innerHTML: art.description,\n                  class: \"text-subtitle1 text-center q-px-sm description\"\n                }, null, 8, _hoisted_6)\n              ])\n            ])\n          ]);\n        }), 64))\n      ]);\n    };\n  }\n});\n",
+      "start": 1703982897049,
+      "end": 1703982897050,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897050,
+      "end": 1703982897050,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897050,
+      "end": 1703982897050,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897050,
+      "end": 1703982897050,
+      "order": "normal"
+    }
+  ]
+}

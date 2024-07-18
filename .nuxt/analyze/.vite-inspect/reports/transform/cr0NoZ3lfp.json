@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/private/use-file.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, getCurrentInstance } from 'vue'\n\nimport { client } from '../../plugins/Platform.js'\nimport { stop, stopAndPrevent } from '../../utils/event.js'\n\nfunction filterFiles (files, rejectedFiles, failedPropValidation, filterFn) {\n  const acceptedFiles = []\n\n  files.forEach(file => {\n    if (filterFn(file) === true) {\n      acceptedFiles.push(file)\n    }\n    else {\n      rejectedFiles.push({ failedPropValidation, file })\n    }\n  })\n\n  return acceptedFiles\n}\n\nfunction stopAndPreventDrag (e) {\n  e && e.dataTransfer && (e.dataTransfer.dropEffect = 'copy')\n  stopAndPrevent(e)\n}\n\nexport const useFileProps = {\n  multiple: Boolean,\n  accept: String,\n  capture: String,\n  maxFileSize: [ Number, String ],\n  maxTotalSize: [ Number, String ],\n  maxFiles: [ Number, String ],\n  filter: Function\n}\n\nexport const useFileEmits = [ 'rejected' ]\n\nexport default function ({\n  editable,\n  dnd,\n  getFileInput,\n  addFilesToQueue\n}) {\n  const { props, emit, proxy } = getCurrentInstance()\n\n  const dndRef = ref(null)\n\n  const extensions = computed(() => (\n    props.accept !== void 0\n      ? props.accept.split(',').map(ext => {\n        ext = ext.trim()\n        if (ext === '*') { // support \"*\"\n          return '*/'\n        }\n        else if (ext.endsWith('/*')) { // support \"image/*\" or \"*/*\"\n          ext = ext.slice(0, ext.length - 1)\n        }\n        return ext.toUpperCase()\n      })\n      : null\n  ))\n\n  const maxFilesNumber = computed(() => parseInt(props.maxFiles, 10))\n  const maxTotalSizeNumber = computed(() => parseInt(props.maxTotalSize, 10))\n\n  function pickFiles (e) {\n    if (editable.value) {\n      if (e !== Object(e)) {\n        e = { target: null }\n      }\n\n      if (e.target !== null && e.target.matches('input[type=\"file\"]') === true) {\n        // stop propagation if it's not a real pointer event\n        e.clientX === 0 && e.clientY === 0 && stop(e)\n      }\n      else {\n        const input = getFileInput()\n        input && input !== e.target && input.click(e)\n      }\n    }\n  }\n\n  function addFiles (files) {\n    if (editable.value && files) {\n      addFilesToQueue(null, files)\n    }\n  }\n\n  function processFiles (e, filesToProcess, currentFileList, append) {\n    let files = Array.from(filesToProcess || e.target.files)\n    const rejectedFiles = []\n\n    const done = () => {\n      if (rejectedFiles.length !== 0) {\n        emit('rejected', rejectedFiles)\n      }\n    }\n\n    // filter file types\n    if (props.accept !== void 0 && extensions.value.indexOf('*/') === -1) {\n      files = filterFiles(files, rejectedFiles, 'accept', file => {\n        return extensions.value.some(ext => (\n          file.type.toUpperCase().startsWith(ext)\n          || file.name.toUpperCase().endsWith(ext)\n        ))\n      })\n\n      if (files.length === 0) { return done() }\n    }\n\n    // filter max file size\n    if (props.maxFileSize !== void 0) {\n      const maxFileSize = parseInt(props.maxFileSize, 10)\n      files = filterFiles(files, rejectedFiles, 'max-file-size', file => {\n        return file.size <= maxFileSize\n      })\n\n      if (files.length === 0) { return done() }\n    }\n\n    // Cordova/iOS allows selecting multiple files even when the\n    // multiple attribute is not specified. We also normalize drag'n'dropped\n    // files here:\n    if (props.multiple !== true && files.length !== 0) {\n      files = [ files[ 0 ] ]\n    }\n\n    // Compute key to use for each file\n    files.forEach(file => {\n      file.__key = file.webkitRelativePath + file.lastModified + file.name + file.size\n    })\n\n    if (append === true) {\n      // Avoid duplicate files\n      const filenameMap = currentFileList.map(entry => entry.__key)\n      files = filterFiles(files, rejectedFiles, 'duplicate', file => {\n        return filenameMap.includes(file.__key) === false\n      })\n    }\n\n    if (files.length === 0) { return done() }\n\n    if (props.maxTotalSize !== void 0) {\n      let size = append === true\n        ? currentFileList.reduce((total, file) => total + file.size, 0)\n        : 0\n\n      files = filterFiles(files, rejectedFiles, 'max-total-size', file => {\n        size += file.size\n        return size <= maxTotalSizeNumber.value\n      })\n\n      if (files.length === 0) { return done() }\n    }\n\n    // do we have custom filter function?\n    if (typeof props.filter === 'function') {\n      const filteredFiles = props.filter(files)\n      files = filterFiles(files, rejectedFiles, 'filter', file => {\n        return filteredFiles.includes(file)\n      })\n    }\n\n    if (props.maxFiles !== void 0) {\n      let filesNumber = append === true\n        ? currentFileList.length\n        : 0\n\n      files = filterFiles(files, rejectedFiles, 'max-files', () => {\n        filesNumber++\n        return filesNumber <= maxFilesNumber.value\n      })\n\n      if (files.length === 0) { return done() }\n    }\n\n    done()\n\n    if (files.length !== 0) {\n      return files\n    }\n  }\n\n  function onDragover (e) {\n    stopAndPreventDrag(e)\n    dnd.value !== true && (dnd.value = true)\n  }\n\n  function onDragleave (e) {\n    stopAndPrevent(e)\n\n    // Safari bug: relatedTarget is null for over 10 years\n    // https://bugs.webkit.org/show_bug.cgi?id=66547\n    const gone = e.relatedTarget !== null || client.is.safari !== true\n      ? e.relatedTarget !== dndRef.value\n      : document.elementsFromPoint(e.clientX, e.clientY).includes(dndRef.value) === false\n\n    gone === true && (dnd.value = false)\n  }\n\n  function onDrop (e) {\n    stopAndPreventDrag(e)\n    const files = e.dataTransfer.files\n\n    if (files.length !== 0) {\n      addFilesToQueue(null, files)\n    }\n\n    dnd.value = false\n  }\n\n  function getDndNode (type) {\n    if (dnd.value === true) {\n      return h('div', {\n        ref: dndRef,\n        class: `q-${ type }__dnd absolute-full`,\n        onDragenter: stopAndPreventDrag,\n        onDragover: stopAndPreventDrag,\n        onDragleave,\n        onDrop\n      })\n    }\n  }\n\n  // expose public methods\n  Object.assign(proxy, { pickFiles, addFiles })\n\n  return {\n    pickFiles,\n    addFiles,\n    onDragover,\n    onDragleave,\n    processFiles,\n    getDndNode,\n\n    maxFilesNumber,\n    maxTotalSizeNumber\n  }\n}\n",
+      "start": 1703982897303,
+      "end": 1703982897349,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897349,
+      "end": 1703982897350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897350,
+      "end": 1703982897350,
+      "order": "normal"
+    }
+  ]
+}

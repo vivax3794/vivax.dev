@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/private/global-nodes.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { globalConfig } from './global-config.js'\n\nconst nodesList = []\nconst portalTypeList = []\n\nlet portalIndex = 1\nlet target = __QUASAR_SSR_SERVER__\n  ? void 0\n  : document.body\n\nexport function createGlobalNode (id, portalType) {\n  const el = document.createElement('div')\n\n  el.id = portalType !== void 0\n    ? `q-portal--${ portalType }--${ portalIndex++ }`\n    : id\n\n  if (globalConfig.globalNodes !== void 0) {\n    const cls = globalConfig.globalNodes.class\n    if (cls !== void 0) {\n      el.className = cls\n    }\n  }\n\n  target.appendChild(el)\n  nodesList.push(el)\n  portalTypeList.push(portalType)\n\n  return el\n}\n\nexport function removeGlobalNode (el) {\n  const nodeIndex = nodesList.indexOf(el)\n\n  nodesList.splice(nodeIndex, 1)\n  portalTypeList.splice(nodeIndex, 1)\n\n  el.remove()\n}\n\nexport function changeGlobalNodesTarget (newTarget) {\n  if (newTarget === target) {\n    return\n  }\n\n  target = newTarget\n\n  if (\n    target === document.body\n    // or we have less than 2 dialogs:\n    || portalTypeList.reduce((acc, type) => (type === 'dialog' ? acc + 1 : acc), 0) < 2\n  ) {\n    nodesList.forEach(node => {\n      if (node.contains(target) === false) {\n        target.appendChild(node)\n      }\n    })\n\n    return\n  }\n\n  const lastDialogIndex = portalTypeList.lastIndexOf('dialog')\n\n  for (let i = 0; i < nodesList.length; i++) {\n    const el = nodesList[ i ]\n\n    if (\n      (i === lastDialogIndex || portalTypeList[ i ] !== 'dialog')\n      && el.contains(target) === false\n    ) {\n      target.appendChild(el)\n    }\n  }\n}\n",
+      "start": 1703982897413,
+      "end": 1703982897533,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897533,
+      "end": 1703982897533,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897534,
+      "end": 1703982897534,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897534,
+      "end": 1703982897534,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897534,
+      "end": 1703982897534,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897534,
+      "end": 1703982897534,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897534,
+      "end": 1703982897534,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897534,
+      "end": 1703982897534,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897534,
+      "end": 1703982897534,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { globalConfig } from \"./global-config.js\";\nconst nodesList = [];\nconst portalTypeList = [];\nlet portalIndex = 1;\nlet target = false ? void 0 : document.body;\nexport function createGlobalNode(id, portalType) {\n  const el = document.createElement(\"div\");\n  el.id = portalType !== void 0 ? `q-portal--${portalType}--${portalIndex++}` : id;\n  if (globalConfig.globalNodes !== void 0) {\n    const cls = globalConfig.globalNodes.class;\n    if (cls !== void 0) {\n      el.className = cls;\n    }\n  }\n  target.appendChild(el);\n  nodesList.push(el);\n  portalTypeList.push(portalType);\n  return el;\n}\nexport function removeGlobalNode(el) {\n  const nodeIndex = nodesList.indexOf(el);\n  nodesList.splice(nodeIndex, 1);\n  portalTypeList.splice(nodeIndex, 1);\n  el.remove();\n}\nexport function changeGlobalNodesTarget(newTarget) {\n  if (newTarget === target) {\n    return;\n  }\n  target = newTarget;\n  if (target === document.body || portalTypeList.reduce((acc, type) => type === \"dialog\" ? acc + 1 : acc, 0) < 2) {\n    nodesList.forEach((node) => {\n      if (node.contains(target) === false) {\n        target.appendChild(node);\n      }\n    });\n    return;\n  }\n  const lastDialogIndex = portalTypeList.lastIndexOf(\"dialog\");\n  for (let i = 0; i < nodesList.length; i++) {\n    const el = nodesList[i];\n    if ((i === lastDialogIndex || portalTypeList[i] !== \"dialog\") && el.contains(target) === false) {\n      target.appendChild(el);\n    }\n  }\n}\n",
+      "start": 1703982897534,
+      "end": 1703982897603,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897603,
+      "end": 1703982897603,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897604,
+      "end": 1703982897604,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897605,
+      "end": 1703982897605,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897606,
+      "end": 1703982897606,
+      "order": "normal"
+    }
+  ]
+}

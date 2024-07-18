@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/color/QColor.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, nextTick, getCurrentInstance } from 'vue'\n\nimport TouchPan from '../../directives/TouchPan.js'\n\nimport QSlider from '../slider/QSlider.js'\nimport QIcon from '../icon/QIcon.js'\n\nimport QTabs from '../tabs/QTabs.js'\nimport QTab from '../tabs/QTab.js'\nimport QTabPanels from '../tab-panels/QTabPanels.js'\nimport QTabPanel from '../tab-panels/QTabPanel.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport useCache from '../../composables/private/use-cache.js'\nimport { useFormInject, useFormProps } from '../../composables/private/use-form.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { testPattern } from '../../utils/patterns.js'\nimport throttle from '../../utils/throttle.js'\nimport { stop } from '../../utils/event.js'\nimport { hexToRgb, rgbToHex, rgbToString, textToRgb, rgbToHsv, hsvToRgb, luminosity } from '../../utils/colors.js'\nimport { hDir } from '../../utils/private/render.js'\n\nconst palette = [\n  'rgb(255,204,204)', 'rgb(255,230,204)', 'rgb(255,255,204)', 'rgb(204,255,204)', 'rgb(204,255,230)', 'rgb(204,255,255)', 'rgb(204,230,255)', 'rgb(204,204,255)', 'rgb(230,204,255)', 'rgb(255,204,255)',\n  'rgb(255,153,153)', 'rgb(255,204,153)', 'rgb(255,255,153)', 'rgb(153,255,153)', 'rgb(153,255,204)', 'rgb(153,255,255)', 'rgb(153,204,255)', 'rgb(153,153,255)', 'rgb(204,153,255)', 'rgb(255,153,255)',\n  'rgb(255,102,102)', 'rgb(255,179,102)', 'rgb(255,255,102)', 'rgb(102,255,102)', 'rgb(102,255,179)', 'rgb(102,255,255)', 'rgb(102,179,255)', 'rgb(102,102,255)', 'rgb(179,102,255)', 'rgb(255,102,255)',\n  'rgb(255,51,51)', 'rgb(255,153,51)', 'rgb(255,255,51)', 'rgb(51,255,51)', 'rgb(51,255,153)', 'rgb(51,255,255)', 'rgb(51,153,255)', 'rgb(51,51,255)', 'rgb(153,51,255)', 'rgb(255,51,255)',\n  'rgb(255,0,0)', 'rgb(255,128,0)', 'rgb(255,255,0)', 'rgb(0,255,0)', 'rgb(0,255,128)', 'rgb(0,255,255)', 'rgb(0,128,255)', 'rgb(0,0,255)', 'rgb(128,0,255)', 'rgb(255,0,255)',\n  'rgb(245,0,0)', 'rgb(245,123,0)', 'rgb(245,245,0)', 'rgb(0,245,0)', 'rgb(0,245,123)', 'rgb(0,245,245)', 'rgb(0,123,245)', 'rgb(0,0,245)', 'rgb(123,0,245)', 'rgb(245,0,245)',\n  'rgb(214,0,0)', 'rgb(214,108,0)', 'rgb(214,214,0)', 'rgb(0,214,0)', 'rgb(0,214,108)', 'rgb(0,214,214)', 'rgb(0,108,214)', 'rgb(0,0,214)', 'rgb(108,0,214)', 'rgb(214,0,214)',\n  'rgb(163,0,0)', 'rgb(163,82,0)', 'rgb(163,163,0)', 'rgb(0,163,0)', 'rgb(0,163,82)', 'rgb(0,163,163)', 'rgb(0,82,163)', 'rgb(0,0,163)', 'rgb(82,0,163)', 'rgb(163,0,163)',\n  'rgb(92,0,0)', 'rgb(92,46,0)', 'rgb(92,92,0)', 'rgb(0,92,0)', 'rgb(0,92,46)', 'rgb(0,92,92)', 'rgb(0,46,92)', 'rgb(0,0,92)', 'rgb(46,0,92)', 'rgb(92,0,92)',\n  'rgb(255,255,255)', 'rgb(205,205,205)', 'rgb(178,178,178)', 'rgb(153,153,153)', 'rgb(127,127,127)', 'rgb(102,102,102)', 'rgb(76,76,76)', 'rgb(51,51,51)', 'rgb(25,25,25)', 'rgb(0,0,0)'\n]\n\nconst thumbPath = 'M5 5 h10 v10 h-10 v-10 z'\nconst alphaTrackImg = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAH0lEQVQoU2NkYGAwZkAFZ5G5jPRRgOYEVDeB3EBjBQBOZwTVugIGyAAAAABJRU5ErkJggg=='\n\nexport default createComponent({\n  name: 'QColor',\n\n  props: {\n    ...useDarkProps,\n    ...useFormProps,\n\n    modelValue: String,\n\n    defaultValue: String,\n    defaultView: {\n      type: String,\n      default: 'spectrum',\n      validator: v => [ 'spectrum', 'tune', 'palette' ].includes(v)\n    },\n\n    formatModel: {\n      type: String,\n      default: 'auto',\n      validator: v => [ 'auto', 'hex', 'rgb', 'hexa', 'rgba' ].includes(v)\n    },\n\n    palette: Array,\n\n    noHeader: Boolean,\n    noHeaderTabs: Boolean,\n    noFooter: Boolean,\n\n    square: Boolean,\n    flat: Boolean,\n    bordered: Boolean,\n\n    disable: Boolean,\n    readonly: Boolean\n  },\n\n  emits: [ 'update:modelValue', 'change' ],\n\n  setup (props, { emit }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const isDark = useDark(props, $q)\n    const { getCache } = useCache()\n\n    const spectrumRef = ref(null)\n    const errorIconRef = ref(null)\n\n    const forceHex = computed(() => (\n      props.formatModel === 'auto'\n        ? null\n        : props.formatModel.indexOf('hex') > -1\n    ))\n\n    const forceAlpha = computed(() => (\n      props.formatModel === 'auto'\n        ? null\n        : props.formatModel.indexOf('a') > -1\n    ))\n\n    const topView = ref(\n      props.formatModel === 'auto'\n        ? (\n            (props.modelValue === void 0 || props.modelValue === null || props.modelValue === '' || props.modelValue.startsWith('#'))\n              ? 'hex'\n              : 'rgb'\n          )\n        : (props.formatModel.startsWith('hex') ? 'hex' : 'rgb')\n    )\n\n    const view = ref(props.defaultView)\n    const model = ref(parseModel(props.modelValue || props.defaultValue))\n\n    const editable = computed(() => props.disable !== true && props.readonly !== true)\n\n    const isHex = computed(() =>\n      props.modelValue === void 0\n      || props.modelValue === null\n      || props.modelValue === ''\n      || props.modelValue.startsWith('#')\n    )\n\n    const isOutputHex = computed(() => (\n      forceHex.value !== null\n        ? forceHex.value\n        : isHex.value\n    ))\n\n    const formAttrs = computed(() => ({\n      type: 'hidden',\n      name: props.name,\n      value: model.value[ isOutputHex.value === true ? 'hex' : 'rgb' ]\n    }))\n\n    const injectFormInput = useFormInject(formAttrs)\n\n    const hasAlpha = computed(() => (\n      forceAlpha.value !== null\n        ? forceAlpha.value\n        : model.value.a !== void 0\n    ))\n\n    const currentBgColor = computed(() => ({\n      backgroundColor: model.value.rgb || '#000'\n    }))\n\n    const headerClass = computed(() => {\n      const light = model.value.a !== void 0 && model.value.a < 65\n        ? true\n        : luminosity(model.value) > 0.4\n\n      return 'q-color-picker__header-content'\n        + ` q-color-picker__header-content--${ light ? 'light' : 'dark' }`\n    })\n\n    const spectrumStyle = computed(() => ({\n      background: `hsl(${ model.value.h },100%,50%)`\n    }))\n\n    const spectrumPointerStyle = computed(() => ({\n      top: `${ 100 - model.value.v }%`,\n      [ $q.lang.rtl === true ? 'right' : 'left' ]: `${ model.value.s }%`\n    }))\n\n    const computedPalette = computed(() => (\n      props.palette !== void 0 && props.palette.length !== 0\n        ? props.palette\n        : palette\n    ))\n\n    const classes = computed(() =>\n      'q-color-picker'\n      + (props.bordered === true ? ' q-color-picker--bordered' : '')\n      + (props.square === true ? ' q-color-picker--square no-border-radius' : '')\n      + (props.flat === true ? ' q-color-picker--flat no-shadow' : '')\n      + (props.disable === true ? ' disabled' : '')\n      + (isDark.value === true ? ' q-color-picker--dark q-dark' : '')\n    )\n\n    const attributes = computed(() => (\n      props.disable === true\n        ? { 'aria-disabled': 'true' }\n        : {}\n    ))\n\n    const spectrumDirective = computed(() => {\n      // if editable.value === true\n      return [ [\n        TouchPan,\n        onSpectrumPan,\n        void 0,\n        { prevent: true, stop: true, mouse: true }\n      ] ]\n    })\n\n    watch(() => props.modelValue, v => {\n      const localModel = parseModel(v || props.defaultValue)\n      if (localModel.hex !== model.value.hex) {\n        model.value = localModel\n      }\n    })\n\n    watch(() => props.defaultValue, v => {\n      if (!props.modelValue && v) {\n        const localModel = parseModel(v)\n        if (localModel.hex !== model.value.hex) {\n          model.value = localModel\n        }\n      }\n    })\n\n    function updateModel (rgb, change) {\n      // update internally\n      model.value.hex = rgbToHex(rgb)\n      model.value.rgb = rgbToString(rgb)\n      model.value.r = rgb.r\n      model.value.g = rgb.g\n      model.value.b = rgb.b\n      model.value.a = rgb.a\n\n      const value = model.value[ isOutputHex.value === true ? 'hex' : 'rgb' ]\n\n      // emit new value\n      emit('update:modelValue', value)\n      change === true && emit('change', value)\n    }\n\n    function parseModel (v) {\n      const alpha = forceAlpha.value !== void 0\n        ? forceAlpha.value\n        : (\n            props.formatModel === 'auto'\n              ? null\n              : props.formatModel.indexOf('a') > -1\n          )\n\n      if (typeof v !== 'string' || v.length === 0 || testPattern.anyColor(v.replace(/ /g, '')) !== true) {\n        return {\n          h: 0,\n          s: 0,\n          v: 0,\n          r: 0,\n          g: 0,\n          b: 0,\n          a: alpha === true ? 100 : void 0,\n          hex: void 0,\n          rgb: void 0\n        }\n      }\n\n      const model = textToRgb(v)\n\n      if (alpha === true && model.a === void 0) {\n        model.a = 100\n      }\n\n      model.hex = rgbToHex(model)\n      model.rgb = rgbToString(model)\n\n      return Object.assign(model, rgbToHsv(model))\n    }\n\n    function changeSpectrum (left, top, change) {\n      const panel = spectrumRef.value\n      if (panel === null) { return }\n\n      const\n        width = panel.clientWidth,\n        height = panel.clientHeight,\n        rect = panel.getBoundingClientRect()\n\n      let x = Math.min(width, Math.max(0, left - rect.left))\n\n      if ($q.lang.rtl === true) {\n        x = width - x\n      }\n\n      const\n        y = Math.min(height, Math.max(0, top - rect.top)),\n        s = Math.round(100 * x / width),\n        v = Math.round(100 * Math.max(0, Math.min(1, -(y / height) + 1))),\n        rgb = hsvToRgb({\n          h: model.value.h,\n          s,\n          v,\n          a: hasAlpha.value === true ? model.value.a : void 0\n        })\n\n      model.value.s = s\n      model.value.v = v\n      updateModel(rgb, change)\n    }\n\n    function onHueChange (val, change) {\n      const h = Math.round(val)\n      const rgb = hsvToRgb({\n        h,\n        s: model.value.s,\n        v: model.value.v,\n        a: hasAlpha.value === true ? model.value.a : void 0\n      })\n\n      model.value.h = h\n      updateModel(rgb, change)\n    }\n\n    function onNumericChange (value, formatModel, max, evt, change) {\n      evt !== void 0 && stop(evt)\n\n      if (!/^[0-9]+$/.test(value)) {\n        change === true && proxy.$forceUpdate()\n        return\n      }\n\n      const val = Math.floor(Number(value))\n\n      if (val < 0 || val > max) {\n        change === true && proxy.$forceUpdate()\n        return\n      }\n\n      const rgb = {\n        r: formatModel === 'r' ? val : model.value.r,\n        g: formatModel === 'g' ? val : model.value.g,\n        b: formatModel === 'b' ? val : model.value.b,\n        a: hasAlpha.value === true\n          ? (formatModel === 'a' ? val : model.value.a)\n          : void 0\n      }\n\n      if (formatModel !== 'a') {\n        const hsv = rgbToHsv(rgb)\n        model.value.h = hsv.h\n        model.value.s = hsv.s\n        model.value.v = hsv.v\n      }\n\n      updateModel(rgb, change)\n\n      if (evt !== void 0 && change !== true && evt.target.selectionEnd !== void 0) {\n        const index = evt.target.selectionEnd\n        nextTick(() => {\n          evt.target.setSelectionRange(index, index)\n        })\n      }\n    }\n\n    function onEditorChange (evt, change) {\n      let rgb\n      const inp = evt.target.value\n\n      stop(evt)\n\n      if (topView.value === 'hex') {\n        if (\n          inp.length !== (hasAlpha.value === true ? 9 : 7)\n          || !/^#[0-9A-Fa-f]+$/.test(inp)\n        ) {\n          return true\n        }\n\n        rgb = hexToRgb(inp)\n      }\n      else {\n        let model\n\n        if (!inp.endsWith(')')) {\n          return true\n        }\n        else if (hasAlpha.value !== true && inp.startsWith('rgb(')) {\n          model = inp.substring(4, inp.length - 1).split(',').map(n => parseInt(n, 10))\n\n          if (\n            model.length !== 3\n            || !/^rgb\\([0-9]{1,3},[0-9]{1,3},[0-9]{1,3}\\)$/.test(inp)\n          ) {\n            return true\n          }\n        }\n        else if (hasAlpha.value === true && inp.startsWith('rgba(')) {\n          model = inp.substring(5, inp.length - 1).split(',')\n\n          if (\n            model.length !== 4\n            || !/^rgba\\([0-9]{1,3},[0-9]{1,3},[0-9]{1,3},(0|0\\.[0-9]+[1-9]|0\\.[1-9]+|1)\\)$/.test(inp)\n          ) {\n            return true\n          }\n\n          for (let i = 0; i < 3; i++) {\n            const v = parseInt(model[ i ], 10)\n            if (v < 0 || v > 255) {\n              return true\n            }\n            model[ i ] = v\n          }\n\n          const v = parseFloat(model[ 3 ])\n          if (v < 0 || v > 1) {\n            return true\n          }\n          model[ 3 ] = v\n        }\n        else {\n          return true\n        }\n\n        if (\n          model[ 0 ] < 0 || model[ 0 ] > 255\n          || model[ 1 ] < 0 || model[ 1 ] > 255\n          || model[ 2 ] < 0 || model[ 2 ] > 255\n          || (hasAlpha.value === true && (model[ 3 ] < 0 || model[ 3 ] > 1))\n        ) {\n          return true\n        }\n\n        rgb = {\n          r: model[ 0 ],\n          g: model[ 1 ],\n          b: model[ 2 ],\n          a: hasAlpha.value === true\n            ? model[ 3 ] * 100\n            : void 0\n        }\n      }\n\n      const hsv = rgbToHsv(rgb)\n      model.value.h = hsv.h\n      model.value.s = hsv.s\n      model.value.v = hsv.v\n\n      updateModel(rgb, change)\n\n      if (change !== true) {\n        const index = evt.target.selectionEnd\n        nextTick(() => {\n          evt.target.setSelectionRange(index, index)\n        })\n      }\n    }\n\n    function onPalettePick (color) {\n      const def = parseModel(color)\n      const rgb = { r: def.r, g: def.g, b: def.b, a: def.a }\n\n      if (rgb.a === void 0) {\n        rgb.a = model.value.a\n      }\n\n      model.value.h = def.h\n      model.value.s = def.s\n      model.value.v = def.v\n\n      updateModel(rgb, true)\n    }\n\n    function onSpectrumPan (evt) {\n      if (evt.isFinal) {\n        changeSpectrum(\n          evt.position.left,\n          evt.position.top,\n          true\n        )\n      }\n      else {\n        onSpectrumChange(evt)\n      }\n    }\n\n    const onSpectrumChange = throttle(\n      evt => { changeSpectrum(evt.position.left, evt.position.top) },\n      20\n    )\n\n    function onSpectrumClick (evt) {\n      changeSpectrum(\n        evt.pageX - window.pageXOffset,\n        evt.pageY - window.pageYOffset,\n        true\n      )\n    }\n\n    function onActivate (evt) {\n      changeSpectrum(\n        evt.pageX - window.pageXOffset,\n        evt.pageY - window.pageYOffset\n      )\n    }\n\n    function updateErrorIcon (val) {\n      // we MUST avoid vue triggering a render,\n      // so manually changing this\n      if (errorIconRef.value !== null) {\n        errorIconRef.value.$el.style.opacity = val ? 1 : 0\n      }\n    }\n\n    function getHeader () {\n      const child = []\n\n      props.noHeaderTabs !== true && child.push(\n        h(QTabs, {\n          class: 'q-color-picker__header-tabs',\n          modelValue: topView.value,\n          dense: true,\n          align: 'justify',\n          ...getCache('topVTab', {\n            'onUpdate:modelValue': val => { topView.value = val }\n          })\n        }, () => [\n          h(QTab, {\n            label: 'HEX' + (hasAlpha.value === true ? 'A' : ''),\n            name: 'hex',\n            ripple: false\n          }),\n\n          h(QTab, {\n            label: 'RGB' + (hasAlpha.value === true ? 'A' : ''),\n            name: 'rgb',\n            ripple: false\n          })\n        ])\n      )\n\n      child.push(\n        h('div', {\n          class: 'q-color-picker__header-banner row flex-center no-wrap'\n        }, [\n          h('input', {\n            class: 'fit',\n            value: model.value[ topView.value ],\n            ...(editable.value !== true\n              ? { readonly: true }\n              : {}\n            ),\n            ...getCache('topIn', {\n              onInput: evt => {\n                updateErrorIcon(onEditorChange(evt) === true)\n              },\n              onChange: stop,\n              onBlur: evt => {\n                onEditorChange(evt, true) === true && proxy.$forceUpdate()\n                updateErrorIcon(false)\n              }\n            })\n          }),\n\n          h(QIcon, {\n            ref: errorIconRef,\n            class: 'q-color-picker__error-icon absolute no-pointer-events',\n            name: $q.iconSet.type.negative\n          })\n        ])\n      )\n\n      return h('div', {\n        class: 'q-color-picker__header relative-position overflow-hidden'\n      }, [\n        h('div', { class: 'q-color-picker__header-bg absolute-full' }),\n\n        h('div', {\n          class: headerClass.value,\n          style: currentBgColor.value\n        }, child)\n      ])\n    }\n\n    function getContent () {\n      return h(QTabPanels, {\n        modelValue: view.value,\n        animated: true\n      }, () => [\n        h(QTabPanel, {\n          class: 'q-color-picker__spectrum-tab overflow-hidden',\n          name: 'spectrum'\n        }, getSpectrumTab),\n\n        h(QTabPanel, {\n          class: 'q-pa-md q-color-picker__tune-tab',\n          name: 'tune'\n        }, getTuneTab),\n\n        h(QTabPanel, {\n          class: 'q-color-picker__palette-tab',\n          name: 'palette'\n        }, getPaletteTab)\n      ])\n    }\n\n    function getFooter () {\n      return h('div', {\n        class: 'q-color-picker__footer relative-position overflow-hidden'\n      }, [\n        h(QTabs, {\n          class: 'absolute-full',\n          modelValue: view.value,\n          dense: true,\n          align: 'justify',\n          ...getCache('ftIn', {\n            'onUpdate:modelValue': val => { view.value = val }\n          })\n        }, () => [\n          h(QTab, {\n            icon: $q.iconSet.colorPicker.spectrum,\n            name: 'spectrum',\n            ripple: false\n          }),\n\n          h(QTab, {\n            icon: $q.iconSet.colorPicker.tune,\n            name: 'tune',\n            ripple: false\n          }),\n\n          h(QTab, {\n            icon: $q.iconSet.colorPicker.palette,\n            name: 'palette',\n            ripple: false\n          })\n        ])\n      ])\n    }\n\n    function getSpectrumTab () {\n      const data = {\n        ref: spectrumRef,\n        class: 'q-color-picker__spectrum non-selectable relative-position cursor-pointer'\n          + (editable.value !== true ? ' readonly' : ''),\n        style: spectrumStyle.value,\n        ...(editable.value === true\n          ? {\n              onClick: onSpectrumClick,\n              onMousedown: onActivate\n            }\n          : {}\n        )\n      }\n\n      const child = [\n        h('div', { style: { paddingBottom: '100%' } }),\n        h('div', { class: 'q-color-picker__spectrum-white absolute-full' }),\n        h('div', { class: 'q-color-picker__spectrum-black absolute-full' }),\n        h('div', {\n          class: 'absolute',\n          style: spectrumPointerStyle.value\n        }, [\n          model.value.hex !== void 0\n            ? h('div', { class: 'q-color-picker__spectrum-circle' })\n            : null\n        ])\n      ]\n\n      const sliders = [\n        h(QSlider, {\n          class: 'q-color-picker__hue non-selectable',\n          modelValue: model.value.h,\n          min: 0,\n          max: 360,\n          trackSize: '8px',\n          innerTrackColor: 'transparent',\n          selectionColor: 'transparent',\n          readonly: editable.value !== true,\n          thumbPath,\n          'onUpdate:modelValue': onHueChange,\n          ...getCache('lazyhue', {\n            onChange: val => onHueChange(val, true)\n          })\n        })\n      ]\n\n      hasAlpha.value === true && sliders.push(\n        h(QSlider, {\n          class: 'q-color-picker__alpha non-selectable',\n          modelValue: model.value.a,\n          min: 0,\n          max: 100,\n          trackSize: '8px',\n          trackColor: 'white',\n          innerTrackColor: 'transparent',\n          selectionColor: 'transparent',\n          trackImg: alphaTrackImg,\n          readonly: editable.value !== true,\n          hideSelection: true,\n          thumbPath,\n          ...getCache('alphaSlide', {\n            'onUpdate:modelValue': value => onNumericChange(value, 'a', 100),\n            onChange: value => onNumericChange(value, 'a', 100, void 0, true)\n          })\n        })\n      )\n\n      return [\n        hDir('div', data, child, 'spec', editable.value, () => spectrumDirective.value),\n        h('div', { class: 'q-color-picker__sliders' }, sliders)\n      ]\n    }\n\n    function getTuneTab () {\n      return [\n        h('div', { class: 'row items-center no-wrap' }, [\n          h('div', 'R'),\n          h(QSlider, {\n            modelValue: model.value.r,\n            min: 0,\n            max: 255,\n            color: 'red',\n            dark: isDark.value,\n            readonly: editable.value !== true,\n            ...getCache('rSlide', {\n              'onUpdate:modelValue': value => onNumericChange(value, 'r', 255),\n              onChange: value => onNumericChange(value, 'r', 255, void 0, true)\n            })\n          }),\n          h('input', {\n            value: model.value.r,\n            maxlength: 3,\n            readonly: editable.value !== true,\n            onChange: stop,\n            ...getCache('rIn', {\n              onInput: evt => onNumericChange(evt.target.value, 'r', 255, evt),\n              onBlur: evt => onNumericChange(evt.target.value, 'r', 255, evt, true)\n            })\n          })\n        ]),\n\n        h('div', { class: 'row items-center no-wrap' }, [\n          h('div', 'G'),\n          h(QSlider, {\n            modelValue: model.value.g,\n            min: 0,\n            max: 255,\n            color: 'green',\n            dark: isDark.value,\n            readonly: editable.value !== true,\n            ...getCache('gSlide', {\n              'onUpdate:modelValue': value => onNumericChange(value, 'g', 255),\n              onChange: value => onNumericChange(value, 'g', 255, void 0, true)\n            })\n          }),\n          h('input', {\n            value: model.value.g,\n            maxlength: 3,\n            readonly: editable.value !== true,\n            onChange: stop,\n            ...getCache('gIn', {\n              onInput: evt => onNumericChange(evt.target.value, 'g', 255, evt),\n              onBlur: evt => onNumericChange(evt.target.value, 'g', 255, evt, true)\n            })\n          })\n        ]),\n\n        h('div', { class: 'row items-center no-wrap' }, [\n          h('div', 'B'),\n          h(QSlider, {\n            modelValue: model.value.b,\n            min: 0,\n            max: 255,\n            color: 'blue',\n            readonly: editable.value !== true,\n            dark: isDark.value,\n            ...getCache('bSlide', {\n              'onUpdate:modelValue': value => onNumericChange(value, 'b', 255),\n              onChange: value => onNumericChange(value, 'b', 255, void 0, true)\n            })\n          }),\n          h('input', {\n            value: model.value.b,\n            maxlength: 3,\n            readonly: editable.value !== true,\n            onChange: stop,\n            ...getCache('bIn', {\n              onInput: evt => onNumericChange(evt.target.value, 'b', 255, evt),\n              onBlur: evt => onNumericChange(evt.target.value, 'b', 255, evt, true)\n            })\n          })\n        ]),\n\n        hasAlpha.value === true ? h('div', { class: 'row items-center no-wrap' }, [\n          h('div', 'A'),\n          h(QSlider, {\n            modelValue: model.value.a,\n            color: 'grey',\n            readonly: editable.value !== true,\n            dark: isDark.value,\n            ...getCache('aSlide', {\n              'onUpdate:modelValue': value => onNumericChange(value, 'a', 100),\n              onChange: value => onNumericChange(value, 'a', 100, void 0, true)\n            })\n          }),\n          h('input', {\n            value: model.value.a,\n            maxlength: 3,\n            readonly: editable.value !== true,\n            onChange: stop,\n            ...getCache('aIn', {\n              onInput: evt => onNumericChange(evt.target.value, 'a', 100, evt),\n              onBlur: evt => onNumericChange(evt.target.value, 'a', 100, evt, true)\n            })\n          })\n        ]) : null\n      ]\n    }\n\n    function getPaletteTab () {\n      const fn = color => h('div', {\n        class: 'q-color-picker__cube col-auto',\n        style: { backgroundColor: color },\n        ...(\n          editable.value === true\n            ? getCache('palette#' + color, {\n              onClick: () => { onPalettePick(color) }\n            })\n            : {}\n        )\n      })\n\n      return [\n        h('div', {\n          class: 'row items-center q-color-picker__palette-rows'\n            + (editable.value === true ? ' q-color-picker__palette-rows--editable' : '')\n        }, computedPalette.value.map(fn))\n      ]\n    }\n\n    return () => {\n      const child = [ getContent() ]\n\n      if (props.name !== void 0 && props.disable !== true) {\n        injectFormInput(child, 'push')\n      }\n\n      props.noHeader !== true && child.unshift(\n        getHeader()\n      )\n\n      props.noFooter !== true && child.push(\n        getFooter()\n      )\n\n      return h('div', {\n        class: classes.value,\n        ...attributes.value\n      }, child)\n    }\n  }\n})\n",
+      "start": 1703982896202,
+      "end": 1703982896285,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896285,
+      "end": 1703982896285,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896286,
+      "end": 1703982896286,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896286,
+      "end": 1703982896288,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896288,
+      "end": 1703982896288,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896288,
+      "end": 1703982896288,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896288,
+      "end": 1703982896288,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896288,
+      "end": 1703982896288,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896288,
+      "end": 1703982896289,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896289,
+      "end": 1703982896289,
+      "order": "normal"
+    }
+  ]
+}

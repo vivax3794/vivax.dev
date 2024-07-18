@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/slide-item/QSlideItem.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, withDirectives, onBeforeUnmount, onBeforeUpdate, getCurrentInstance } from 'vue'\n\nimport TouchPan from '../../directives/TouchPan.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport useCache from '../../composables/private/use-cache.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { hSlot } from '../../utils/private/render.js'\n\nconst slotsDef = [\n  [ 'left', 'center', 'start', 'width' ],\n  [ 'right', 'center', 'end', 'width' ],\n  [ 'top', 'start', 'center', 'height' ],\n  [ 'bottom', 'end', 'center', 'height' ]\n]\n\nexport default createComponent({\n  name: 'QSlideItem',\n\n  props: {\n    ...useDarkProps,\n\n    leftColor: String,\n    rightColor: String,\n    topColor: String,\n    bottomColor: String,\n\n    onSlide: Function\n  },\n\n  emits: [ 'action', 'top', 'right', 'bottom', 'left' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const isDark = useDark(props, $q)\n    const { getCacheWithFn } = useCache()\n\n    const contentRef = ref(null)\n\n    let timer = null, pan = {}, dirRefs = {}, dirContentRefs = {}\n\n    const langDir = computed(() => (\n      $q.lang.rtl === true\n        ? { left: 'right', right: 'left' }\n        : { left: 'left', right: 'right' }\n    ))\n\n    const classes = computed(() =>\n      'q-slide-item q-item-type overflow-hidden'\n      + (isDark.value === true ? ' q-slide-item--dark q-dark' : '')\n    )\n\n    function reset () {\n      contentRef.value.style.transform = 'translate(0,0)'\n    }\n\n    function emitSlide (side, ratio, isReset) {\n      props.onSlide !== void 0 && emit('slide', { side, ratio, isReset })\n    }\n\n    function onPan (evt) {\n      const node = contentRef.value\n\n      if (evt.isFirst) {\n        pan = {\n          dir: null,\n          size: { left: 0, right: 0, top: 0, bottom: 0 },\n          scale: 0\n        }\n\n        node.classList.add('no-transition')\n\n        slotsDef.forEach(slotName => {\n          if (slots[ slotName[ 0 ] ] !== void 0) {\n            const node = dirContentRefs[ slotName[ 0 ] ]\n            node.style.transform = 'scale(1)'\n            pan.size[ slotName[ 0 ] ] = node.getBoundingClientRect()[ slotName[ 3 ] ]\n          }\n        })\n\n        pan.axis = (evt.direction === 'up' || evt.direction === 'down')\n          ? 'Y'\n          : 'X'\n      }\n      else if (evt.isFinal) {\n        node.classList.remove('no-transition')\n\n        if (pan.scale === 1) {\n          node.style.transform = `translate${ pan.axis }(${ pan.dir * 100 }%)`\n\n          timer !== null && clearTimeout(timer)\n          timer = setTimeout(() => {\n            timer = null\n            emit(pan.showing, { reset })\n            emit('action', { side: pan.showing, reset })\n          }, 230)\n        }\n        else {\n          node.style.transform = 'translate(0,0)'\n          emitSlide(pan.showing, 0, true)\n        }\n\n        return\n      }\n      else {\n        evt.direction = pan.axis === 'X'\n          ? evt.offset.x < 0 ? 'left' : 'right'\n          : evt.offset.y < 0 ? 'up' : 'down'\n      }\n\n      if (\n        (slots.left === void 0 && evt.direction === langDir.value.right)\n        || (slots.right === void 0 && evt.direction === langDir.value.left)\n        || (slots.top === void 0 && evt.direction === 'down')\n        || (slots.bottom === void 0 && evt.direction === 'up')\n      ) {\n        node.style.transform = 'translate(0,0)'\n        return\n      }\n\n      let showing, dir, dist\n\n      if (pan.axis === 'X') {\n        dir = evt.direction === 'left' ? -1 : 1\n        showing = dir === 1 ? langDir.value.left : langDir.value.right\n        dist = evt.distance.x\n      }\n      else {\n        dir = evt.direction === 'up' ? -2 : 2\n        showing = dir === 2 ? 'top' : 'bottom'\n        dist = evt.distance.y\n      }\n\n      if (pan.dir !== null && Math.abs(dir) !== Math.abs(pan.dir)) {\n        return\n      }\n\n      if (pan.dir !== dir) {\n        [ 'left', 'right', 'top', 'bottom' ].forEach(d => {\n          if (dirRefs[ d ]) {\n            dirRefs[ d ].style.visibility = showing === d\n              ? 'visible'\n              : 'hidden'\n          }\n        })\n        pan.showing = showing\n        pan.dir = dir\n      }\n\n      pan.scale = Math.max(0, Math.min(1, (dist - 40) / pan.size[ showing ]))\n\n      node.style.transform = `translate${ pan.axis }(${ dist * dir / Math.abs(dir) }px)`\n      dirContentRefs[ showing ].style.transform = `scale(${ pan.scale })`\n\n      emitSlide(showing, pan.scale, false)\n    }\n\n    onBeforeUpdate(() => {\n      dirRefs = {}\n      dirContentRefs = {}\n    })\n\n    onBeforeUnmount(() => {\n      timer !== null && clearTimeout(timer)\n    })\n\n    // expose public methods\n    Object.assign(proxy, { reset })\n\n    return () => {\n      const\n        content = [],\n        slotsList = {\n          left: slots[ langDir.value.right ] !== void 0,\n          right: slots[ langDir.value.left ] !== void 0,\n          up: slots.bottom !== void 0,\n          down: slots.top !== void 0\n        },\n        dirs = Object.keys(slotsList).filter(key => slotsList[ key ] === true)\n\n      slotsDef.forEach(slotName => {\n        const dir = slotName[ 0 ]\n\n        if (slots[ dir ] !== void 0) {\n          content.push(\n            h('div', {\n              ref: el => { dirRefs[ dir ] = el },\n              class: `q-slide-item__${ dir } absolute-full row no-wrap items-${ slotName[ 1 ] } justify-${ slotName[ 2 ] }`\n                + (props[ dir + 'Color' ] !== void 0 ? ` bg-${ props[ dir + 'Color' ] }` : '')\n            }, [\n              h('div', { ref: el => { dirContentRefs[ dir ] = el } }, slots[ dir ]())\n            ])\n          )\n        }\n      })\n\n      const node = h('div', {\n        key: `${ dirs.length === 0 ? 'only-' : '' } content`,\n        ref: contentRef,\n        class: 'q-slide-item__content'\n      }, hSlot(slots.default))\n\n      if (dirs.length === 0) {\n        content.push(node)\n      }\n      else {\n        content.push(\n          withDirectives(node, getCacheWithFn('dir#' + dirs.join(''), () => {\n            const modifiers = {\n              prevent: true,\n              stop: true,\n              mouse: true\n            }\n\n            dirs.forEach(dir => {\n              modifiers[ dir ] = true\n            })\n\n            return [ [\n              TouchPan,\n              onPan,\n              void 0,\n              modifiers\n            ] ]\n          }))\n        )\n      }\n\n      return h('div', { class: classes.value }, content)\n    }\n  }\n})\n",
+      "start": 1703982896472,
+      "end": 1703982896550,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896550,
+      "end": 1703982896550,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896550,
+      "end": 1703982896551,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896551,
+      "end": 1703982896551,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896552,
+      "end": 1703982896552,
+      "order": "normal"
+    }
+  ]
+}

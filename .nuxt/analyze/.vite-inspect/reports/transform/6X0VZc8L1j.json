@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/stepper/StepHeader.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, withDirectives, getCurrentInstance } from 'vue'\n\nimport QIcon from '../icon/QIcon.js'\nimport Ripple from '../../directives/Ripple.js'\n\nimport { createComponent } from '../../utils/private/create.js'\n\nexport default createComponent({\n  name: 'StepHeader',\n\n  props: {\n    stepper: {},\n    step: {},\n    goToPanel: Function\n  },\n\n  setup (props, { attrs }) {\n    const { proxy: { $q } } = getCurrentInstance()\n    const blurRef = ref(null)\n\n    const isActive = computed(() => props.stepper.modelValue === props.step.name)\n\n    const isDisable = computed(() => {\n      const opt = props.step.disable\n      return opt === true || opt === ''\n    })\n\n    const isError = computed(() => {\n      const opt = props.step.error\n      return opt === true || opt === ''\n    })\n\n    const isDone = computed(() => {\n      const opt = props.step.done\n      return isDisable.value === false && (opt === true || opt === '')\n    })\n\n    const headerNav = computed(() => {\n      const\n        opt = props.step.headerNav,\n        nav = opt === true || opt === '' || opt === void 0\n\n      return isDisable.value === false\n        && props.stepper.headerNav\n        && nav\n    })\n\n    const hasPrefix = computed(() => {\n      return props.step.prefix\n        && (isActive.value === false || props.stepper.activeIcon === 'none')\n        && (isError.value === false || props.stepper.errorIcon === 'none')\n        && (isDone.value === false || props.stepper.doneIcon === 'none')\n    })\n\n    const icon = computed(() => {\n      const defaultIcon = props.step.icon || props.stepper.inactiveIcon\n\n      if (isActive.value === true) {\n        const icon = props.step.activeIcon || props.stepper.activeIcon\n        return icon === 'none'\n          ? defaultIcon\n          : icon || $q.iconSet.stepper.active\n      }\n\n      if (isError.value === true) {\n        const icon = props.step.errorIcon || props.stepper.errorIcon\n        return icon === 'none'\n          ? defaultIcon\n          : icon || $q.iconSet.stepper.error\n      }\n\n      if (isDisable.value === false && isDone.value === true) {\n        const icon = props.step.doneIcon || props.stepper.doneIcon\n        return icon === 'none'\n          ? defaultIcon\n          : icon || $q.iconSet.stepper.done\n      }\n\n      return defaultIcon\n    })\n\n    const color = computed(() => {\n      const errorColor = isError.value === true\n        ? props.step.errorColor || props.stepper.errorColor\n        : void 0\n\n      if (isActive.value === true) {\n        const color = props.step.activeColor || props.stepper.activeColor || props.step.color\n        return color !== void 0\n          ? color\n          : errorColor\n      }\n      if (errorColor !== void 0) {\n        return errorColor\n      }\n      if (isDisable.value === false && isDone.value === true) {\n        return props.step.doneColor || props.stepper.doneColor || props.step.color || props.stepper.inactiveColor\n      }\n\n      return props.step.color || props.stepper.inactiveColor\n    })\n\n    const classes = computed(() => {\n      return 'q-stepper__tab col-grow flex items-center no-wrap relative-position'\n        + (color.value !== void 0 ? ` text-${ color.value }` : '')\n        + (isError.value === true\n          ? ' q-stepper__tab--error q-stepper__tab--error-with-' + (hasPrefix.value === true ? 'prefix' : 'icon')\n          : '')\n        + (isActive.value === true ? ' q-stepper__tab--active' : '')\n        + (isDone.value === true ? ' q-stepper__tab--done' : '')\n        + (headerNav.value === true ? ' q-stepper__tab--navigation q-focusable q-hoverable' : '')\n        + (isDisable.value === true ? ' q-stepper__tab--disabled' : '')\n    })\n\n    const ripple = computed(() => (\n      props.stepper.headerNav !== true\n        ? false\n        : headerNav.value\n    ))\n\n    function onActivate () {\n      blurRef.value !== null && blurRef.value.focus()\n      isActive.value === false && props.goToPanel(props.step.name)\n    }\n\n    function onKeyup (e) {\n      if (e.keyCode === 13 && isActive.value === false) {\n        props.goToPanel(props.step.name)\n      }\n    }\n\n    return () => {\n      const data = { class: classes.value }\n\n      if (headerNav.value === true) {\n        data.onClick = onActivate\n        data.onKeyup = onKeyup\n\n        Object.assign(data,\n          isDisable.value === true\n            ? { tabindex: -1, 'aria-disabled': 'true' }\n            : { tabindex: attrs.tabindex || 0 }\n        )\n      }\n\n      const child = [\n        h('div', { class: 'q-focus-helper', tabindex: -1, ref: blurRef }),\n\n        h('div', { class: 'q-stepper__dot row flex-center q-stepper__line relative-position' }, [\n          h('span', { class: 'row flex-center' }, [\n            hasPrefix.value === true\n              ? props.step.prefix\n              : h(QIcon, { name: icon.value })\n          ])\n        ])\n      ]\n\n      if (props.step.title !== void 0 && props.step.title !== null) {\n        const content = [\n          h('div', { class: 'q-stepper__title' }, props.step.title)\n        ]\n\n        if (props.step.caption !== void 0 && props.step.caption !== null) {\n          content.push(\n            h('div', { class: 'q-stepper__caption' }, props.step.caption)\n          )\n        }\n\n        child.push(\n          h('div', {\n            class: 'q-stepper__label q-stepper__line relative-position'\n          }, content)\n        )\n      }\n\n      return withDirectives(\n        h('div', data, child),\n        [ [ Ripple, ripple.value ] ]\n      )\n    }\n  }\n})\n",
+      "start": 1703982897349,
+      "end": 1703982897417,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897418,
+      "end": 1703982897418,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897419,
+      "end": 1703982897419,
+      "order": "normal"
+    }
+  ]
+}

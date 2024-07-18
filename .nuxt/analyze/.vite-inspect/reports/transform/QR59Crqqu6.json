@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/range/QRange.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, getCurrentInstance } from 'vue'\n\nimport useSlider, {\n  useSliderProps,\n  useSliderEmits,\n  keyCodes\n} from '../slider/use-slider.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stopAndPrevent } from '../../utils/event.js'\nimport { between } from '../../utils/format.js'\n\nconst dragType = {\n  MIN: 0,\n  RANGE: 1,\n  MAX: 2\n}\n\nexport default createComponent({\n  name: 'QRange',\n\n  props: {\n    ...useSliderProps,\n\n    modelValue: {\n      type: Object,\n      default: () => ({ min: null, max: null }),\n      validator: v => 'min' in v && 'max' in v\n    },\n\n    dragRange: Boolean,\n    dragOnlyRange: Boolean,\n\n    leftLabelColor: String,\n    leftLabelTextColor: String,\n    rightLabelColor: String,\n    rightLabelTextColor: String,\n\n    leftLabelValue: [ String, Number ],\n    rightLabelValue: [ String, Number ],\n\n    leftThumbColor: String,\n    rightThumbColor: String\n  },\n\n  emits: useSliderEmits,\n\n  setup (props, { emit }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const { state, methods } = useSlider({\n      updateValue, updatePosition, getDragging,\n      formAttrs: computed(() => ({\n        type: 'hidden',\n        name: props.name,\n        value: `${ props.modelValue.min }|${ props.modelValue.max }`\n      }))\n    })\n\n    const rootRef = ref(null)\n    const curMinRatio = ref(0)\n    const curMaxRatio = ref(0)\n    const model = ref({ min: 0, max: 0 })\n\n    function normalizeModel () {\n      model.value.min = props.modelValue.min === null\n        ? state.innerMin.value\n        : between(props.modelValue.min, state.innerMin.value, state.innerMax.value)\n\n      model.value.max = props.modelValue.max === null\n        ? state.innerMax.value\n        : between(props.modelValue.max, state.innerMin.value, state.innerMax.value)\n    }\n\n    watch(\n      () => `${ props.modelValue.min }|${ props.modelValue.max }|${ state.innerMin.value }|${ state.innerMax.value }`,\n      normalizeModel\n    )\n\n    normalizeModel()\n\n    const modelMinRatio = computed(() => methods.convertModelToRatio(model.value.min))\n    const modelMaxRatio = computed(() => methods.convertModelToRatio(model.value.max))\n\n    const ratioMin = computed(() => (\n      state.active.value === true ? curMinRatio.value : modelMinRatio.value\n    ))\n    const ratioMax = computed(() => (\n      state.active.value === true ? curMaxRatio.value : modelMaxRatio.value\n    ))\n\n    const selectionBarStyle = computed(() => {\n      const acc = {\n        [ state.positionProp.value ]: `${ 100 * ratioMin.value }%`,\n        [ state.sizeProp.value ]: `${ 100 * (ratioMax.value - ratioMin.value) }%`\n      }\n      if (props.selectionImg !== void 0) {\n        acc.backgroundImage = `url(${ props.selectionImg }) !important`\n      }\n      return acc\n    })\n\n    const trackContainerEvents = computed(() => {\n      if (state.editable.value !== true) {\n        return {}\n      }\n\n      if ($q.platform.is.mobile === true) {\n        return { onClick: methods.onMobileClick }\n      }\n\n      const evt = { onMousedown: methods.onActivate }\n\n      if (props.dragRange === true || props.dragOnlyRange === true) {\n        Object.assign(evt, {\n          onFocus: () => { state.focus.value = 'both' },\n          onBlur: methods.onBlur,\n          onKeydown,\n          onKeyup: methods.onKeyup\n        })\n      }\n\n      return evt\n    })\n\n    function getEvents (side) {\n      return $q.platform.is.mobile !== true && state.editable.value === true && props.dragOnlyRange !== true\n        ? {\n            onFocus: () => { state.focus.value = side },\n            onBlur: methods.onBlur,\n            onKeydown,\n            onKeyup: methods.onKeyup\n          }\n        : {}\n    }\n\n    const thumbTabindex = computed(() => (props.dragOnlyRange !== true ? state.tabindex.value : null))\n    const trackContainerTabindex = computed(() => (\n      $q.platform.is.mobile !== true && (props.dragRange || props.dragOnlyRange === true)\n        ? state.tabindex.value\n        : null\n    ))\n\n    const minThumbRef = ref(null)\n    const minEvents = computed(() => getEvents('min'))\n    const getMinThumb = methods.getThumbRenderFn({\n      focusValue: 'min',\n      getNodeData: () => ({\n        ref: minThumbRef,\n        key: 'tmin',\n        ...minEvents.value,\n        tabindex: thumbTabindex.value\n      }),\n      ratio: ratioMin,\n      label: computed(() => (\n        props.leftLabelValue !== void 0\n          ? props.leftLabelValue\n          : model.value.min\n      )),\n      thumbColor: computed(() => props.leftThumbColor || props.thumbColor || props.color),\n      labelColor: computed(() => props.leftLabelColor || props.labelColor),\n      labelTextColor: computed(() => props.leftLabelTextColor || props.labelTextColor)\n    })\n\n    const maxEvents = computed(() => getEvents('max'))\n    const getMaxThumb = methods.getThumbRenderFn({\n      focusValue: 'max',\n      getNodeData: () => ({\n        ...maxEvents.value,\n        key: 'tmax',\n        tabindex: thumbTabindex.value\n      }),\n      ratio: ratioMax,\n      label: computed(() => (\n        props.rightLabelValue !== void 0\n          ? props.rightLabelValue\n          : model.value.max\n      )),\n      thumbColor: computed(() => props.rightThumbColor || props.thumbColor || props.color),\n      labelColor: computed(() => props.rightLabelColor || props.labelColor),\n      labelTextColor: computed(() => props.rightLabelTextColor || props.labelTextColor)\n    })\n\n    function updateValue (change) {\n      if (model.value.min !== props.modelValue.min || model.value.max !== props.modelValue.max) {\n        emit('update:modelValue', { ...model.value })\n      }\n      change === true && emit('change', { ...model.value })\n    }\n\n    function getDragging (event) {\n      const\n        { left, top, width, height } = rootRef.value.getBoundingClientRect(),\n        sensitivity = props.dragOnlyRange === true\n          ? 0\n          : (props.vertical === true\n              ? minThumbRef.value.offsetHeight / (2 * height)\n              : minThumbRef.value.offsetWidth / (2 * width)\n            )\n\n      const dragging = {\n        left,\n        top,\n        width,\n        height,\n        valueMin: model.value.min,\n        valueMax: model.value.max,\n        ratioMin: modelMinRatio.value,\n        ratioMax: modelMaxRatio.value\n      }\n\n      const ratio = methods.getDraggingRatio(event, dragging)\n\n      if (props.dragOnlyRange !== true && ratio < dragging.ratioMin + sensitivity) {\n        dragging.type = dragType.MIN\n      }\n      else if (props.dragOnlyRange === true || ratio < dragging.ratioMax - sensitivity) {\n        if (props.dragRange === true || props.dragOnlyRange === true) {\n          dragging.type = dragType.RANGE\n          Object.assign(dragging, {\n            offsetRatio: ratio,\n            offsetModel: methods.convertRatioToModel(ratio),\n            rangeValue: dragging.valueMax - dragging.valueMin,\n            rangeRatio: dragging.ratioMax - dragging.ratioMin\n          })\n        }\n        else {\n          dragging.type = dragging.ratioMax - ratio < ratio - dragging.ratioMin\n            ? dragType.MAX\n            : dragType.MIN\n        }\n      }\n      else {\n        dragging.type = dragType.MAX\n      }\n\n      return dragging\n    }\n\n    function updatePosition (event, dragging = state.dragging.value) {\n      let pos\n      const ratio = methods.getDraggingRatio(event, dragging)\n      const localModel = methods.convertRatioToModel(ratio)\n\n      switch (dragging.type) {\n        case dragType.MIN:\n          if (ratio <= dragging.ratioMax) {\n            pos = {\n              minR: ratio,\n              maxR: dragging.ratioMax,\n              min: localModel,\n              max: dragging.valueMax\n            }\n            state.focus.value = 'min'\n          }\n          else {\n            pos = {\n              minR: dragging.ratioMax,\n              maxR: ratio,\n              min: dragging.valueMax,\n              max: localModel\n            }\n            state.focus.value = 'max'\n          }\n          break\n\n        case dragType.MAX:\n          if (ratio >= dragging.ratioMin) {\n            pos = {\n              minR: dragging.ratioMin,\n              maxR: ratio,\n              min: dragging.valueMin,\n              max: localModel\n            }\n            state.focus.value = 'max'\n          }\n          else {\n            pos = {\n              minR: ratio,\n              maxR: dragging.ratioMin,\n              min: localModel,\n              max: dragging.valueMin\n            }\n            state.focus.value = 'min'\n          }\n          break\n\n        case dragType.RANGE:\n          const\n            ratioDelta = ratio - dragging.offsetRatio,\n            minR = between(dragging.ratioMin + ratioDelta, state.innerMinRatio.value, state.innerMaxRatio.value - dragging.rangeRatio),\n            modelDelta = localModel - dragging.offsetModel,\n            min = between(dragging.valueMin + modelDelta, state.innerMin.value, state.innerMax.value - dragging.rangeValue)\n\n          pos = {\n            minR,\n            maxR: minR + dragging.rangeRatio,\n            min: state.roundValueFn.value(min),\n            max: state.roundValueFn.value(min + dragging.rangeValue)\n          }\n\n          state.focus.value = 'both'\n          break\n      }\n\n      // If either of the values to be emitted are null, set them to the defaults the user has entered.\n      model.value = model.value.min === null || model.value.max === null\n        ? { min: pos.min || props.min, max: pos.max || props.max }\n        : { min: pos.min, max: pos.max }\n\n      if (props.snap !== true || props.step === 0) {\n        curMinRatio.value = pos.minR\n        curMaxRatio.value = pos.maxR\n      }\n      else {\n        curMinRatio.value = methods.convertModelToRatio(model.value.min)\n        curMaxRatio.value = methods.convertModelToRatio(model.value.max)\n      }\n    }\n\n    function onKeydown (evt) {\n      if (!keyCodes.includes(evt.keyCode)) {\n        return\n      }\n\n      stopAndPrevent(evt)\n\n      const\n        stepVal = ([ 34, 33 ].includes(evt.keyCode) ? 10 : 1) * state.keyStep.value,\n        offset = (\n          ([ 34, 37, 40 ].includes(evt.keyCode) ? -1 : 1)\n          * (state.isReversed.value === true ? -1 : 1)\n          * (props.vertical === true ? -1 : 1) * stepVal\n        )\n\n      if (state.focus.value === 'both') {\n        const interval = model.value.max - model.value.min\n        const min = between(\n          state.roundValueFn.value(model.value.min + offset),\n          state.innerMin.value,\n          state.innerMax.value - interval\n        )\n\n        model.value = {\n          min,\n          max: state.roundValueFn.value(min + interval)\n        }\n      }\n      else if (state.focus.value === false) {\n        return\n      }\n      else {\n        const which = state.focus.value\n\n        model.value = {\n          ...model.value,\n          [ which ]: between(\n            state.roundValueFn.value(model.value[ which ] + offset),\n            which === 'min' ? state.innerMin.value : model.value.min,\n            which === 'max' ? state.innerMax.value : model.value.max\n          )\n        }\n      }\n\n      updateValue()\n    }\n\n    return () => {\n      const content = methods.getContent(\n        selectionBarStyle,\n        trackContainerTabindex,\n        trackContainerEvents,\n        node => {\n          node.push(\n            getMinThumb(),\n            getMaxThumb()\n          )\n        }\n      )\n\n      return h('div', {\n        ref: rootRef,\n        class: 'q-range ' + state.classes.value + (\n          props.modelValue.min === null || props.modelValue.max === null\n            ? ' q-slider--no-value'\n            : ''\n        ),\n        ...state.attributes.value,\n        'aria-valuenow': props.modelValue.min + '|' + props.modelValue.max\n      }, content)\n    }\n  }\n})\n",
+      "start": 1703982896428,
+      "end": 1703982896509,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896509,
+      "end": 1703982896509,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896509,
+      "end": 1703982896510,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896510,
+      "end": 1703982896510,
+      "order": "normal"
+    }
+  ]
+}

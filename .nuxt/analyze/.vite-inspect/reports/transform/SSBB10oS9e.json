@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/dialog-plugin/DialogPlugin.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, toRaw, getCurrentInstance } from 'vue'\n\nimport QDialog from '../dialog/QDialog.js'\nimport QBtn from '../btn/QBtn.js'\n\nimport QCard from '../card/QCard.js'\nimport QCardSection from '../card/QCardSection.js'\nimport QCardActions from '../card/QCardActions.js'\nimport QSeparator from '../separator/QSeparator.js'\n\nimport QInput from '../input/QInput.js'\nimport QOptionGroup from '../option-group/QOptionGroup.js'\n\nimport QSpinner from '../spinner/QSpinner.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nimport { isKeyCode } from '../../utils/private/key-composition.js'\nimport { isObject } from '../../utils/is.js'\n\nexport default createComponent({\n  name: 'DialogPlugin',\n\n  props: {\n    ...useDarkProps,\n\n    title: String,\n    message: String,\n    prompt: Object,\n    options: Object,\n    progress: [ Boolean, Object ],\n\n    html: Boolean,\n\n    ok: {\n      type: [ String, Object, Boolean ],\n      default: true\n    },\n    cancel: [ String, Object, Boolean ],\n    focus: {\n      type: String,\n      default: 'ok',\n      validator: v => [ 'ok', 'cancel', 'none' ].includes(v)\n    },\n\n    stackButtons: Boolean,\n    color: String,\n\n    cardClass: [ String, Array, Object ],\n    cardStyle: [ String, Array, Object ]\n  },\n\n  emits: [ 'ok', 'hide' ],\n\n  setup (props, { emit }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const isDark = useDark(props, $q)\n\n    const dialogRef = ref(null)\n\n    const model = ref(\n      props.prompt !== void 0\n        ? props.prompt.model\n        : (props.options !== void 0 ? props.options.model : void 0)\n    )\n\n    const classes = computed(() =>\n      'q-dialog-plugin'\n      + (isDark.value === true ? ' q-dialog-plugin--dark q-dark' : '')\n      + (props.progress !== false ? ' q-dialog-plugin--progress' : '')\n    )\n\n    const vmColor = computed(() =>\n      props.color || (isDark.value === true ? 'amber' : 'primary')\n    )\n\n    const spinner = computed(() => (\n      props.progress === false\n        ? null\n        : (\n            isObject(props.progress) === true\n              ? {\n                  component: props.progress.spinner || QSpinner,\n                  props: { color: props.progress.color || vmColor.value }\n                }\n              : {\n                  component: QSpinner,\n                  props: { color: vmColor.value }\n                }\n          )\n    ))\n\n    const hasForm = computed(() =>\n      props.prompt !== void 0 || props.options !== void 0\n    )\n\n    const formProps = computed(() => {\n      if (hasForm.value !== true) {\n        return {}\n      }\n\n      const { model, isValid, items, ...formProps } = props.prompt !== void 0\n        ? props.prompt\n        : props.options\n\n      return formProps\n    })\n\n    const okLabel = computed(() => (\n      isObject(props.ok) === true\n        ? $q.lang.label.ok\n        : (\n            props.ok === true\n              ? $q.lang.label.ok\n              : props.ok\n          )\n    ))\n\n    const cancelLabel = computed(() => (\n      isObject(props.cancel) === true\n        ? $q.lang.label.cancel\n        : (\n            props.cancel === true\n              ? $q.lang.label.cancel\n              : props.cancel\n          )\n    ))\n\n    const okDisabled = computed(() => {\n      if (props.prompt !== void 0) {\n        return props.prompt.isValid !== void 0\n          && props.prompt.isValid(model.value) !== true\n      }\n      if (props.options !== void 0) {\n        return props.options.isValid !== void 0\n          && props.options.isValid(model.value) !== true\n      }\n      return false\n    })\n\n    const okProps = computed(() => ({\n      color: vmColor.value,\n      label: okLabel.value,\n      ripple: false,\n      disable: okDisabled.value,\n      ...(isObject(props.ok) === true ? props.ok : { flat: true }),\n      'data-autofocus': (props.focus === 'ok' && hasForm.value !== true) || void 0,\n      onClick: onOk\n    }))\n\n    const cancelProps = computed(() => ({\n      color: vmColor.value,\n      label: cancelLabel.value,\n      ripple: false,\n      ...(isObject(props.cancel) === true ? props.cancel : { flat: true }),\n      'data-autofocus': (props.focus === 'cancel' && hasForm.value !== true) || void 0,\n      onClick: onCancel\n    }))\n\n    watch(() => props.prompt && props.prompt.model, onUpdateModel)\n    watch(() => props.options && props.options.model, onUpdateModel)\n\n    function show () {\n      dialogRef.value.show()\n    }\n\n    function hide () {\n      dialogRef.value.hide()\n    }\n\n    function onOk () {\n      emit('ok', toRaw(model.value))\n      hide()\n    }\n\n    function onCancel () {\n      hide()\n    }\n\n    function onDialogHide () {\n      emit('hide')\n    }\n\n    function onUpdateModel (val) {\n      model.value = val\n    }\n\n    function onInputKeyup (evt) {\n      // if ENTER key\n      if (\n        okDisabled.value !== true\n        && props.prompt.type !== 'textarea'\n        && isKeyCode(evt, 13) === true\n      ) {\n        onOk()\n      }\n    }\n\n    function getSection (classes, text) {\n      return props.html === true\n        ? h(QCardSection, {\n          class: classes,\n          innerHTML: text\n        })\n        : h(QCardSection, { class: classes }, () => text)\n    }\n\n    function getPrompt () {\n      return [\n        h(QInput, {\n          color: vmColor.value,\n          dense: true,\n          autofocus: true,\n          dark: isDark.value,\n          ...formProps.value,\n          modelValue: model.value,\n          'onUpdate:modelValue': onUpdateModel,\n          onKeyup: onInputKeyup\n        })\n      ]\n    }\n\n    function getOptions () {\n      return [\n        h(QOptionGroup, {\n          color: vmColor.value,\n          options: props.options.items,\n          dark: isDark.value,\n          ...formProps.value,\n          modelValue: model.value,\n          'onUpdate:modelValue': onUpdateModel\n        })\n      ]\n    }\n\n    function getButtons () {\n      const child = []\n\n      props.cancel && child.push(\n        h(QBtn, cancelProps.value)\n      )\n\n      props.ok && child.push(\n        h(QBtn, okProps.value)\n      )\n\n      return h(QCardActions, {\n        class: props.stackButtons === true ? 'items-end' : '',\n        vertical: props.stackButtons,\n        align: 'right'\n      }, () => child)\n    }\n\n    function getCardContent () {\n      const child = []\n\n      props.title && child.push(\n        getSection('q-dialog__title', props.title)\n      )\n\n      props.progress !== false && child.push(\n        h(\n          QCardSection,\n          { class: 'q-dialog__progress' },\n          () => h(spinner.value.component, spinner.value.props)\n        )\n      )\n\n      props.message && child.push(\n        getSection('q-dialog__message', props.message)\n      )\n\n      if (props.prompt !== void 0) {\n        child.push(\n          h(\n            QCardSection,\n            { class: 'scroll q-dialog-plugin__form' },\n            getPrompt\n          )\n        )\n      }\n      else if (props.options !== void 0) {\n        child.push(\n          h(QSeparator, { dark: isDark.value }),\n          h(\n            QCardSection,\n            { class: 'scroll q-dialog-plugin__form' },\n            getOptions\n          ),\n          h(QSeparator, { dark: isDark.value })\n        )\n      }\n\n      if (props.ok || props.cancel) {\n        child.push(getButtons())\n      }\n\n      return child\n    }\n\n    function getContent () {\n      return [\n        h(QCard, {\n          class: [\n            classes.value,\n            props.cardClass\n          ],\n          style: props.cardStyle,\n          dark: isDark.value\n        }, getCardContent)\n      ]\n    }\n\n    // expose public methods\n    Object.assign(proxy, { show, hide })\n\n    return () => h(QDialog, {\n      ref: dialogRef,\n      onHide: onDialogHide\n    }, getContent)\n  }\n})\n",
+      "start": 1703982897413,
+      "end": 1703982897480,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897480,
+      "end": 1703982897480,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897486,
+      "end": 1703982897486,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897488,
+      "end": 1703982897489,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897492,
+      "end": 1703982897492,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897499,
+      "end": 1703982897499,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897500,
+      "end": 1703982897500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897500,
+      "end": 1703982897500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897500,
+      "end": 1703982897500,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897503,
+      "end": 1703982897503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897504,
+      "end": 1703982897512,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897513,
+      "end": 1703982897515,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897516,
+      "end": 1703982897516,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897517,
+      "end": 1703982897517,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897517,
+      "end": 1703982897517,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897517,
+      "end": 1703982897517,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897520,
+      "end": 1703982897521,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897521,
+      "end": 1703982897521,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897525,
+      "end": 1703982897526,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897527,
+      "end": 1703982897527,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897528,
+      "end": 1703982897528,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897528,
+      "end": 1703982897528,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897528,
+      "end": 1703982897528,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897528,
+      "end": 1703982897528,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897528,
+      "end": 1703982897528,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/btn-dropdown/QBtnDropdown.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, onMounted, getCurrentInstance } from 'vue'\n\nimport QIcon from '../icon/QIcon.js'\nimport QBtn from '../btn/QBtn.js'\nimport QBtnGroup from '../btn-group/QBtnGroup.js'\nimport QMenu from '../menu/QMenu.js'\n\nimport { getBtnDesignAttr, useBtnProps } from '../btn/use-btn.js'\nimport { useTransitionProps } from '../../composables/private/use-transition.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stop } from '../../utils/event.js'\nimport uid from '../../utils/uid.js'\nimport { hSlot } from '../../utils/private/render.js'\n\nconst btnPropsList = Object.keys(useBtnProps)\n\nexport const passBtnProps = props => btnPropsList.reduce(\n  (acc, key) => {\n    const val = props[ key ]\n    if (val !== void 0) {\n      acc[ key ] = val\n    }\n    return acc\n  },\n  {}\n)\n\nexport default createComponent({\n  name: 'QBtnDropdown',\n\n  props: {\n    ...useBtnProps,\n    ...useTransitionProps,\n\n    modelValue: Boolean,\n    split: Boolean,\n    dropdownIcon: String,\n\n    contentClass: [ Array, String, Object ],\n    contentStyle: [ Array, String, Object ],\n\n    cover: Boolean,\n    persistent: Boolean,\n    noRouteDismiss: Boolean,\n    autoClose: Boolean,\n\n    menuAnchor: {\n      type: String,\n      default: 'bottom end'\n    },\n    menuSelf: {\n      type: String,\n      default: 'top end'\n    },\n    menuOffset: Array,\n\n    disableMainBtn: Boolean,\n    disableDropdown: Boolean,\n\n    noIconAnimation: Boolean,\n\n    toggleAriaLabel: String\n  },\n\n  emits: [ 'update:modelValue', 'click', 'beforeShow', 'show', 'beforeHide', 'hide' ],\n\n  setup (props, { slots, emit }) {\n    const { proxy } = getCurrentInstance()\n\n    const showing = ref(props.modelValue)\n    const menuRef = ref(null)\n    const targetUid = uid()\n\n    const ariaAttrs = computed(() => {\n      const acc = {\n        'aria-expanded': showing.value === true ? 'true' : 'false',\n        'aria-haspopup': 'true',\n        'aria-controls': targetUid,\n        'aria-label': props.toggleAriaLabel || proxy.$q.lang.label[ showing.value === true ? 'collapse' : 'expand' ](props.label)\n      }\n\n      if (\n        props.disable === true\n        || (\n          (props.split === false && props.disableMainBtn === true)\n          || props.disableDropdown === true\n        )\n      ) {\n        acc[ 'aria-disabled' ] = 'true'\n      }\n\n      return acc\n    })\n\n    const iconClass = computed(() =>\n      'q-btn-dropdown__arrow'\n      + (showing.value === true && props.noIconAnimation === false ? ' rotate-180' : '')\n      + (props.split === false ? ' q-btn-dropdown__arrow-container' : '')\n    )\n\n    const btnDesignAttr = computed(() => getBtnDesignAttr(props))\n    const btnProps = computed(() => passBtnProps(props))\n\n    watch(() => props.modelValue, val => {\n      menuRef.value !== null && menuRef.value[ val ? 'show' : 'hide' ]()\n    })\n\n    watch(() => props.split, hide)\n\n    function onBeforeShow (e) {\n      showing.value = true\n      emit('beforeShow', e)\n    }\n\n    function onShow (e) {\n      emit('show', e)\n      emit('update:modelValue', true)\n    }\n\n    function onBeforeHide (e) {\n      showing.value = false\n      emit('beforeHide', e)\n    }\n\n    function onHide (e) {\n      emit('hide', e)\n      emit('update:modelValue', false)\n    }\n\n    function onClick (e) {\n      emit('click', e)\n    }\n\n    function onClickHide (e) {\n      stop(e)\n      hide()\n      emit('click', e)\n    }\n\n    function toggle (evt) {\n      menuRef.value !== null && menuRef.value.toggle(evt)\n    }\n\n    function show (evt) {\n      menuRef.value !== null && menuRef.value.show(evt)\n    }\n\n    function hide (evt) {\n      menuRef.value !== null && menuRef.value.hide(evt)\n    }\n\n    // expose public methods\n    Object.assign(proxy, {\n      show, hide, toggle\n    })\n\n    onMounted(() => {\n      props.modelValue === true && show()\n    })\n\n    return () => {\n      const Arrow = [\n        h(QIcon, {\n          class: iconClass.value,\n          name: props.dropdownIcon || proxy.$q.iconSet.arrow.dropdown\n        })\n      ]\n\n      props.disableDropdown !== true && Arrow.push(\n        h(QMenu, {\n          ref: menuRef,\n          id: targetUid,\n          class: props.contentClass,\n          style: props.contentStyle,\n          cover: props.cover,\n          fit: true,\n          persistent: props.persistent,\n          noRouteDismiss: props.noRouteDismiss,\n          autoClose: props.autoClose,\n          anchor: props.menuAnchor,\n          self: props.menuSelf,\n          offset: props.menuOffset,\n          separateClosePopup: true,\n          transitionShow: props.transitionShow,\n          transitionHide: props.transitionHide,\n          transitionDuration: props.transitionDuration,\n          onBeforeShow,\n          onShow,\n          onBeforeHide,\n          onHide\n        }, slots.default)\n      )\n\n      if (props.split === false) {\n        return h(QBtn, {\n          class: 'q-btn-dropdown q-btn-dropdown--simple',\n          ...btnProps.value,\n          ...ariaAttrs.value,\n          disable: props.disable === true || props.disableMainBtn === true,\n          noWrap: true,\n          round: false,\n          onClick\n        }, {\n          default: () => hSlot(slots.label, []).concat(Arrow),\n          loading: slots.loading\n        })\n      }\n\n      return h(QBtnGroup, {\n        class: 'q-btn-dropdown q-btn-dropdown--split no-wrap q-btn-item',\n        rounded: props.rounded,\n        square: props.square,\n        ...btnDesignAttr.value,\n        glossy: props.glossy,\n        stretch: props.stretch\n      }, () => [\n        h(QBtn, {\n          class: 'q-btn-dropdown--current',\n          ...btnProps.value,\n          disable: props.disable === true || props.disableMainBtn === true,\n          noWrap: true,\n          round: false,\n          onClick: onClickHide\n        }, {\n          default: slots.label,\n          loading: slots.loading\n        }),\n\n        h(QBtn, {\n          class: 'q-btn-dropdown__arrow-container q-anchor--skip',\n          ...ariaAttrs.value,\n          ...btnDesignAttr.value,\n          disable: props.disable === true || props.disableDropdown === true,\n          rounded: props.rounded,\n          color: props.color,\n          textColor: props.textColor,\n          dense: props.dense,\n          size: props.size,\n          padding: props.padding,\n          ripple: props.ripple\n        }, () => Arrow)\n      ])\n    }\n  }\n})\n",
+      "start": 1703982896152,
+      "end": 1703982896257,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896257,
+      "end": 1703982896257,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896257,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896258,
+      "end": 1703982896258,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896259,
+      "end": 1703982896259,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896259,
+      "end": 1703982896259,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896259,
+      "end": 1703982896259,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896259,
+      "end": 1703982896259,
+      "order": "normal"
+    }
+  ]
+}

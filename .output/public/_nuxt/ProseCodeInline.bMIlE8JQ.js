@@ -1,0 +1,1 @@
+import{_ as o}from"./_plugin-vue_export-helper.x3n3nnut.js";import{o as s,c as n,a as t,B as r}from"./entry.gJC_TtOp.js";const a={},c={class:"inline"};function d(e,l){return s(),n("div",c,[t("code",null,[r(e.$slots,"default",{},void 0,!0)])])}const i=o(a,[["render",d],["__scopeId","data-v-971f803d"]]);export{i as default};

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/composables/private/use-field.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, Transition, nextTick, onActivated, onDeactivated, onBeforeUnmount, onMounted, getCurrentInstance } from 'vue'\n\nimport { isRuntimeSsrPreHydration } from '../../plugins/Platform.js'\n\nimport QIcon from '../../components/icon/QIcon.js'\nimport QSpinner from '../../components/spinner/QSpinner.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport useValidate, { useValidateProps } from './use-validate.js'\nimport useSplitAttrs from './use-split-attrs.js'\n\nimport { hSlot } from '../../utils/private/render.js'\nimport uid from '../../utils/uid.js'\nimport { prevent, stopAndPrevent } from '../../utils/event.js'\nimport { addFocusFn, removeFocusFn } from '../../utils/private/focus-manager.js'\n\nfunction getTargetUid (val, requiredForAttr) {\n  return val === void 0\n    ? (requiredForAttr === true ? `f_${ uid() }` : void 0)\n    : val\n}\n\nexport function fieldValueIsFilled (val) {\n  return val !== void 0\n    && val !== null\n    && ('' + val).length !== 0\n}\n\nexport const useFieldProps = {\n  ...useDarkProps,\n  ...useValidateProps,\n\n  label: String,\n  stackLabel: Boolean,\n  hint: String,\n  hideHint: Boolean,\n  prefix: String,\n  suffix: String,\n\n  labelColor: String,\n  color: String,\n  bgColor: String,\n\n  filled: Boolean,\n  outlined: Boolean,\n  borderless: Boolean,\n  standout: [ Boolean, String ],\n\n  square: Boolean,\n\n  loading: Boolean,\n\n  labelSlot: Boolean,\n\n  bottomSlots: Boolean,\n  hideBottomSpace: Boolean,\n\n  rounded: Boolean,\n  dense: Boolean,\n  itemAligned: Boolean,\n\n  counter: Boolean,\n\n  clearable: Boolean,\n  clearIcon: String,\n\n  disable: Boolean,\n  readonly: Boolean,\n\n  autofocus: Boolean,\n\n  for: String,\n\n  maxlength: [ Number, String ]\n}\n\nexport const useFieldEmits = [ 'update:modelValue', 'clear', 'focus', 'blur', 'popupShow', 'popupHide' ]\n\nexport function useFieldState ({ requiredForAttr = true, tagProp } = {}) {\n  const { props, attrs, proxy, vnode } = getCurrentInstance()\n\n  const isDark = useDark(props, proxy.$q)\n\n  return {\n    requiredForAttr,\n    tag: tagProp === true\n      ? computed(() => props.tag)\n      : { value: 'label' },\n\n    isDark,\n\n    editable: computed(() =>\n      props.disable !== true && props.readonly !== true\n    ),\n\n    innerLoading: ref(false),\n    focused: ref(false),\n    hasPopupOpen: false,\n\n    splitAttrs: useSplitAttrs(attrs, vnode),\n    targetUid: ref(\n      getTargetUid(props.for, requiredForAttr)\n    ),\n\n    rootRef: ref(null),\n    targetRef: ref(null),\n    controlRef: ref(null)\n\n    /**\n     * user supplied additionals:\n\n     * innerValue - computed\n     * floatingLabel - computed\n     * inputRef - computed\n\n     * fieldClass - computed\n     * hasShadow - computed\n\n     * controlEvents - Object with fn(e)\n\n     * getControl - fn\n     * getInnerAppend - fn\n     * getControlChild - fn\n     * getShadowControl - fn\n     * showPopup - fn\n     */\n  }\n}\n\nexport default function (state) {\n  const { props, emit, slots, attrs, proxy } = getCurrentInstance()\n  const { $q } = proxy\n\n  let focusoutTimer = null\n\n  if (state.hasValue === void 0) {\n    state.hasValue = computed(() => fieldValueIsFilled(props.modelValue))\n  }\n\n  if (state.emitValue === void 0) {\n    state.emitValue = value => {\n      emit('update:modelValue', value)\n    }\n  }\n\n  if (state.controlEvents === void 0) {\n    state.controlEvents = {\n      onFocusin: onControlFocusin,\n      onFocusout: onControlFocusout\n    }\n  }\n\n  Object.assign(state, {\n    clearValue,\n    onControlFocusin,\n    onControlFocusout,\n    focus\n  })\n\n  if (state.computedCounter === void 0) {\n    state.computedCounter = computed(() => {\n      if (props.counter !== false) {\n        const len = typeof props.modelValue === 'string' || typeof props.modelValue === 'number'\n          ? ('' + props.modelValue).length\n          : (Array.isArray(props.modelValue) === true ? props.modelValue.length : 0)\n\n        const max = props.maxlength !== void 0\n          ? props.maxlength\n          : props.maxValues\n\n        return len + (max !== void 0 ? ' / ' + max : '')\n      }\n    })\n  }\n\n  const {\n    isDirtyModel,\n    hasRules,\n    hasError,\n    errorMessage,\n    resetValidation\n  } = useValidate(state.focused, state.innerLoading)\n\n  const floatingLabel = state.floatingLabel !== void 0\n    ? computed(() => props.stackLabel === true || state.focused.value === true || state.floatingLabel.value === true)\n    : computed(() => props.stackLabel === true || state.focused.value === true || state.hasValue.value === true)\n\n  const shouldRenderBottom = computed(() =>\n    props.bottomSlots === true\n    || props.hint !== void 0\n    || hasRules.value === true\n    || props.counter === true\n    || props.error !== null\n  )\n\n  const styleType = computed(() => {\n    if (props.filled === true) { return 'filled' }\n    if (props.outlined === true) { return 'outlined' }\n    if (props.borderless === true) { return 'borderless' }\n    if (props.standout) { return 'standout' }\n    return 'standard'\n  })\n\n  const classes = computed(() =>\n    `q-field row no-wrap items-start q-field--${ styleType.value }`\n    + (state.fieldClass !== void 0 ? ` ${ state.fieldClass.value }` : '')\n    + (props.rounded === true ? ' q-field--rounded' : '')\n    + (props.square === true ? ' q-field--square' : '')\n    + (floatingLabel.value === true ? ' q-field--float' : '')\n    + (hasLabel.value === true ? ' q-field--labeled' : '')\n    + (props.dense === true ? ' q-field--dense' : '')\n    + (props.itemAligned === true ? ' q-field--item-aligned q-item-type' : '')\n    + (state.isDark.value === true ? ' q-field--dark' : '')\n    + (state.getControl === void 0 ? ' q-field--auto-height' : '')\n    + (state.focused.value === true ? ' q-field--focused' : '')\n    + (hasError.value === true ? ' q-field--error' : '')\n    + (hasError.value === true || state.focused.value === true ? ' q-field--highlighted' : '')\n    + (props.hideBottomSpace !== true && shouldRenderBottom.value === true ? ' q-field--with-bottom' : '')\n    + (props.disable === true ? ' q-field--disabled' : (props.readonly === true ? ' q-field--readonly' : ''))\n  )\n\n  const contentClass = computed(() =>\n    'q-field__control relative-position row no-wrap'\n    + (props.bgColor !== void 0 ? ` bg-${ props.bgColor }` : '')\n    + (\n      hasError.value === true\n        ? ' text-negative'\n        : (\n            typeof props.standout === 'string' && props.standout.length !== 0 && state.focused.value === true\n              ? ` ${ props.standout }`\n              : (props.color !== void 0 ? ` text-${ props.color }` : '')\n          )\n    )\n  )\n\n  const hasLabel = computed(() =>\n    props.labelSlot === true || props.label !== void 0\n  )\n\n  const labelClass = computed(() =>\n    'q-field__label no-pointer-events absolute ellipsis'\n    + (props.labelColor !== void 0 && hasError.value !== true ? ` text-${ props.labelColor }` : '')\n  )\n\n  const controlSlotScope = computed(() => ({\n    id: state.targetUid.value,\n    editable: state.editable.value,\n    focused: state.focused.value,\n    floatingLabel: floatingLabel.value,\n    modelValue: props.modelValue,\n    emitValue: state.emitValue\n  }))\n\n  const attributes = computed(() => {\n    const acc = {\n      for: state.targetUid.value\n    }\n\n    if (props.disable === true) {\n      acc[ 'aria-disabled' ] = 'true'\n    }\n\n    return acc\n  })\n\n  watch(() => props.for, val => {\n    // don't transform targetUid into a computed\n    // prop as it will break SSR\n    state.targetUid.value = getTargetUid(val, state.requiredForAttr)\n  })\n\n  function focusHandler () {\n    const el = document.activeElement\n    let target = state.targetRef !== void 0 && state.targetRef.value\n\n    if (target && (el === null || el.id !== state.targetUid.value)) {\n      target.hasAttribute('tabindex') === true || (target = target.querySelector('[tabindex]'))\n      if (target && target !== el) {\n        target.focus({ preventScroll: true })\n      }\n    }\n  }\n\n  function focus () {\n    addFocusFn(focusHandler)\n  }\n\n  function blur () {\n    removeFocusFn(focusHandler)\n    const el = document.activeElement\n    if (el !== null && state.rootRef.value.contains(el)) {\n      el.blur()\n    }\n  }\n\n  function onControlFocusin (e) {\n    if (focusoutTimer !== null) {\n      clearTimeout(focusoutTimer)\n      focusoutTimer = null\n    }\n\n    if (state.editable.value === true && state.focused.value === false) {\n      state.focused.value = true\n      emit('focus', e)\n    }\n  }\n\n  function onControlFocusout (e, then) {\n    focusoutTimer !== null && clearTimeout(focusoutTimer)\n    focusoutTimer = setTimeout(() => {\n      focusoutTimer = null\n\n      if (\n        document.hasFocus() === true && (\n          state.hasPopupOpen === true\n          || state.controlRef === void 0\n          || state.controlRef.value === null\n          || state.controlRef.value.contains(document.activeElement) !== false\n        )\n      ) {\n        return\n      }\n\n      if (state.focused.value === true) {\n        state.focused.value = false\n        emit('blur', e)\n      }\n\n      then !== void 0 && then()\n    })\n  }\n\n  function clearValue (e) {\n    // prevent activating the field but keep focus on desktop\n    stopAndPrevent(e)\n\n    if ($q.platform.is.mobile !== true) {\n      const el = (state.targetRef !== void 0 && state.targetRef.value) || state.rootRef.value\n      el.focus()\n    }\n    else if (state.rootRef.value.contains(document.activeElement) === true) {\n      document.activeElement.blur()\n    }\n\n    if (props.type === 'file') { // TODO vue3\n      // do not let focus be triggered\n      // as it will make the native file dialog\n      // appear for another selection\n      state.inputRef.value.value = null\n    }\n\n    emit('update:modelValue', null)\n    emit('clear', props.modelValue)\n\n    nextTick(() => {\n      resetValidation()\n\n      if ($q.platform.is.mobile !== true) {\n        isDirtyModel.value = false\n      }\n    })\n  }\n\n  function getContent () {\n    const node = []\n\n    slots.prepend !== void 0 && node.push(\n      h('div', {\n        class: 'q-field__prepend q-field__marginal row no-wrap items-center',\n        key: 'prepend',\n        onClick: prevent\n      }, slots.prepend())\n    )\n\n    node.push(\n      h('div', {\n        class: 'q-field__control-container col relative-position row no-wrap q-anchor--skip'\n      }, getControlContainer())\n    )\n\n    hasError.value === true && props.noErrorIcon === false && node.push(\n      getInnerAppendNode('error', [\n        h(QIcon, { name: $q.iconSet.field.error, color: 'negative' })\n      ])\n    )\n\n    if (props.loading === true || state.innerLoading.value === true) {\n      node.push(\n        getInnerAppendNode(\n          'inner-loading-append',\n          slots.loading !== void 0\n            ? slots.loading()\n            : [ h(QSpinner, { color: props.color }) ]\n        )\n      )\n    }\n    else if (props.clearable === true && state.hasValue.value === true && state.editable.value === true) {\n      node.push(\n        getInnerAppendNode('inner-clearable-append', [\n          h(QIcon, {\n            class: 'q-field__focusable-action',\n            tag: 'button',\n            name: props.clearIcon || $q.iconSet.field.clear,\n            tabindex: 0,\n            type: 'button',\n            'aria-hidden': null,\n            role: null,\n            onClick: clearValue\n          })\n        ])\n      )\n    }\n\n    slots.append !== void 0 && node.push(\n      h('div', {\n        class: 'q-field__append q-field__marginal row no-wrap items-center',\n        key: 'append',\n        onClick: prevent\n      }, slots.append())\n    )\n\n    state.getInnerAppend !== void 0 && node.push(\n      getInnerAppendNode('inner-append', state.getInnerAppend())\n    )\n\n    state.getControlChild !== void 0 && node.push(\n      state.getControlChild()\n    )\n\n    return node\n  }\n\n  function getControlContainer () {\n    const node = []\n\n    props.prefix !== void 0 && props.prefix !== null && node.push(\n      h('div', {\n        class: 'q-field__prefix no-pointer-events row items-center'\n      }, props.prefix)\n    )\n\n    if (state.getShadowControl !== void 0 && state.hasShadow.value === true) {\n      node.push(\n        state.getShadowControl()\n      )\n    }\n\n    if (state.getControl !== void 0) {\n      node.push(state.getControl())\n    }\n    // internal usage only:\n    else if (slots.rawControl !== void 0) {\n      node.push(slots.rawControl())\n    }\n    else if (slots.control !== void 0) {\n      node.push(\n        h('div', {\n          ref: state.targetRef,\n          class: 'q-field__native row',\n          tabindex: -1,\n          ...state.splitAttrs.attributes.value,\n          'data-autofocus': props.autofocus === true || void 0\n        }, slots.control(controlSlotScope.value))\n      )\n    }\n\n    hasLabel.value === true && node.push(\n      h('div', {\n        class: labelClass.value\n      }, hSlot(slots.label, props.label))\n    )\n\n    props.suffix !== void 0 && props.suffix !== null && node.push(\n      h('div', {\n        class: 'q-field__suffix no-pointer-events row items-center'\n      }, props.suffix)\n    )\n\n    return node.concat(hSlot(slots.default))\n  }\n\n  function getBottom () {\n    let msg, key\n\n    if (hasError.value === true) {\n      if (errorMessage.value !== null) {\n        msg = [ h('div', { role: 'alert' }, errorMessage.value) ]\n        key = `q--slot-error-${ errorMessage.value }`\n      }\n      else {\n        msg = hSlot(slots.error)\n        key = 'q--slot-error'\n      }\n    }\n    else if (props.hideHint !== true || state.focused.value === true) {\n      if (props.hint !== void 0) {\n        msg = [ h('div', props.hint) ]\n        key = `q--slot-hint-${ props.hint }`\n      }\n      else {\n        msg = hSlot(slots.hint)\n        key = 'q--slot-hint'\n      }\n    }\n\n    const hasCounter = props.counter === true || slots.counter !== void 0\n\n    if (props.hideBottomSpace === true && hasCounter === false && msg === void 0) {\n      return\n    }\n\n    const main = h('div', {\n      key,\n      class: 'q-field__messages col'\n    }, msg)\n\n    return h('div', {\n      class: 'q-field__bottom row items-start q-field__bottom--'\n        + (props.hideBottomSpace !== true ? 'animated' : 'stale'),\n      onClick: prevent\n    }, [\n      props.hideBottomSpace === true\n        ? main\n        : h(Transition, { name: 'q-transition--field-message' }, () => main),\n\n      hasCounter === true\n        ? h('div', {\n          class: 'q-field__counter'\n        }, slots.counter !== void 0 ? slots.counter() : state.computedCounter.value)\n        : null\n    ])\n  }\n\n  function getInnerAppendNode (key, content) {\n    return content === null\n      ? null\n      : h('div', {\n        key,\n        class: 'q-field__append q-field__marginal row no-wrap items-center q-anchor--skip'\n      }, content)\n  }\n\n  let shouldActivate = false\n\n  onDeactivated(() => {\n    shouldActivate = true\n  })\n\n  onActivated(() => {\n    shouldActivate === true && props.autofocus === true && proxy.focus()\n  })\n\n  onMounted(() => {\n    if (\n      isRuntimeSsrPreHydration.value === true\n      && state.requiredForAttr === true\n      && props.for === void 0\n    ) {\n      state.targetUid.value = `f_${ uid() }` // getTargetUid(void 0, true)\n    }\n\n    props.autofocus === true && proxy.focus()\n  })\n\n  onBeforeUnmount(() => {\n    focusoutTimer !== null && clearTimeout(focusoutTimer)\n  })\n\n  // expose public methods\n  Object.assign(proxy, { focus, blur })\n\n  return function renderField () {\n    const labelAttrs = state.getControl === void 0 && slots.control === void 0\n      ? {\n          ...state.splitAttrs.attributes.value,\n          'data-autofocus': props.autofocus === true || void 0,\n          ...attributes.value\n        }\n      : attributes.value\n\n    return h(state.tag.value, {\n      ref: state.rootRef,\n      class: [\n        classes.value,\n        attrs.class\n      ],\n      style: attrs.style,\n      ...labelAttrs\n    }, [\n      slots.before !== void 0\n        ? h('div', {\n          class: 'q-field__before q-field__marginal row no-wrap items-center',\n          onClick: prevent\n        }, slots.before())\n        : null,\n\n      h('div', {\n        class: 'q-field__inner relative-position col self-stretch'\n      }, [\n        h('div', {\n          ref: state.controlRef,\n          class: contentClass.value,\n          tabindex: -1,\n          ...state.controlEvents\n        }, getContent()),\n\n        shouldRenderBottom.value === true\n          ? getBottom()\n          : null\n      ]),\n\n      slots.after !== void 0\n        ? h('div', {\n          class: 'q-field__after q-field__marginal row no-wrap items-center',\n          onClick: prevent\n        }, slots.after())\n        : null\n    ])\n  }\n}\n",
+      "start": 1703982897302,
+      "end": 1703982897346,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897346,
+      "end": 1703982897346,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897347,
+      "end": 1703982897347,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897347,
+      "end": 1703982897348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897348,
+      "end": 1703982897348,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897349,
+      "end": 1703982897349,
+      "order": "normal"
+    }
+  ]
+}

@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/tooltip/QTooltip.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, onBeforeUnmount, Transition, getCurrentInstance } from 'vue'\n\nimport useAnchor, { useAnchorProps } from '../../composables/private/use-anchor.js'\nimport useScrollTarget from '../../composables/private/use-scroll-target.js'\nimport useModelToggle, { useModelToggleProps, useModelToggleEmits } from '../../composables/private/use-model-toggle.js'\nimport usePortal from '../../composables/private/use-portal.js'\nimport useTransition, { useTransitionProps } from '../../composables/private/use-transition.js'\nimport useTick from '../../composables/private/use-tick.js'\nimport useTimeout from '../../composables/private/use-timeout.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { getScrollTarget } from '../../utils/scroll.js'\nimport { stopAndPrevent, addEvt, cleanEvt } from '../../utils/event.js'\nimport { clearSelection } from '../../utils/private/selection.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { addClickOutside, removeClickOutside } from '../../utils/private/click-outside.js'\nimport {\n  validatePosition, validateOffset, setPosition, parsePosition\n} from '../../utils/private/position-engine.js'\n\nexport default createComponent({\n  name: 'QTooltip',\n\n  inheritAttrs: false,\n\n  props: {\n    ...useAnchorProps,\n    ...useModelToggleProps,\n    ...useTransitionProps,\n\n    maxHeight: {\n      type: String,\n      default: null\n    },\n    maxWidth: {\n      type: String,\n      default: null\n    },\n\n    transitionShow: {\n      default: 'jump-down'\n    },\n    transitionHide: {\n      default: 'jump-up'\n    },\n\n    anchor: {\n      type: String,\n      default: 'bottom middle',\n      validator: validatePosition\n    },\n    self: {\n      type: String,\n      default: 'top middle',\n      validator: validatePosition\n    },\n    offset: {\n      type: Array,\n      default: () => [ 14, 14 ],\n      validator: validateOffset\n    },\n\n    scrollTarget: {\n      default: void 0\n    },\n\n    delay: {\n      type: Number,\n      default: 0\n    },\n\n    hideDelay: {\n      type: Number,\n      default: 0\n    }\n  },\n\n  emits: [\n    ...useModelToggleEmits\n  ],\n\n  setup (props, { slots, emit, attrs }) {\n    let unwatchPosition, observer\n\n    const vm = getCurrentInstance()\n    const { proxy: { $q } } = vm\n\n    const innerRef = ref(null)\n    const showing = ref(false)\n\n    const anchorOrigin = computed(() => parsePosition(props.anchor, $q.lang.rtl))\n    const selfOrigin = computed(() => parsePosition(props.self, $q.lang.rtl))\n    const hideOnRouteChange = computed(() => props.persistent !== true)\n\n    const { registerTick, removeTick } = useTick()\n    const { registerTimeout } = useTimeout()\n    const { transitionProps, transitionStyle } = useTransition(props)\n    const { localScrollTarget, changeScrollEvent, unconfigureScrollTarget } = useScrollTarget(props, configureScrollTarget)\n\n    const { anchorEl, canShow, anchorEvents } = useAnchor({ showing, configureAnchorEl })\n\n    const { show, hide } = useModelToggle({\n      showing, canShow, handleShow, handleHide,\n      hideOnRouteChange,\n      processOnMount: true\n    })\n\n    Object.assign(anchorEvents, { delayShow, delayHide })\n\n    const { showPortal, hidePortal, renderPortal } = usePortal(vm, innerRef, renderPortalContent, 'tooltip')\n\n    // if we're on mobile, let's improve the experience\n    // by closing it when user taps outside of it\n    if ($q.platform.is.mobile === true) {\n      const clickOutsideProps = {\n        anchorEl,\n        innerRef,\n        onClickOutside (e) {\n          hide(e)\n\n          // prevent click if it's on a dialog backdrop\n          if (e.target.classList.contains('q-dialog__backdrop')) {\n            stopAndPrevent(e)\n          }\n\n          return true\n        }\n      }\n\n      const hasClickOutside = computed(() =>\n        // it doesn't has external model\n        // (null is the default value)\n        props.modelValue === null\n        // and it's not persistent\n        && props.persistent !== true\n        && showing.value === true\n      )\n\n      watch(hasClickOutside, val => {\n        const fn = val === true ? addClickOutside : removeClickOutside\n        fn(clickOutsideProps)\n      })\n\n      onBeforeUnmount(() => {\n        removeClickOutside(clickOutsideProps)\n      })\n    }\n\n    function handleShow (evt) {\n      showPortal()\n\n      // should removeTick() if this gets removed\n      registerTick(() => {\n        observer = new MutationObserver(() => updatePosition())\n        observer.observe(innerRef.value, { attributes: false, childList: true, characterData: true, subtree: true })\n        updatePosition()\n        configureScrollTarget()\n      })\n\n      if (unwatchPosition === void 0) {\n        unwatchPosition = watch(\n          () => $q.screen.width + '|' + $q.screen.height + '|' + props.self + '|' + props.anchor + '|' + $q.lang.rtl,\n          updatePosition\n        )\n      }\n\n      // should removeTimeout() if this gets removed\n      registerTimeout(() => {\n        showPortal(true) // done showing portal\n        emit('show', evt)\n      }, props.transitionDuration)\n    }\n\n    function handleHide (evt) {\n      removeTick()\n      hidePortal()\n\n      anchorCleanup()\n\n      // should removeTimeout() if this gets removed\n      registerTimeout(() => {\n        hidePortal(true) // done hiding, now destroy\n        emit('hide', evt)\n      }, props.transitionDuration)\n    }\n\n    function anchorCleanup () {\n      if (observer !== void 0) {\n        observer.disconnect()\n        observer = void 0\n      }\n\n      if (unwatchPosition !== void 0) {\n        unwatchPosition()\n        unwatchPosition = void 0\n      }\n\n      unconfigureScrollTarget()\n      cleanEvt(anchorEvents, 'tooltipTemp')\n    }\n\n    function updatePosition () {\n      setPosition({\n        targetEl: innerRef.value,\n        offset: props.offset,\n        anchorEl: anchorEl.value,\n        anchorOrigin: anchorOrigin.value,\n        selfOrigin: selfOrigin.value,\n        maxHeight: props.maxHeight,\n        maxWidth: props.maxWidth\n      })\n    }\n\n    function delayShow (evt) {\n      if ($q.platform.is.mobile === true) {\n        clearSelection()\n        document.body.classList.add('non-selectable')\n\n        const target = anchorEl.value\n        const evts = [ 'touchmove', 'touchcancel', 'touchend', 'click' ]\n          .map(e => ([ target, e, 'delayHide', 'passiveCapture' ]))\n\n        addEvt(anchorEvents, 'tooltipTemp', evts)\n      }\n\n      registerTimeout(() => { show(evt) }, props.delay)\n    }\n\n    function delayHide (evt) {\n      if ($q.platform.is.mobile === true) {\n        cleanEvt(anchorEvents, 'tooltipTemp')\n        clearSelection()\n        // delay needed otherwise selection still occurs\n        setTimeout(() => {\n          document.body.classList.remove('non-selectable')\n        }, 10)\n      }\n\n      // should removeTimeout() if this gets removed\n      registerTimeout(() => { hide(evt) }, props.hideDelay)\n    }\n\n    function configureAnchorEl () {\n      if (props.noParentEvent === true || anchorEl.value === null) { return }\n\n      const evts = $q.platform.is.mobile === true\n        ? [\n            [ anchorEl.value, 'touchstart', 'delayShow', 'passive' ]\n          ]\n        : [\n            [ anchorEl.value, 'mouseenter', 'delayShow', 'passive' ],\n            [ anchorEl.value, 'mouseleave', 'delayHide', 'passive' ]\n          ]\n\n      addEvt(anchorEvents, 'anchor', evts)\n    }\n\n    function configureScrollTarget () {\n      if (anchorEl.value !== null || props.scrollTarget !== void 0) {\n        localScrollTarget.value = getScrollTarget(anchorEl.value, props.scrollTarget)\n        const fn = props.noParentEvent === true\n          ? updatePosition\n          : hide\n\n        changeScrollEvent(localScrollTarget.value, fn)\n      }\n    }\n\n    function getTooltipContent () {\n      return showing.value === true\n        ? h('div', {\n          ...attrs,\n          ref: innerRef,\n          class: [\n            'q-tooltip q-tooltip--style q-position-engine no-pointer-events',\n            attrs.class\n          ],\n          style: [\n            attrs.style,\n            transitionStyle.value\n          ],\n          role: 'tooltip'\n        }, hSlot(slots.default))\n        : null\n    }\n\n    function renderPortalContent () {\n      return h(Transition, transitionProps.value, getTooltipContent)\n    }\n\n    onBeforeUnmount(anchorCleanup)\n\n    // expose public methods\n    Object.assign(vm.proxy, { updatePosition })\n\n    return renderPortal\n  }\n})\n",
+      "start": 1703982896622,
+      "end": 1703982896683,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896683,
+      "end": 1703982896683,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896683,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    }
+  ]
+}

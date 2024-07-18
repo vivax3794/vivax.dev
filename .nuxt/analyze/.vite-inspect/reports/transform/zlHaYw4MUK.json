@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/utils/morph.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { isObject } from './is'\n\nlet id = 0\nlet offsetBase = void 0\n\nfunction getAbsolutePosition (el, resize) {\n  if (offsetBase === void 0) {\n    offsetBase = document.createElement('div')\n    offsetBase.style.cssText = 'position: absolute; left: 0; top: 0'\n    document.body.appendChild(offsetBase)\n  }\n\n  const boundingRect = el.getBoundingClientRect()\n  const baseRect = offsetBase.getBoundingClientRect()\n  const { marginLeft, marginRight, marginTop, marginBottom } = window.getComputedStyle(el)\n  const marginH = parseInt(marginLeft, 10) + parseInt(marginRight, 10)\n  const marginV = parseInt(marginTop, 10) + parseInt(marginBottom, 10)\n\n  return {\n    left: boundingRect.left - baseRect.left,\n    top: boundingRect.top - baseRect.top,\n    width: boundingRect.right - boundingRect.left,\n    height: boundingRect.bottom - boundingRect.top,\n    widthM: boundingRect.right - boundingRect.left + (resize === true ? 0 : marginH),\n    heightM: boundingRect.bottom - boundingRect.top + (resize === true ? 0 : marginV),\n    marginH: resize === true ? marginH : 0,\n    marginV: resize === true ? marginV : 0\n  }\n}\n\nfunction getAbsoluteSize (el) {\n  return {\n    width: el.scrollWidth,\n    height: el.scrollHeight\n  }\n}\n\n// firefox rulez\nconst styleEdges = [ 'Top', 'Right', 'Bottom', 'Left' ]\nconst styleBorderRadiuses = [ 'borderTopLeftRadius', 'borderTopRightRadius', 'borderBottomRightRadius', 'borderBottomLeftRadius' ]\nconst reStyleSkipKey = /-block|-inline|block-|inline-/\nconst reStyleSkipRule = /(-block|-inline|block-|inline-).*:/\n\nfunction getComputedStyle (el, props) {\n  const style = window.getComputedStyle(el)\n  const fixed = {}\n  for (let i = 0; i < props.length; i++) {\n    const prop = props[ i ]\n\n    if (style[ prop ] === '') {\n      if (prop === 'cssText') {\n        const styleLen = style.length\n        let val = ''\n\n        for (let i = 0; i < styleLen; i++) {\n          if (reStyleSkipKey.test(style[ i ]) !== true) {\n            val += style[ i ] + ': ' + style[ style[ i ] ] + '; '\n          }\n        }\n\n        fixed[ prop ] = val\n      }\n      else if ([ 'borderWidth', 'borderStyle', 'borderColor' ].indexOf(prop) > -1) {\n        const suffix = prop.replace('border', '')\n        let val = ''\n        for (let j = 0; j < styleEdges.length; j++) {\n          const subProp = 'border' + styleEdges[ j ] + suffix\n          val += style[ subProp ] + ' '\n        }\n        fixed[ prop ] = val\n      }\n      else if (prop === 'borderRadius') {\n        let val1 = ''\n        let val2 = ''\n        for (let j = 0; j < styleBorderRadiuses.length; j++) {\n          const val = style[ styleBorderRadiuses[ j ] ].split(' ')\n          val1 += val[ 0 ] + ' '\n          val2 += (val[ 1 ] === void 0 ? val[ 0 ] : val[ 1 ]) + ' '\n        }\n        fixed[ prop ] = val1 + '/ ' + val2\n      }\n      else {\n        fixed[ prop ] = style[ prop ]\n      }\n    }\n    else {\n      if (prop === 'cssText') {\n        fixed[ prop ] = style[ prop ]\n          .split(';')\n          .filter(val => reStyleSkipRule.test(val) !== true)\n          .join(';')\n      }\n      else {\n        fixed[ prop ] = style[ prop ]\n      }\n    }\n  }\n\n  return fixed\n}\n\nconst zIndexPositions = [ 'absolute', 'fixed', 'relative', 'sticky' ]\n\nfunction getMaxZIndex (elStart) {\n  let el = elStart\n  let maxIndex = 0\n\n  while (el !== null && el !== document) {\n    const { position, zIndex } = window.getComputedStyle(el)\n    const zIndexNum = Number(zIndex)\n\n    if (\n      zIndexNum > maxIndex\n      && (el === elStart || zIndexPositions.includes(position) === true)\n    ) {\n      maxIndex = zIndexNum\n    }\n\n    el = el.parentNode\n  }\n\n  return maxIndex\n}\n\nfunction normalizeElements (opts) {\n  return {\n    from: opts.from,\n    to: opts.to !== void 0\n      ? opts.to\n      : opts.from\n  }\n}\n\nfunction normalizeOptions (options) {\n  if (typeof options === 'number') {\n    options = {\n      duration: options\n    }\n  }\n  else if (typeof options === 'function') {\n    options = {\n      onEnd: options\n    }\n  }\n\n  return {\n    ...options,\n\n    waitFor: options.waitFor === void 0 ? 0 : options.waitFor,\n\n    duration: isNaN(options.duration) === true ? 300 : parseInt(options.duration, 10),\n    easing: typeof options.easing === 'string' && options.easing.length !== 0 ? options.easing : 'ease-in-out',\n    delay: isNaN(options.delay) === true ? 0 : parseInt(options.delay, 10),\n    fill: typeof options.fill === 'string' && options.fill.length !== 0 ? options.fill : 'none',\n\n    resize: options.resize === true,\n\n    // account for UMD too where modifiers will be lowercased to work\n    useCSS: options.useCSS === true || options.usecss === true,\n    // account for UMD too where modifiers will be lowercased to work\n    hideFromClone: options.hideFromClone === true || options.hidefromclone === true,\n    // account for UMD too where modifiers will be lowercased to work\n    keepToClone: options.keepToClone === true || options.keeptoclone === true,\n\n    tween: options.tween === true,\n    tweenFromOpacity: isNaN(options.tweenFromOpacity) === true ? 0.6 : parseFloat(options.tweenFromOpacity),\n    tweenToOpacity: isNaN(options.tweenToOpacity) === true ? 0.5 : parseFloat(options.tweenToOpacity)\n  }\n}\n\nfunction getElement (element) {\n  const type = typeof element\n\n  return type === 'function'\n    ? element()\n    : (\n        type === 'string'\n          ? document.querySelector(element)\n          : element\n      )\n}\n\nfunction isValidElement (element) {\n  return element\n    && element.ownerDocument === document\n    && element.parentNode !== null\n}\n\nexport default function morph (_options) {\n  let cancel = () => false\n  let cancelStatus = false\n  let endElementTo = true\n\n  const elements = normalizeElements(_options)\n  const options = normalizeOptions(_options)\n\n  const elFrom = getElement(elements.from)\n  if (isValidElement(elFrom) !== true) {\n    // we return a cancel function that return false, meaning the cancel function failed\n    return cancel\n  }\n  // we clean other morphs running on this element\n  typeof elFrom.qMorphCancel === 'function' && elFrom.qMorphCancel()\n\n  let animationFromClone = void 0\n  let animationFromTween = void 0\n  let animationToClone = void 0\n  let animationTo = void 0\n\n  const elFromParent = elFrom.parentNode\n  const elFromNext = elFrom.nextElementSibling\n\n  // we get the dimensions and characteristics\n  // of the parent of the initial element before changes\n  const elFromPosition = getAbsolutePosition(elFrom, options.resize)\n  const {\n    width: elFromParentWidthBefore,\n    height: elFromParentHeightBefore\n  } = getAbsoluteSize(elFromParent)\n  const {\n    borderWidth: elFromBorderWidth,\n    borderStyle: elFromBorderStyle,\n    borderColor: elFromBorderColor,\n    borderRadius: elFromBorderRadius,\n    backgroundColor: elFromBackground,\n    transform: elFromTransform,\n    position: elFromPositioningType,\n    cssText: elFromCssText\n  } = getComputedStyle(elFrom, [ 'borderWidth', 'borderStyle', 'borderColor', 'borderRadius', 'backgroundColor', 'transform', 'position', 'cssText' ])\n  const elFromClassSaved = elFrom.classList.toString()\n  const elFromStyleSaved = elFrom.style.cssText\n\n  // we make a clone of the initial element and\n  // use it to display until the final element is ready\n  // and to change the occupied space during animation\n  const elFromClone = elFrom.cloneNode(true)\n  const elFromTween = options.tween === true ? elFrom.cloneNode(true) : void 0\n\n  if (elFromTween !== void 0) {\n    elFromTween.className = elFromTween.classList.toString().split(' ').filter(c => /^bg-/.test(c) === false).join(' ')\n  }\n\n  // if the initial element is not going to be removed do not show the placeholder\n  options.hideFromClone === true && elFromClone.classList.add('q-morph--internal')\n\n  // prevent interaction with placeholder\n  elFromClone.setAttribute('aria-hidden', 'true')\n  elFromClone.style.transition = 'none'\n  elFromClone.style.animation = 'none'\n  elFromClone.style.pointerEvents = 'none'\n  elFromParent.insertBefore(elFromClone, elFromNext)\n\n  // we mark the element with its cleanup function\n  elFrom.qMorphCancel = () => {\n    cancelStatus = true\n\n    // we clean the clone of the initial element\n    elFromClone.remove()\n    elFromTween !== void 0 && elFromTween.remove()\n\n    options.hideFromClone === true && elFromClone.classList.remove('q-morph--internal')\n\n    // we remove the cleanup function from the element\n    elFrom.qMorphCancel = void 0\n  }\n\n  // will be called after Vue catches up with the changes done by _options.onToggle() function\n  const calculateFinalState = () => {\n    const elTo = getElement(elements.to)\n    if (cancelStatus === true || isValidElement(elTo) !== true) {\n      typeof elFrom.qMorphCancel === 'function' && elFrom.qMorphCancel()\n\n      return\n    }\n    // we clean other morphs running on this element\n    elFrom !== elTo && typeof elTo.qMorphCancel === 'function' && elTo.qMorphCancel()\n\n    // we hide the final element and the clone of the initial element\n    // we don't hide the final element if we want both it and the animated one visible\n    options.keepToClone !== true && elTo.classList.add('q-morph--internal')\n    elFromClone.classList.add('q-morph--internal')\n\n    // we get the dimensions of the parent of the initial element after changes\n    // the difference is how much we should animate the clone\n    const {\n      width: elFromParentWidthAfter,\n      height: elFromParentHeightAfter\n    } = getAbsoluteSize(elFromParent)\n\n    // we get the dimensions of the parent of the final element before changes\n    const {\n      width: elToParentWidthBefore,\n      height: elToParentHeightBefore\n    } = getAbsoluteSize(elTo.parentNode)\n\n    // then we show the clone of the initial element if we don't want it hidden\n    options.hideFromClone !== true && elFromClone.classList.remove('q-morph--internal')\n\n    // we mark the element with its cleanup function\n    elTo.qMorphCancel = () => {\n      cancelStatus = true\n\n      // we clean the clone of the initial element\n      elFromClone.remove()\n      elFromTween !== void 0 && elFromTween.remove()\n\n      options.hideFromClone === true && elFromClone.classList.remove('q-morph--internal')\n\n      // we show the final element\n      options.keepToClone !== true && elTo.classList.remove('q-morph--internal')\n\n      // we remove the cleanup function from the elements\n      elFrom.qMorphCancel = void 0\n      elTo.qMorphCancel = void 0\n    }\n\n    // will be called after waitFor (give time to render the final element)\n    const animate = () => {\n      if (cancelStatus === true) {\n        typeof elTo.qMorphCancel === 'function' && elTo.qMorphCancel()\n\n        return\n      }\n\n      // now the animation starts, so we only need the clone\n      // of the initial element as a spacer\n      // we also hide it to calculate the dimensions of the\n      // parent of the final element after the changes\n      if (options.hideFromClone !== true) {\n        elFromClone.classList.add('q-morph--internal')\n        elFromClone.innerHTML = ''\n        elFromClone.style.left = 0\n        elFromClone.style.right = 'unset'\n        elFromClone.style.top = 0\n        elFromClone.style.bottom = 'unset'\n        elFromClone.style.transform = 'none'\n      }\n\n      // we show the final element\n      if (options.keepToClone !== true) {\n        elTo.classList.remove('q-morph--internal')\n      }\n\n      // we get the dimensions of the parent of the final element after changes\n      // the difference is how much we should animate the clone\n      const elToParent = elTo.parentNode\n      const {\n        width: elToParentWidthAfter,\n        height: elToParentHeightAfter\n      } = getAbsoluteSize(elToParent)\n\n      const elToClone = elTo.cloneNode(options.keepToClone)\n      elToClone.setAttribute('aria-hidden', 'true')\n      if (options.keepToClone !== true) {\n        elToClone.style.left = 0\n        elToClone.style.right = 'unset'\n        elToClone.style.top = 0\n        elToClone.style.bottom = 'unset'\n        elToClone.style.transform = 'none'\n        elToClone.style.pointerEvents = 'none'\n      }\n      elToClone.classList.add('q-morph--internal')\n\n      // if elFrom is the same as elTo the next element is elFromClone\n      const elToNext = elTo === elFrom && elFromParent === elToParent ? elFromClone : elTo.nextElementSibling\n      elToParent.insertBefore(elToClone, elToNext)\n\n      const {\n        borderWidth: elToBorderWidth,\n        borderStyle: elToBorderStyle,\n        borderColor: elToBorderColor,\n        borderRadius: elToBorderRadius,\n        backgroundColor: elToBackground,\n        transform: elToTransform,\n        position: elToPositioningType,\n        cssText: elToCssText\n      } = getComputedStyle(elTo, [ 'borderWidth', 'borderStyle', 'borderColor', 'borderRadius', 'backgroundColor', 'transform', 'position', 'cssText' ])\n      const elToClassSaved = elTo.classList.toString()\n      const elToStyleSaved = elTo.style.cssText\n\n      // we set the computed styles on the element (to be able to remove classes)\n      elTo.style.cssText = elToCssText\n      elTo.style.transform = 'none'\n      elTo.style.animation = 'none'\n      elTo.style.transition = 'none'\n      // we strip the background classes (background color can no longer be animated if !important is used)\n      elTo.className = elToClassSaved.split(' ').filter(c => /^bg-/.test(c) === false).join(' ')\n\n      const elToPosition = getAbsolutePosition(elTo, options.resize)\n\n      const deltaX = elFromPosition.left - elToPosition.left\n      const deltaY = elFromPosition.top - elToPosition.top\n      const scaleX = elFromPosition.width / (elToPosition.width > 0 ? elToPosition.width : 10)\n      const scaleY = elFromPosition.height / (elToPosition.height > 0 ? elToPosition.height : 100)\n\n      const elFromParentWidthDiff = elFromParentWidthBefore - elFromParentWidthAfter\n      const elFromParentHeightDiff = elFromParentHeightBefore - elFromParentHeightAfter\n      const elToParentWidthDiff = elToParentWidthAfter - elToParentWidthBefore\n      const elToParentHeightDiff = elToParentHeightAfter - elToParentHeightBefore\n\n      const elFromCloneWidth = Math.max(elFromPosition.widthM, elFromParentWidthDiff)\n      const elFromCloneHeight = Math.max(elFromPosition.heightM, elFromParentHeightDiff)\n      const elToCloneWidth = Math.max(elToPosition.widthM, elToParentWidthDiff)\n      const elToCloneHeight = Math.max(elToPosition.heightM, elToParentHeightDiff)\n\n      const elSharedSize = elFrom === elTo\n        && [ 'absolute', 'fixed' ].includes(elToPositioningType) === false\n        && [ 'absolute', 'fixed' ].includes(elFromPositioningType) === false\n\n      // if the final element has fixed position or if a parent\n      // has fixed position we need to animate it as fixed\n      let elToNeedsFixedPosition = elToPositioningType === 'fixed'\n      let parent = elToParent\n      while (elToNeedsFixedPosition !== true && parent !== document) {\n        elToNeedsFixedPosition = window.getComputedStyle(parent).position === 'fixed'\n        parent = parent.parentNode\n      }\n\n      // we show the spacer for the initial element\n      if (options.hideFromClone !== true) {\n        elFromClone.style.display = 'block'\n        elFromClone.style.flex = '0 0 auto'\n        elFromClone.style.opacity = 0\n        elFromClone.style.minWidth = 'unset'\n        elFromClone.style.maxWidth = 'unset'\n        elFromClone.style.minHeight = 'unset'\n        elFromClone.style.maxHeight = 'unset'\n        elFromClone.classList.remove('q-morph--internal')\n      }\n\n      // we show the spacer for the final element\n      if (options.keepToClone !== true) {\n        elToClone.style.display = 'block'\n        elToClone.style.flex = '0 0 auto'\n        elToClone.style.opacity = 0\n        elToClone.style.minWidth = 'unset'\n        elToClone.style.maxWidth = 'unset'\n        elToClone.style.minHeight = 'unset'\n        elToClone.style.maxHeight = 'unset'\n      }\n      elToClone.classList.remove('q-morph--internal')\n\n      // we apply classes specified by user\n      if (typeof options.classes === 'string') {\n        elTo.className += ' ' + options.classes\n      }\n\n      // we apply styles specified by user\n      if (typeof options.style === 'string') {\n        elTo.style.cssText += ' ' + options.style\n      }\n      else if (isObject(options.style) === true) {\n        for (const prop in options.style) {\n          elTo.style[ prop ] = options.style[ prop ]\n        }\n      }\n\n      const elFromZIndex = getMaxZIndex(elFromClone)\n      const elToZIndex = getMaxZIndex(elTo)\n\n      // we position the morphing element\n      // if we use fixed position for the final element we need to adjust for scroll\n      const documentScroll = elToNeedsFixedPosition === true\n        ? document.documentElement\n        : { scrollLeft: 0, scrollTop: 0 }\n      elTo.style.position = elToNeedsFixedPosition === true ? 'fixed' : 'absolute'\n      elTo.style.left = `${ elToPosition.left - documentScroll.scrollLeft }px`\n      elTo.style.right = 'unset'\n      elTo.style.top = `${ elToPosition.top - documentScroll.scrollTop }px`\n      elTo.style.margin = 0\n\n      if (options.resize === true) {\n        elTo.style.minWidth = 'unset'\n        elTo.style.maxWidth = 'unset'\n        elTo.style.minHeight = 'unset'\n        elTo.style.maxHeight = 'unset'\n        elTo.style.overflow = 'hidden'\n        elTo.style.overflowX = 'hidden'\n        elTo.style.overflowY = 'hidden'\n      }\n\n      document.body.appendChild(elTo)\n\n      if (elFromTween !== void 0) {\n        elFromTween.style.cssText = elFromCssText\n        elFromTween.style.transform = 'none'\n        elFromTween.style.animation = 'none'\n        elFromTween.style.transition = 'none'\n\n        elFromTween.style.position = elTo.style.position\n        elFromTween.style.left = `${ elFromPosition.left - documentScroll.scrollLeft }px`\n        elFromTween.style.right = 'unset'\n        elFromTween.style.top = `${ elFromPosition.top - documentScroll.scrollTop }px`\n        elFromTween.style.margin = 0\n        elFromTween.style.pointerEvents = 'none'\n\n        if (options.resize === true) {\n          elFromTween.style.minWidth = 'unset'\n          elFromTween.style.maxWidth = 'unset'\n          elFromTween.style.minHeight = 'unset'\n          elFromTween.style.maxHeight = 'unset'\n          elFromTween.style.overflow = 'hidden'\n          elFromTween.style.overflowX = 'hidden'\n          elFromTween.style.overflowY = 'hidden'\n        }\n\n        document.body.appendChild(elFromTween)\n      }\n\n      const commonCleanup = aborted => {\n        // we put the element back in it's place\n        // and restore the styles and classes\n        if (elFrom === elTo && endElementTo !== true) {\n          elTo.style.cssText = elFromStyleSaved\n          elTo.className = elFromClassSaved\n        }\n        else {\n          elTo.style.cssText = elToStyleSaved\n          elTo.className = elToClassSaved\n        }\n        elToClone.parentNode === elToParent && elToParent.insertBefore(elTo, elToClone)\n\n        // we clean the spacers\n        elFromClone.remove()\n        elToClone.remove()\n        elFromTween !== void 0 && elFromTween.remove()\n\n        // cancel will be no longer available\n        cancel = () => false\n\n        elFrom.qMorphCancel = void 0\n        elTo.qMorphCancel = void 0\n\n        // we are ready\n        if (typeof options.onEnd === 'function') {\n          options.onEnd(endElementTo === true ? 'to' : 'from', aborted === true)\n        }\n      }\n\n      if (options.useCSS !== true && typeof elTo.animate === 'function') {\n        const resizeFrom = options.resize === true\n          ? {\n              transform: `translate(${ deltaX }px, ${ deltaY }px)`,\n              width: `${ elFromCloneWidth }px`,\n              height: `${ elFromCloneHeight }px`\n            }\n          : {\n              transform: `translate(${ deltaX }px, ${ deltaY }px) scale(${ scaleX }, ${ scaleY })`\n            }\n        const resizeTo = options.resize === true\n          ? {\n              width: `${ elToCloneWidth }px`,\n              height: `${ elToCloneHeight }px`\n            }\n          : {}\n        const resizeFromTween = options.resize === true\n          ? {\n              width: `${ elFromCloneWidth }px`,\n              height: `${ elFromCloneHeight }px`\n            }\n          : {}\n        const resizeToTween = options.resize === true\n          ? {\n              transform: `translate(${ -1 * deltaX }px, ${ -1 * deltaY }px)`,\n              width: `${ elToCloneWidth }px`,\n              height: `${ elToCloneHeight }px`\n            }\n          : {\n              transform: `translate(${ -1 * deltaX }px, ${ -1 * deltaY }px) scale(${ 1 / scaleX }, ${ 1 / scaleY })`\n            }\n        const tweenFrom = elFromTween !== void 0\n          ? { opacity: options.tweenToOpacity }\n          : { backgroundColor: elFromBackground }\n        const tweenTo = elFromTween !== void 0\n          ? { opacity: 1 }\n          : { backgroundColor: elToBackground }\n        animationTo = elTo.animate([\n          {\n            margin: 0,\n            borderWidth: elFromBorderWidth,\n            borderStyle: elFromBorderStyle,\n            borderColor: elFromBorderColor,\n            borderRadius: elFromBorderRadius,\n            zIndex: elFromZIndex,\n            transformOrigin: '0 0',\n            ...resizeFrom,\n            ...tweenFrom\n          },\n          {\n            margin: 0,\n            borderWidth: elToBorderWidth,\n            borderStyle: elToBorderStyle,\n            borderColor: elToBorderColor,\n            borderRadius: elToBorderRadius,\n            zIndex: elToZIndex,\n            transformOrigin: '0 0',\n            transform: elToTransform,\n            ...resizeTo,\n            ...tweenTo\n          }\n        ], {\n          duration: options.duration,\n          easing: options.easing,\n          fill: options.fill,\n          delay: options.delay\n        })\n\n        animationFromTween = elFromTween === void 0 ? void 0 : elFromTween.animate([\n          {\n            opacity: options.tweenFromOpacity,\n            margin: 0,\n            borderWidth: elFromBorderWidth,\n            borderStyle: elFromBorderStyle,\n            borderColor: elFromBorderColor,\n            borderRadius: elFromBorderRadius,\n            zIndex: elFromZIndex,\n            transformOrigin: '0 0',\n            transform: elFromTransform,\n            ...resizeFromTween\n          },\n          {\n            opacity: 0,\n            margin: 0,\n            borderWidth: elToBorderWidth,\n            borderStyle: elToBorderStyle,\n            borderColor: elToBorderColor,\n            borderRadius: elToBorderRadius,\n            zIndex: elToZIndex,\n            transformOrigin: '0 0',\n            ...resizeToTween\n          }\n        ], {\n          duration: options.duration,\n          easing: options.easing,\n          fill: options.fill,\n          delay: options.delay\n        })\n\n        animationFromClone = options.hideFromClone === true || elSharedSize === true ? void 0 : elFromClone.animate([\n          {\n            margin: `${ elFromParentHeightDiff < 0 ? elFromParentHeightDiff / 2 : 0 }px ${ elFromParentWidthDiff < 0 ? elFromParentWidthDiff / 2 : 0 }px`,\n            width: `${ elFromCloneWidth + elFromPosition.marginH }px`,\n            height: `${ elFromCloneHeight + elFromPosition.marginV }px`\n          },\n          {\n            margin: 0,\n            width: 0,\n            height: 0\n          }\n        ], {\n          duration: options.duration,\n          easing: options.easing,\n          fill: options.fill,\n          delay: options.delay\n        })\n\n        animationToClone = options.keepToClone === true ? void 0 : elToClone.animate([\n          elSharedSize === true\n            ? {\n                margin: `${ elFromParentHeightDiff < 0 ? elFromParentHeightDiff / 2 : 0 }px ${ elFromParentWidthDiff < 0 ? elFromParentWidthDiff / 2 : 0 }px`,\n                width: `${ elFromCloneWidth + elFromPosition.marginH }px`,\n                height: `${ elFromCloneHeight + elFromPosition.marginV }px`\n              }\n            : {\n                margin: 0,\n                width: 0,\n                height: 0\n              },\n          {\n            margin: `${ elToParentHeightDiff < 0 ? elToParentHeightDiff / 2 : 0 }px ${ elToParentWidthDiff < 0 ? elToParentWidthDiff / 2 : 0 }px`,\n            width: `${ elToCloneWidth + elToPosition.marginH }px`,\n            height: `${ elToCloneHeight + elToPosition.marginV }px`\n          }\n        ], {\n          duration: options.duration,\n          easing: options.easing,\n          fill: options.fill,\n          delay: options.delay\n        })\n\n        const cleanup = abort => {\n          animationFromClone !== void 0 && animationFromClone.cancel()\n          animationFromTween !== void 0 && animationFromTween.cancel()\n          animationToClone !== void 0 && animationToClone.cancel()\n          animationTo.cancel()\n\n          animationTo.removeEventListener('finish', cleanup)\n          animationTo.removeEventListener('cancel', cleanup)\n\n          commonCleanup(abort)\n\n          // we clean the animations\n          animationFromClone = void 0\n          animationFromTween = void 0\n          animationToClone = void 0\n          animationTo = void 0\n        }\n\n        elFrom.qMorphCancel = () => {\n          elFrom.qMorphCancel = void 0\n          cancelStatus = true\n          cleanup()\n        }\n        elTo.qMorphCancel = () => {\n          elTo.qMorphCancel = void 0\n          cancelStatus = true\n          cleanup()\n        }\n\n        animationTo.addEventListener('finish', cleanup)\n        animationTo.addEventListener('cancel', cleanup)\n\n        cancel = abort => {\n          // we are not in a morph that we can cancel\n          if (cancelStatus === true || animationTo === void 0) {\n            return false\n          }\n\n          if (abort === true) {\n            cleanup(true)\n            return true\n          }\n\n          endElementTo = endElementTo !== true\n\n          animationFromClone !== void 0 && animationFromClone.reverse()\n          animationFromTween !== void 0 && animationFromTween.reverse()\n          animationToClone !== void 0 && animationToClone.reverse()\n          animationTo.reverse()\n\n          return true\n        }\n      }\n      else {\n        const qAnimId = `q-morph-anim-${ ++id }`\n        const style = document.createElement('style')\n        const resizeFrom = options.resize === true\n          ? `\n            transform: translate(${ deltaX }px, ${ deltaY }px);\n            width: ${ elFromCloneWidth }px;\n            height: ${ elFromCloneHeight }px;\n          `\n          : `transform: translate(${ deltaX }px, ${ deltaY }px) scale(${ scaleX }, ${ scaleY });`\n        const resizeTo = options.resize === true\n          ? `\n            width: ${ elToCloneWidth }px;\n            height: ${ elToCloneHeight }px;\n          `\n          : ''\n        const resizeFromTween = options.resize === true\n          ? `\n            width: ${ elFromCloneWidth }px;\n            height: ${ elFromCloneHeight }px;\n          `\n          : ''\n        const resizeToTween = options.resize === true\n          ? `\n            transform: translate(${ -1 * deltaX }px, ${ -1 * deltaY }px);\n            width: ${ elToCloneWidth }px;\n            height: ${ elToCloneHeight }px;\n          `\n          : `transform: translate(${ -1 * deltaX }px, ${ -1 * deltaY }px) scale(${ 1 / scaleX }, ${ 1 / scaleY });`\n        const tweenFrom = elFromTween !== void 0\n          ? `opacity: ${ options.tweenToOpacity };`\n          : `background-color: ${ elFromBackground };`\n        const tweenTo = elFromTween !== void 0\n          ? 'opacity: 1;'\n          : `background-color: ${ elToBackground };`\n        const keyframesFromTween = elFromTween === void 0\n          ? ''\n          : `\n            @keyframes ${ qAnimId }-from-tween {\n              0% {\n                opacity: ${ options.tweenFromOpacity };\n                margin: 0;\n                border-width: ${ elFromBorderWidth };\n                border-style: ${ elFromBorderStyle };\n                border-color: ${ elFromBorderColor };\n                border-radius: ${ elFromBorderRadius };\n                z-index: ${ elFromZIndex };\n                transform-origin: 0 0;\n                transform: ${ elFromTransform };\n                ${ resizeFromTween }\n              }\n\n              100% {\n                opacity: 0;\n                margin: 0;\n                border-width: ${ elToBorderWidth };\n                border-style: ${ elToBorderStyle };\n                border-color: ${ elToBorderColor };\n                border-radius: ${ elToBorderRadius };\n                z-index: ${ elToZIndex };\n                transform-origin: 0 0;\n                ${ resizeToTween }\n              }\n            }\n          `\n        const keyframesFrom = options.hideFromClone === true || elSharedSize === true\n          ? ''\n          : `\n            @keyframes ${ qAnimId }-from {\n              0% {\n                margin: ${ elFromParentHeightDiff < 0 ? elFromParentHeightDiff / 2 : 0 }px ${ elFromParentWidthDiff < 0 ? elFromParentWidthDiff / 2 : 0 }px;\n                width: ${ elFromCloneWidth + elFromPosition.marginH }px;\n                height: ${ elFromCloneHeight + elFromPosition.marginV }px;\n              }\n\n              100% {\n                margin: 0;\n                width: 0;\n                height: 0;\n              }\n            }\n          `\n        const keyframeToStart = elSharedSize === true\n          ? `\n            margin: ${ elFromParentHeightDiff < 0 ? elFromParentHeightDiff / 2 : 0 }px ${ elFromParentWidthDiff < 0 ? elFromParentWidthDiff / 2 : 0 }px;\n            width: ${ elFromCloneWidth + elFromPosition.marginH }px;\n            height: ${ elFromCloneHeight + elFromPosition.marginV }px;\n          `\n          : `\n            margin: 0;\n            width: 0;\n            height: 0;\n          `\n        const keyframesTo = options.keepToClone === true\n          ? ''\n          : `\n            @keyframes ${ qAnimId }-to {\n              0% {\n                ${ keyframeToStart }\n              }\n\n              100% {\n                margin: ${ elToParentHeightDiff < 0 ? elToParentHeightDiff / 2 : 0 }px ${ elToParentWidthDiff < 0 ? elToParentWidthDiff / 2 : 0 }px;\n                width: ${ elToCloneWidth + elToPosition.marginH }px;\n                height: ${ elToCloneHeight + elToPosition.marginV }px;\n              }\n            }\n          `\n        style.innerHTML = `\n          @keyframes ${ qAnimId } {\n            0% {\n              margin: 0;\n              border-width: ${ elFromBorderWidth };\n              border-style: ${ elFromBorderStyle };\n              border-color: ${ elFromBorderColor };\n              border-radius: ${ elFromBorderRadius };\n              background-color: ${ elFromBackground };\n              z-index: ${ elFromZIndex };\n              transform-origin: 0 0;\n              ${ resizeFrom }\n              ${ tweenFrom }\n            }\n\n            100% {\n              margin: 0;\n              border-width: ${ elToBorderWidth };\n              border-style: ${ elToBorderStyle };\n              border-color: ${ elToBorderColor };\n              border-radius: ${ elToBorderRadius };\n              background-color: ${ elToBackground };\n              z-index: ${ elToZIndex };\n              transform-origin: 0 0;\n              transform: ${ elToTransform };\n              ${ resizeTo }\n              ${ tweenTo }\n            }\n          }\n\n          ${ keyframesFrom }\n\n          ${ keyframesFromTween }\n\n          ${ keyframesTo }\n        `\n        document.head.appendChild(style)\n\n        let animationDirection = 'normal'\n\n        elFromClone.style.animation = `${ options.duration }ms ${ options.easing } ${ options.delay }ms ${ animationDirection } ${ options.fill } ${ qAnimId }-from`\n        if (elFromTween !== void 0) {\n          elFromTween.style.animation = `${ options.duration }ms ${ options.easing } ${ options.delay }ms ${ animationDirection } ${ options.fill } ${ qAnimId }-from-tween`\n        }\n        elToClone.style.animation = `${ options.duration }ms ${ options.easing } ${ options.delay }ms ${ animationDirection } ${ options.fill } ${ qAnimId }-to`\n        elTo.style.animation = `${ options.duration }ms ${ options.easing } ${ options.delay }ms ${ animationDirection } ${ options.fill } ${ qAnimId }`\n\n        const cleanup = evt => {\n          if (evt === Object(evt) && evt.animationName !== qAnimId) {\n            return\n          }\n\n          elTo.removeEventListener('animationend', cleanup)\n          elTo.removeEventListener('animationcancel', cleanup)\n\n          commonCleanup()\n\n          // we clean the animations\n          style.remove()\n        }\n\n        elFrom.qMorphCancel = () => {\n          elFrom.qMorphCancel = void 0\n          cancelStatus = true\n          cleanup()\n        }\n        elTo.qMorphCancel = () => {\n          elTo.qMorphCancel = void 0\n          cancelStatus = true\n          cleanup()\n        }\n\n        elTo.addEventListener('animationend', cleanup)\n        elTo.addEventListener('animationcancel', cleanup)\n\n        cancel = abort => {\n          // we are not in a morph that we can cancel\n          if (cancelStatus === true || !elTo || !elFromClone || !elToClone) {\n            return false\n          }\n\n          if (abort === true) {\n            cleanup()\n\n            return true\n          }\n\n          endElementTo = endElementTo !== true\n\n          animationDirection = animationDirection === 'normal' ? 'reverse' : 'normal'\n\n          elFromClone.style.animationDirection = animationDirection\n          elFromTween.style.animationDirection = animationDirection\n          elToClone.style.animationDirection = animationDirection\n          elTo.style.animationDirection = animationDirection\n\n          return true\n        }\n      }\n    }\n\n    if (\n      options.waitFor > 0\n      || options.waitFor === 'transitionend'\n      || (options.waitFor === Object(options.waitFor) && typeof options.waitFor.then === 'function')\n    ) {\n      const delayPromise = options.waitFor > 0\n        ? new Promise(resolve => setTimeout(resolve, options.waitFor))\n        : (\n            options.waitFor === 'transitionend'\n              ? new Promise(resolve => {\n                const endFn = () => {\n                  if (timer !== null) {\n                    clearTimeout(timer)\n                    timer = null\n                  }\n\n                  if (elTo) {\n                    elTo.removeEventListener('transitionend', endFn)\n                    elTo.removeEventListener('transitioncancel', endFn)\n                  }\n\n                  resolve()\n                }\n\n                let timer = setTimeout(endFn, 400)\n\n                elTo.addEventListener('transitionend', endFn)\n                elTo.addEventListener('transitioncancel', endFn)\n              })\n              : options.waitFor\n          )\n\n      delayPromise\n        .then(animate)\n        .catch(() => {\n          typeof elTo.qMorphCancel === 'function' && elTo.qMorphCancel()\n        })\n    }\n    else {\n      animate()\n    }\n  }\n\n  typeof _options.onToggle === 'function' && _options.onToggle()\n  requestAnimationFrame(calculateFinalState)\n\n  // we return the cancel function\n  // returns:\n  //   false if the cancel cannot be performed (the morph ended already or has not started)\n  //   true else\n  return abort => cancel(abort)\n}\n",
+      "start": 1703982896753,
+      "end": 1703982896825,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896825,
+      "end": 1703982896825,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896826,
+      "end": 1703982896826,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896826,
+      "end": 1703982896829,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896829,
+      "end": 1703982896829,
+      "order": "normal"
+    }
+  ]
+}

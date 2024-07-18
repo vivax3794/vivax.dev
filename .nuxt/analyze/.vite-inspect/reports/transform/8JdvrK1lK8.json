@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/parallax/QParallax.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, watch, onMounted, onBeforeUnmount } from 'vue'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { height, offset } from '../../utils/dom.js'\nimport frameDebounce from '../../utils/frame-debounce.js'\nimport { getScrollTarget } from '../../utils/scroll.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { listenOpts } from '../../utils/event.js'\n\nconst { passive } = listenOpts\n\nexport default createComponent({\n  name: 'QParallax',\n\n  props: {\n    src: String,\n    height: {\n      type: Number,\n      default: 500\n    },\n    speed: {\n      type: Number,\n      default: 1,\n      validator: v => v >= 0 && v <= 1\n    },\n\n    scrollTarget: {\n      default: void 0\n    },\n\n    onScroll: Function\n  },\n\n  setup (props, { slots, emit }) {\n    const percentScrolled = ref(0)\n    const rootRef = ref(null)\n    const mediaParentRef = ref(null)\n    const mediaRef = ref(null)\n\n    let isWorking, mediaEl, mediaHeight, resizeHandler, observer, localScrollTarget\n\n    watch(() => props.height, () => {\n      isWorking === true && updatePos()\n    })\n\n    watch(() => props.scrollTarget, () => {\n      if (isWorking === true) {\n        stop()\n        start()\n      }\n    })\n\n    let update = percentage => {\n      percentScrolled.value = percentage\n      props.onScroll !== void 0 && emit('scroll', percentage)\n    }\n\n    function updatePos () {\n      let containerTop, containerHeight, containerBottom\n\n      if (localScrollTarget === window) {\n        containerTop = 0\n        containerBottom = containerHeight = window.innerHeight\n      }\n      else {\n        containerTop = offset(localScrollTarget).top\n        containerHeight = height(localScrollTarget)\n        containerBottom = containerTop + containerHeight\n      }\n\n      const top = offset(rootRef.value).top\n      const bottom = top + props.height\n\n      if (observer !== void 0 || (bottom > containerTop && top < containerBottom)) {\n        const percent = (containerBottom - top) / (props.height + containerHeight)\n        setPos((mediaHeight - props.height) * percent * props.speed)\n        update(percent)\n      }\n    }\n\n    let setPos = offset => {\n      // apply it immediately without any delay\n      mediaEl.style.transform = `translate3d(-50%,${ Math.round(offset) }px,0)`\n    }\n\n    function onResize () {\n      mediaHeight = mediaEl.naturalHeight || mediaEl.videoHeight || height(mediaEl)\n      isWorking === true && updatePos()\n    }\n\n    function start () {\n      isWorking = true\n      localScrollTarget = getScrollTarget(rootRef.value, props.scrollTarget)\n      localScrollTarget.addEventListener('scroll', updatePos, passive)\n      window.addEventListener('resize', resizeHandler, passive)\n      updatePos()\n    }\n\n    function stop () {\n      if (isWorking === true) {\n        isWorking = false\n        localScrollTarget.removeEventListener('scroll', updatePos, passive)\n        window.removeEventListener('resize', resizeHandler, passive)\n        localScrollTarget = void 0\n        setPos.cancel()\n        update.cancel()\n        resizeHandler.cancel()\n      }\n    }\n\n    onMounted(() => {\n      setPos = frameDebounce(setPos)\n      update = frameDebounce(update)\n      resizeHandler = frameDebounce(onResize)\n\n      mediaEl = slots.media !== void 0\n        ? mediaParentRef.value.children[ 0 ]\n        : mediaRef.value\n\n      mediaEl.onload = mediaEl.onloadstart = mediaEl.loadedmetadata = onResize\n      onResize()\n      mediaEl.style.display = 'initial'\n\n      if (window.IntersectionObserver !== void 0) {\n        observer = new IntersectionObserver(entries => {\n          const fn = entries[ 0 ].isIntersecting === true ? start : stop\n          fn()\n        })\n\n        observer.observe(rootRef.value)\n      }\n      else {\n        start()\n      }\n    })\n\n    onBeforeUnmount(() => {\n      stop()\n      observer !== void 0 && observer.disconnect()\n      mediaEl.onload = mediaEl.onloadstart = mediaEl.loadedmetadata = null\n    })\n\n    return () => {\n      return h('div', {\n        ref: rootRef,\n        class: 'q-parallax',\n        style: { height: `${ props.height }px` }\n      }, [\n        h('div', {\n          ref: mediaParentRef,\n          class: 'q-parallax__media absolute-full'\n        }, slots.media !== void 0 ? slots.media() : [\n          h('img', {\n            ref: mediaRef,\n            src: props.src\n          })\n        ]),\n\n        h(\n          'div',\n          { class: 'q-parallax__content absolute-full column flex-center' },\n          slots.content !== void 0\n            ? slots.content({ percentScrolled: percentScrolled.value })\n            : hSlot(slots.default)\n        )\n      ])\n    }\n  }\n})\n",
+      "start": 1703982896417,
+      "end": 1703982896502,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896502,
+      "end": 1703982896502,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896503,
+      "end": 1703982896503,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896503,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    }
+  ]
+}

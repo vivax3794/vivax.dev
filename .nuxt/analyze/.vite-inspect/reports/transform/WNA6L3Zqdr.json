@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/menu/QMenu.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, watch, Transition, onBeforeUnmount, getCurrentInstance } from 'vue'\n\nimport useAnchor, { useAnchorProps } from '../../composables/private/use-anchor.js'\nimport useScrollTarget from '../../composables/private/use-scroll-target.js'\nimport useModelToggle, { useModelToggleProps, useModelToggleEmits } from '../../composables/private/use-model-toggle.js'\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\nimport usePortal from '../../composables/private/use-portal.js'\nimport useTransition, { useTransitionProps } from '../../composables/private/use-transition.js'\nimport useTick from '../../composables/private/use-tick.js'\nimport useTimeout from '../../composables/private/use-timeout.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { closePortalMenus } from '../../utils/private/portal.js'\nimport { getScrollTarget } from '../../utils/scroll.js'\nimport { position, stopAndPrevent } from '../../utils/event.js'\nimport { hSlot } from '../../utils/private/render.js'\nimport { addEscapeKey, removeEscapeKey } from '../../utils/private/escape-key.js'\nimport { addFocusout, removeFocusout } from '../../utils/private/focusout.js'\nimport { childHasFocus } from '../../utils/dom.js'\nimport { addClickOutside, removeClickOutside } from '../../utils/private/click-outside.js'\nimport { addFocusFn } from '../../utils/private/focus-manager.js'\n\nimport {\n  validatePosition, validateOffset, setPosition, parsePosition\n} from '../../utils/private/position-engine.js'\n\nexport default createComponent({\n  name: 'QMenu',\n\n  inheritAttrs: false,\n\n  props: {\n    ...useAnchorProps,\n    ...useModelToggleProps,\n    ...useDarkProps,\n    ...useTransitionProps,\n\n    persistent: Boolean,\n    autoClose: Boolean,\n    separateClosePopup: Boolean,\n\n    noRouteDismiss: Boolean,\n    noRefocus: Boolean,\n    noFocus: Boolean,\n\n    fit: Boolean,\n    cover: Boolean,\n\n    square: Boolean,\n\n    anchor: {\n      type: String,\n      validator: validatePosition\n    },\n    self: {\n      type: String,\n      validator: validatePosition\n    },\n    offset: {\n      type: Array,\n      validator: validateOffset\n    },\n\n    scrollTarget: {\n      default: void 0\n    },\n\n    touchPosition: Boolean,\n\n    maxHeight: {\n      type: String,\n      default: null\n    },\n    maxWidth: {\n      type: String,\n      default: null\n    }\n  },\n\n  emits: [\n    ...useModelToggleEmits,\n    'click', 'escapeKey'\n  ],\n\n  setup (props, { slots, emit, attrs }) {\n    let refocusTarget = null, absoluteOffset, unwatchPosition, avoidAutoClose\n\n    const vm = getCurrentInstance()\n    const { proxy } = vm\n    const { $q } = proxy\n\n    const innerRef = ref(null)\n    const showing = ref(false)\n\n    const hideOnRouteChange = computed(() =>\n      props.persistent !== true\n      && props.noRouteDismiss !== true\n    )\n\n    const isDark = useDark(props, $q)\n    const { registerTick, removeTick } = useTick()\n    const { registerTimeout } = useTimeout()\n    const { transitionProps, transitionStyle } = useTransition(props)\n    const { localScrollTarget, changeScrollEvent, unconfigureScrollTarget } = useScrollTarget(props, configureScrollTarget)\n\n    const { anchorEl, canShow } = useAnchor({ showing })\n\n    const { hide } = useModelToggle({\n      showing, canShow, handleShow, handleHide,\n      hideOnRouteChange,\n      processOnMount: true\n    })\n\n    const { showPortal, hidePortal, renderPortal } = usePortal(vm, innerRef, renderPortalContent, 'menu')\n\n    const clickOutsideProps = {\n      anchorEl,\n      innerRef,\n      onClickOutside (e) {\n        if (props.persistent !== true && showing.value === true) {\n          hide(e)\n\n          if (\n            // always prevent touch event\n            e.type === 'touchstart'\n            // prevent click if it's on a dialog backdrop\n            || e.target.classList.contains('q-dialog__backdrop')\n          ) {\n            stopAndPrevent(e)\n          }\n\n          return true\n        }\n      }\n    }\n\n    const anchorOrigin = computed(() =>\n      parsePosition(\n        props.anchor || (\n          props.cover === true ? 'center middle' : 'bottom start'\n        ),\n        $q.lang.rtl\n      )\n    )\n\n    const selfOrigin = computed(() => (\n      props.cover === true\n        ? anchorOrigin.value\n        : parsePosition(props.self || 'top start', $q.lang.rtl)\n    ))\n\n    const menuClass = computed(() =>\n      (props.square === true ? ' q-menu--square' : '')\n      + (isDark.value === true ? ' q-menu--dark q-dark' : '')\n    )\n\n    const onEvents = computed(() => (\n      props.autoClose === true\n        ? { onClick: onAutoClose }\n        : {}\n    ))\n\n    const handlesFocus = computed(() =>\n      showing.value === true && props.persistent !== true\n    )\n\n    watch(handlesFocus, val => {\n      if (val === true) {\n        addEscapeKey(onEscapeKey)\n        addClickOutside(clickOutsideProps)\n      }\n      else {\n        removeEscapeKey(onEscapeKey)\n        removeClickOutside(clickOutsideProps)\n      }\n    })\n\n    function focus () {\n      addFocusFn(() => {\n        let node = innerRef.value\n\n        if (node && node.contains(document.activeElement) !== true) {\n          node = node.querySelector('[autofocus][tabindex], [data-autofocus][tabindex]')\n            || node.querySelector('[autofocus] [tabindex], [data-autofocus] [tabindex]')\n            || node.querySelector('[autofocus], [data-autofocus]')\n            || node\n          node.focus({ preventScroll: true })\n        }\n      })\n    }\n\n    function handleShow (evt) {\n      refocusTarget = props.noRefocus === false\n        ? document.activeElement\n        : null\n\n      addFocusout(onFocusout)\n\n      showPortal()\n      configureScrollTarget()\n\n      absoluteOffset = void 0\n\n      if (evt !== void 0 && (props.touchPosition || props.contextMenu)) {\n        const pos = position(evt)\n\n        if (pos.left !== void 0) {\n          const { top, left } = anchorEl.value.getBoundingClientRect()\n          absoluteOffset = { left: pos.left - left, top: pos.top - top }\n        }\n      }\n\n      if (unwatchPosition === void 0) {\n        unwatchPosition = watch(\n          () => $q.screen.width + '|' + $q.screen.height + '|' + props.self + '|' + props.anchor + '|' + $q.lang.rtl,\n          updatePosition\n        )\n      }\n\n      if (props.noFocus !== true) {\n        document.activeElement.blur()\n      }\n\n      // should removeTick() if this gets removed\n      registerTick(() => {\n        updatePosition()\n        props.noFocus !== true && focus()\n      })\n\n      // should removeTimeout() if this gets removed\n      registerTimeout(() => {\n        // required in order to avoid the \"double-tap needed\" issue\n        if ($q.platform.is.ios === true) {\n          // if auto-close, then this click should\n          // not close the menu\n          avoidAutoClose = props.autoClose\n          innerRef.value.click()\n        }\n\n        updatePosition()\n        showPortal(true) // done showing portal\n        emit('show', evt)\n      }, props.transitionDuration)\n    }\n\n    function handleHide (evt) {\n      removeTick()\n      hidePortal()\n\n      anchorCleanup(true)\n\n      if (\n        refocusTarget !== null\n        && (\n          // menu was hidden from code or ESC plugin\n          evt === void 0\n          // menu was not closed from a mouse or touch clickOutside\n          || evt.qClickOutside !== true\n        )\n      ) {\n        ((evt && evt.type.indexOf('key') === 0\n          ? refocusTarget.closest('[tabindex]:not([tabindex^=\"-\"])')\n          : void 0\n        ) || refocusTarget).focus()\n        refocusTarget = null\n      }\n\n      // should removeTimeout() if this gets removed\n      registerTimeout(() => {\n        hidePortal(true) // done hiding, now destroy\n        emit('hide', evt)\n      }, props.transitionDuration)\n    }\n\n    function anchorCleanup (hiding) {\n      absoluteOffset = void 0\n\n      if (unwatchPosition !== void 0) {\n        unwatchPosition()\n        unwatchPosition = void 0\n      }\n\n      if (hiding === true || showing.value === true) {\n        removeFocusout(onFocusout)\n        unconfigureScrollTarget()\n        removeClickOutside(clickOutsideProps)\n        removeEscapeKey(onEscapeKey)\n      }\n\n      if (hiding !== true) {\n        refocusTarget = null\n      }\n    }\n\n    function configureScrollTarget () {\n      if (anchorEl.value !== null || props.scrollTarget !== void 0) {\n        localScrollTarget.value = getScrollTarget(anchorEl.value, props.scrollTarget)\n        changeScrollEvent(localScrollTarget.value, updatePosition)\n      }\n    }\n\n    function onAutoClose (e) {\n      // if auto-close, then the ios double-tap fix which\n      // issues a click should not close the menu\n      if (avoidAutoClose !== true) {\n        closePortalMenus(proxy, e)\n        emit('click', e)\n      }\n      else {\n        avoidAutoClose = false\n      }\n    }\n\n    function onFocusout (evt) {\n      // the focus is not in a vue child component\n      if (\n        handlesFocus.value === true\n        && props.noFocus !== true\n        && childHasFocus(innerRef.value, evt.target) !== true\n      ) {\n        focus()\n      }\n    }\n\n    function onEscapeKey (evt) {\n      emit('escapeKey')\n      hide(evt)\n    }\n\n    function updatePosition () {\n      setPosition({\n        targetEl: innerRef.value,\n        offset: props.offset,\n        anchorEl: anchorEl.value,\n        anchorOrigin: anchorOrigin.value,\n        selfOrigin: selfOrigin.value,\n        absoluteOffset,\n        fit: props.fit,\n        cover: props.cover,\n        maxHeight: props.maxHeight,\n        maxWidth: props.maxWidth\n      })\n    }\n\n    function renderPortalContent () {\n      return h(\n        Transition,\n        transitionProps.value,\n        () => (\n          showing.value === true\n            ? h('div', {\n              role: 'menu',\n              ...attrs,\n              ref: innerRef,\n              tabindex: -1,\n              class: [\n                'q-menu q-position-engine scroll' + menuClass.value,\n                attrs.class\n              ],\n              style: [\n                attrs.style,\n                transitionStyle.value\n              ],\n              ...onEvents.value\n            }, hSlot(slots.default))\n            : null\n        )\n      )\n    }\n\n    onBeforeUnmount(anchorCleanup)\n\n    // expose public methods\n    Object.assign(proxy, { focus, updatePosition })\n\n    return renderPortal\n  }\n})\n",
+      "start": 1703982896346,
+      "end": 1703982896469,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896469,
+      "end": 1703982896469,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896469,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896470,
+      "end": 1703982896470,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896470,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896471,
+      "end": 1703982896471,
+      "order": "normal"
+    }
+  ]
+}

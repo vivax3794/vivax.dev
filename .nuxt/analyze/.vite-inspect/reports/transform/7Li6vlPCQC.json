@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/dialog-bottom-sheet/BottomSheet.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, getCurrentInstance } from 'vue'\n\nimport QDialog from '../dialog/QDialog.js'\n\nimport QIcon from '../icon/QIcon.js'\nimport QSeparator from '../separator/QSeparator.js'\n\nimport QCard from '../card/QCard.js'\nimport QCardSection from '../card/QCardSection.js'\n\nimport QItem from '../item/QItem.js'\nimport QItemSection from '../item/QItemSection.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nexport default createComponent({\n  name: 'BottomSheetPlugin',\n\n  props: {\n    ...useDarkProps,\n\n    title: String,\n    message: String,\n    actions: Array,\n\n    grid: Boolean,\n\n    cardClass: [ String, Array, Object ],\n    cardStyle: [ String, Array, Object ]\n  },\n\n  emits: [ 'ok', 'hide' ],\n\n  setup (props, { emit }) {\n    const { proxy } = getCurrentInstance()\n    const isDark = useDark(props, proxy.$q)\n\n    const dialogRef = ref(null)\n\n    function show () {\n      dialogRef.value.show()\n    }\n\n    function hide () {\n      dialogRef.value.hide()\n    }\n\n    function onOk (action) {\n      emit('ok', action)\n      hide()\n    }\n\n    function onHide () {\n      emit('hide')\n    }\n\n    function getGrid () {\n      return props.actions.map(action => {\n        const img = action.avatar || action.img\n\n        return action.label === void 0\n          ? h(QSeparator, {\n            class: 'col-all',\n            dark: isDark.value\n          })\n          : h('div', {\n            class: [\n              'q-bottom-sheet__item q-hoverable q-focusable cursor-pointer relative-position',\n              action.class\n            ],\n            style: action.style,\n            tabindex: 0,\n            role: 'listitem',\n            onClick () { onOk(action) },\n            onKeyup (e) { e.keyCode === 13 && onOk(action) }\n          }, [\n            h('div', { class: 'q-focus-helper' }),\n\n            action.icon\n              ? h(QIcon, { name: action.icon, color: action.color })\n              : (\n                  img\n                    ? h('img', {\n                      class: action.avatar ? 'q-bottom-sheet__avatar' : '',\n                      src: img\n                    })\n                    : h('div', { class: 'q-bottom-sheet__empty-icon' })\n                ),\n\n            h('div', action.label)\n          ])\n      })\n    }\n\n    function getList () {\n      return props.actions.map(action => {\n        const img = action.avatar || action.img\n\n        return action.label === void 0\n          ? h(QSeparator, { spaced: true, dark: isDark.value })\n          : h(QItem, {\n            class: [ 'q-bottom-sheet__item', action.classes ],\n            style: action.style,\n            tabindex: 0,\n            clickable: true,\n            dark: isDark.value,\n            onClick () { onOk(action) }\n          }, () => [\n            h(\n              QItemSection,\n              { avatar: true },\n              () => (\n                action.icon\n                  ? h(QIcon, { name: action.icon, color: action.color })\n                  : (\n                      img\n                        ? h('img', {\n                          class: action.avatar ? 'q-bottom-sheet__avatar' : '',\n                          src: img\n                        })\n                        : null\n                    )\n              )\n            ),\n\n            h(QItemSection, () => action.label)\n          ])\n      })\n    }\n\n    function getCardContent () {\n      const child = []\n\n      props.title && child.push(\n        h(QCardSection, {\n          class: 'q-dialog__title'\n        }, () => props.title)\n      )\n\n      props.message && child.push(\n        h(QCardSection, {\n          class: 'q-dialog__message'\n        }, () => props.message)\n      )\n\n      child.push(\n        props.grid === true\n          ? h('div', {\n            class: 'row items-stretch justify-start',\n            role: 'list'\n          }, getGrid())\n          : h('div', {\n            role: 'list'\n          }, getList())\n      )\n\n      return child\n    }\n\n    function getContent () {\n      return [\n        h(QCard, {\n          class: [\n            `q-bottom-sheet q-bottom-sheet--${ props.grid === true ? 'grid' : 'list' }`\n            + (isDark.value === true ? ' q-bottom-sheet--dark q-dark' : ''),\n            props.cardClass\n          ],\n          style: props.cardStyle\n        }, getCardContent)\n      ]\n    }\n\n    // expose public methods\n    Object.assign(proxy, { show, hide })\n\n    return () => h(QDialog, {\n      ref: dialogRef,\n      position: 'bottom',\n      onHide\n    }, getContent)\n  }\n})\n",
+      "start": 1703982897410,
+      "end": 1703982897477,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982897477,
+      "end": 1703982897477,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982897477,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982897478,
+      "end": 1703982897478,
+      "order": "normal"
+    }
+  ]
+}

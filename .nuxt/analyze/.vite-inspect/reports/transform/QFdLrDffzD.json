@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/option-group/QOptionGroup.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, computed, getCurrentInstance } from 'vue'\n\nimport QRadio from '../radio/QRadio.js'\nimport QCheckbox from '../checkbox/QCheckbox.js'\nimport QToggle from '../toggle/QToggle.js'\n\nimport { createComponent } from '../../utils/private/create.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nconst components = {\n  radio: QRadio,\n  checkbox: QCheckbox,\n  toggle: QToggle\n}\n\nconst typeValues = Object.keys(components)\n\nexport default createComponent({\n  name: 'QOptionGroup',\n\n  props: {\n    ...useDarkProps,\n\n    modelValue: {\n      required: true\n    },\n    options: {\n      type: Array,\n      validator: opts => opts.every(opt => 'value' in opt && 'label' in opt)\n    },\n\n    name: String,\n\n    type: {\n      default: 'radio',\n      validator: v => typeValues.includes(v)\n    },\n\n    color: String,\n    keepColor: Boolean,\n    dense: Boolean,\n\n    size: String,\n\n    leftLabel: Boolean,\n    inline: Boolean,\n    disable: Boolean\n  },\n\n  emits: [ 'update:modelValue' ],\n\n  setup (props, { emit, slots }) {\n    const { proxy: { $q } } = getCurrentInstance()\n\n    const arrayModel = Array.isArray(props.modelValue)\n\n    if (props.type === 'radio') {\n      if (arrayModel === true) {\n        console.error('q-option-group: model should not be array')\n      }\n    }\n    else if (arrayModel === false) {\n      console.error('q-option-group: model should be array in your case')\n    }\n\n    const isDark = useDark(props, $q)\n\n    const component = computed(() => components[ props.type ])\n\n    const classes = computed(() =>\n      'q-option-group q-gutter-x-sm'\n      + (props.inline === true ? ' q-option-group--inline' : '')\n    )\n\n    const attrs = computed(() => {\n      const attrs = { role: 'group' }\n\n      if (props.type === 'radio') {\n        attrs.role = 'radiogroup'\n\n        if (props.disable === true) {\n          attrs[ 'aria-disabled' ] = 'true'\n        }\n      }\n\n      return attrs\n    })\n\n    function onUpdateModelValue (value) {\n      emit('update:modelValue', value)\n    }\n\n    return () => h('div', {\n      class: classes.value,\n      ...attrs.value\n    }, props.options.map((opt, i) => {\n      // TODO: (Qv3) Make the 'opt' a separate property instead of\n      // the whole scope for consistency and flexibility\n      // (e.g. { opt } instead of opt)\n      const child = slots[ 'label-' + i ] !== void 0\n        ? () => slots[ 'label-' + i ](opt)\n        : (\n            slots.label !== void 0\n              ? () => slots.label(opt)\n              : void 0\n          )\n\n      return h('div', [\n        h(component.value, {\n          modelValue: props.modelValue,\n          val: opt.value,\n          name: opt.name === void 0 ? props.name : opt.name,\n          disable: props.disable || opt.disable,\n          label: child === void 0 ? opt.label : null,\n          leftLabel: opt.leftLabel === void 0 ? props.leftLabel : opt.leftLabel,\n          color: opt.color === void 0 ? props.color : opt.color,\n          checkedIcon: opt.checkedIcon,\n          uncheckedIcon: opt.uncheckedIcon,\n          dark: opt.dark || isDark.value,\n          size: opt.size === void 0 ? props.size : opt.size,\n          dense: props.dense,\n          keepColor: opt.keepColor === void 0 ? props.keepColor : opt.keepColor,\n          'onUpdate:modelValue': onUpdateModelValue\n        }, child)\n      ])\n    }))\n  }\n})\n",
+      "start": 1703982896348,
+      "end": 1703982896472,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896472,
+      "end": 1703982896472,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896472,
+      "end": 1703982896473,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896473,
+      "end": 1703982896473,
+      "order": "normal"
+    }
+  ]
+}

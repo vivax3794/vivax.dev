@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/tree/QTree.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import {\n  h, ref, computed, watch,\n  withDirectives, vShow, nextTick, getCurrentInstance, onBeforeUpdate\n} from 'vue'\n\nimport QIcon from '../icon/QIcon.js'\nimport QCheckbox from '../checkbox/QCheckbox.js'\nimport QSlideTransition from '../slide-transition/QSlideTransition.js'\nimport QSpinner from '../spinner/QSpinner.js'\n\nimport useDark, { useDarkProps } from '../../composables/private/use-dark.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { stopAndPrevent } from '../../utils/event.js'\nimport { shouldIgnoreKey } from '../../utils/private/key-composition.js'\nimport { injectProp } from '../../utils/private/inject-obj-prop.js'\n\nconst tickStrategyOptions = [ 'none', 'strict', 'leaf', 'leaf-filtered' ]\n\nexport default createComponent({\n  name: 'QTree',\n\n  props: {\n    ...useDarkProps,\n\n    nodes: {\n      type: Array,\n      required: true\n    },\n    nodeKey: {\n      type: String,\n      required: true\n    },\n    labelKey: {\n      type: String,\n      default: 'label'\n    },\n    childrenKey: {\n      type: String,\n      default: 'children'\n    },\n\n    dense: Boolean,\n\n    color: String,\n    controlColor: String,\n    textColor: String,\n    selectedColor: String,\n\n    icon: String,\n\n    tickStrategy: {\n      type: String,\n      default: 'none',\n      validator: v => tickStrategyOptions.includes(v)\n    },\n    ticked: Array, // v-model:ticked\n    expanded: Array, // v-model:expanded\n    selected: {}, // v-model:selected\n\n    noSelectionUnset: Boolean,\n\n    defaultExpandAll: Boolean,\n    accordion: Boolean,\n\n    filter: String,\n    filterMethod: Function,\n\n    duration: Number,\n    noConnectors: Boolean,\n    noTransition: Boolean,\n\n    noNodesLabel: String,\n    noResultsLabel: String\n  },\n\n  emits: [\n    'update:expanded',\n    'update:ticked',\n    'update:selected',\n    'lazyLoad',\n    'afterShow',\n    'afterHide'\n  ],\n\n  setup (props, { slots, emit }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const isDark = useDark(props, $q)\n\n    const lazy = ref({})\n    const innerTicked = ref(props.ticked || [])\n    const innerExpanded = ref(props.expanded || [])\n\n    let blurTargets = {}\n\n    onBeforeUpdate(() => {\n      blurTargets = {}\n    })\n\n    const classes = computed(() =>\n      `q-tree q-tree--${ props.dense === true ? 'dense' : 'standard' }`\n      + (props.noConnectors === true ? ' q-tree--no-connectors' : '')\n      + (isDark.value === true ? ' q-tree--dark' : '')\n      + (props.color !== void 0 ? ` text-${ props.color }` : '')\n    )\n\n    const hasSelection = computed(() => props.selected !== void 0)\n\n    const computedIcon = computed(() => props.icon || $q.iconSet.tree.icon)\n\n    const computedControlColor = computed(() => props.controlColor || props.color)\n\n    const textColorClass = computed(() => (\n      props.textColor !== void 0\n        ? ` text-${ props.textColor }`\n        : ''\n    ))\n\n    const selectedColorClass = computed(() => {\n      const color = props.selectedColor || props.color\n      return color ? ` text-${ color }` : ''\n    })\n\n    const computedFilterMethod = computed(() => (\n      props.filterMethod !== void 0\n        ? props.filterMethod\n        : (node, filter) => {\n            const filt = filter.toLowerCase()\n            return node[ props.labelKey ]\n            && node[ props.labelKey ].toLowerCase().indexOf(filt) > -1\n          }\n    ))\n\n    const meta = computed(() => {\n      const meta = {}\n\n      const travel = (node, parent) => {\n        const tickStrategy = node.tickStrategy || (parent ? parent.tickStrategy : props.tickStrategy)\n        const\n          key = node[ props.nodeKey ],\n          isParent = node[ props.childrenKey ] && Array.isArray(node[ props.childrenKey ]) && node[ props.childrenKey ].length !== 0,\n          selectable = node.disabled !== true && hasSelection.value === true && node.selectable !== false,\n          expandable = node.disabled !== true && node.expandable !== false,\n          hasTicking = tickStrategy !== 'none',\n          strictTicking = tickStrategy === 'strict',\n          leafFilteredTicking = tickStrategy === 'leaf-filtered',\n          leafTicking = tickStrategy === 'leaf' || tickStrategy === 'leaf-filtered'\n\n        let tickable = node.disabled !== true && node.tickable !== false\n        if (leafTicking === true && tickable === true && parent && parent.tickable !== true) {\n          tickable = false\n        }\n\n        let localLazy = node.lazy\n        if (\n          localLazy === true\n          && lazy.value[ key ] !== void 0\n          && Array.isArray(node[ props.childrenKey ]) === true\n        ) {\n          localLazy = lazy.value[ key ]\n        }\n\n        const m = {\n          key,\n          parent,\n          isParent,\n          lazy: localLazy,\n          disabled: node.disabled,\n          link: node.disabled !== true && (selectable === true || (expandable === true && (isParent === true || localLazy === true))),\n          children: [],\n          matchesFilter: props.filter ? computedFilterMethod.value(node, props.filter) : true,\n\n          selected: key === props.selected && selectable === true,\n          selectable,\n          expanded: isParent === true ? innerExpanded.value.includes(key) : false,\n          expandable,\n          noTick: node.noTick === true || (strictTicking !== true && localLazy && localLazy !== 'loaded'),\n          tickable,\n          tickStrategy,\n          hasTicking,\n          strictTicking,\n          leafFilteredTicking,\n          leafTicking,\n          ticked: strictTicking === true\n            ? innerTicked.value.includes(key)\n            : (isParent === true ? false : innerTicked.value.includes(key))\n        }\n\n        meta[ key ] = m\n\n        if (isParent === true) {\n          m.children = node[ props.childrenKey ].map(n => travel(n, m))\n\n          if (props.filter) {\n            if (m.matchesFilter !== true) {\n              m.matchesFilter = m.children.some(n => n.matchesFilter)\n            }\n            else if (\n              m.noTick !== true\n              && m.disabled !== true\n              && m.tickable === true\n              && leafFilteredTicking === true\n              && m.children.every(n => n.matchesFilter !== true || n.noTick === true || n.tickable !== true) === true\n            ) {\n              m.tickable = false\n            }\n          }\n\n          if (m.matchesFilter === true) {\n            if (m.noTick !== true && strictTicking !== true && m.children.every(n => n.noTick) === true) {\n              m.noTick = true\n            }\n\n            if (leafTicking) {\n              m.ticked = false\n              m.indeterminate = m.children.some(node => node.indeterminate === true)\n              m.tickable = m.tickable === true && m.children.some(node => node.tickable)\n\n              if (m.indeterminate !== true) {\n                const sel = m.children\n                  .reduce((acc, meta) => (meta.ticked === true ? acc + 1 : acc), 0)\n\n                if (sel === m.children.length) {\n                  m.ticked = true\n                }\n                else if (sel > 0) {\n                  m.indeterminate = true\n                }\n              }\n\n              if (m.indeterminate === true) {\n                m.indeterminateNextState = m.children\n                  .every(meta => meta.tickable !== true || meta.ticked !== true)\n              }\n            }\n          }\n        }\n\n        return m\n      }\n\n      props.nodes.forEach(node => travel(node, null))\n      return meta\n    })\n\n    watch(() => props.ticked, val => {\n      innerTicked.value = val\n    })\n\n    watch(() => props.expanded, val => {\n      innerExpanded.value = val\n    })\n\n    function getNodeByKey (key) {\n      const reduce = [].reduce\n\n      const find = (result, node) => {\n        if (result || !node) {\n          return result\n        }\n        if (Array.isArray(node) === true) {\n          return reduce.call(Object(node), find, result)\n        }\n        if (node[ props.nodeKey ] === key) {\n          return node\n        }\n        if (node[ props.childrenKey ]) {\n          return find(null, node[ props.childrenKey ])\n        }\n      }\n\n      return find(null, props.nodes)\n    }\n\n    function getTickedNodes () {\n      return innerTicked.value.map(key => getNodeByKey(key))\n    }\n\n    function getExpandedNodes () {\n      return innerExpanded.value.map(key => getNodeByKey(key))\n    }\n\n    function isExpanded (key) {\n      return key && meta.value[ key ]\n        ? meta.value[ key ].expanded\n        : false\n    }\n\n    function collapseAll () {\n      if (props.expanded !== void 0) {\n        emit('update:expanded', [])\n      }\n      else {\n        innerExpanded.value = []\n      }\n    }\n\n    function expandAll () {\n      const expanded = []\n      const travel = node => {\n        if (node[ props.childrenKey ] && node[ props.childrenKey ].length !== 0) {\n          if (node.expandable !== false && node.disabled !== true) {\n            expanded.push(node[ props.nodeKey ])\n            node[ props.childrenKey ].forEach(travel)\n          }\n        }\n      }\n\n      props.nodes.forEach(travel)\n\n      if (props.expanded !== void 0) {\n        emit('update:expanded', expanded)\n      }\n      else {\n        innerExpanded.value = expanded\n      }\n    }\n\n    function setExpanded (key, state, node = getNodeByKey(key), m = meta.value[ key ]) {\n      if (m.lazy && m.lazy !== 'loaded') {\n        if (m.lazy === 'loading') {\n          return\n        }\n\n        lazy.value[ key ] = 'loading'\n        if (Array.isArray(node[ props.childrenKey ]) !== true) {\n          node[ props.childrenKey ] = []\n        }\n        emit('lazyLoad', {\n          node,\n          key,\n          done: children => {\n            lazy.value[ key ] = 'loaded'\n            node[ props.childrenKey ] = Array.isArray(children) === true ? children : []\n            nextTick(() => {\n              const localMeta = meta.value[ key ]\n              if (localMeta && localMeta.isParent === true) {\n                localSetExpanded(key, true)\n              }\n            })\n          },\n          fail: () => {\n            delete lazy.value[ key ]\n            if (node[ props.childrenKey ].length === 0) {\n              delete node[ props.childrenKey ]\n            }\n          }\n        })\n      }\n      else if (m.isParent === true && m.expandable === true) {\n        localSetExpanded(key, state)\n      }\n    }\n\n    function localSetExpanded (key, state) {\n      let target = innerExpanded.value\n      const shouldEmit = props.expanded !== void 0\n\n      if (shouldEmit === true) {\n        target = target.slice()\n      }\n\n      if (state) {\n        if (props.accordion) {\n          if (meta.value[ key ]) {\n            const collapse = []\n            if (meta.value[ key ].parent) {\n              meta.value[ key ].parent.children.forEach(m => {\n                if (m.key !== key && m.expandable === true) {\n                  collapse.push(m.key)\n                }\n              })\n            }\n            else {\n              props.nodes.forEach(node => {\n                const k = node[ props.nodeKey ]\n                if (k !== key) {\n                  collapse.push(k)\n                }\n              })\n            }\n            if (collapse.length !== 0) {\n              target = target.filter(k => collapse.includes(k) === false)\n            }\n          }\n        }\n\n        target = target.concat([ key ])\n          .filter((key, index, self) => self.indexOf(key) === index)\n      }\n      else {\n        target = target.filter(k => k !== key)\n      }\n\n      if (shouldEmit === true) {\n        emit('update:expanded', target)\n      }\n      else {\n        innerExpanded.value = target\n      }\n    }\n\n    function isTicked (key) {\n      return key && meta.value[ key ]\n        ? meta.value[ key ].ticked\n        : false\n    }\n\n    function setTicked (keys, state) {\n      let target = innerTicked.value\n      const shouldEmit = props.ticked !== void 0\n\n      if (shouldEmit === true) {\n        target = target.slice()\n      }\n\n      if (state) {\n        target = target.concat(keys)\n          .filter((key, index, self) => self.indexOf(key) === index)\n      }\n      else {\n        target = target.filter(k => keys.includes(k) === false)\n      }\n\n      if (shouldEmit === true) {\n        emit('update:ticked', target)\n      }\n    }\n\n    function getSlotScope (node, meta, key) {\n      const scope = { tree: proxy, node, key, color: props.color, dark: isDark.value }\n\n      injectProp(\n        scope,\n        'expanded',\n        () => { return meta.expanded },\n        val => { val !== meta.expanded && setExpanded(key, val) }\n      )\n\n      injectProp(\n        scope,\n        'ticked',\n        () => { return meta.ticked },\n        val => { val !== meta.ticked && setTicked([ key ], val) }\n      )\n\n      return scope\n    }\n\n    function getChildren (nodes) {\n      return (\n        props.filter\n          ? nodes.filter(n => meta.value[ n[ props.nodeKey ] ].matchesFilter)\n          : nodes\n      ).map(child => getNode(child))\n    }\n\n    function getNodeMedia (node) {\n      if (node.icon !== void 0) {\n        return h(QIcon, {\n          class: 'q-tree__icon q-mr-sm',\n          name: node.icon,\n          color: node.iconColor\n        })\n      }\n      const src = node.img || node.avatar\n      if (src) {\n        return h('img', {\n          class: `q-tree__${ node.img ? 'img' : 'avatar' } q-mr-sm`,\n          src\n        })\n      }\n    }\n\n    function onShow () {\n      emit('afterShow')\n    }\n\n    function onHide () {\n      emit('afterHide')\n    }\n\n    function getNode (node) {\n      const\n        key = node[ props.nodeKey ],\n        m = meta.value[ key ],\n        header = node.header\n          ? slots[ `header-${ node.header }` ] || slots[ 'default-header' ]\n          : slots[ 'default-header' ]\n\n      const children = m.isParent === true\n        ? getChildren(node[ props.childrenKey ])\n        : []\n\n      const isParent = children.length !== 0 || (m.lazy && m.lazy !== 'loaded')\n\n      let body = node.body\n        ? slots[ `body-${ node.body }` ] || slots[ 'default-body' ]\n        : slots[ 'default-body' ]\n\n      const slotScope = header !== void 0 || body !== void 0\n        ? getSlotScope(node, m, key)\n        : null\n\n      if (body !== void 0) {\n        body = h('div', { class: 'q-tree__node-body relative-position' }, [\n          h('div', { class: textColorClass.value }, [\n            body(slotScope)\n          ])\n        ])\n      }\n\n      return h('div', {\n        key,\n        class: 'q-tree__node relative-position'\n          + ` q-tree__node--${ isParent === true ? 'parent' : 'child' }`\n      }, [\n        h('div', {\n          class: 'q-tree__node-header relative-position row no-wrap items-center'\n            + (m.link === true ? ' q-tree__node--link q-hoverable q-focusable' : '')\n            + (m.selected === true ? ' q-tree__node--selected' : '')\n            + (m.disabled === true ? ' q-tree__node--disabled' : ''),\n          tabindex: m.link === true ? 0 : -1,\n          ariaExpanded: children.length > 0 ? m.expanded : null,\n          role: 'treeitem',\n          onClick: (e) => {\n            onClick(node, m, e)\n          },\n          onKeypress (e) {\n            if (shouldIgnoreKey(e) !== true) {\n              if (e.keyCode === 13) { onClick(node, m, e, true) }\n              else if (e.keyCode === 32) { onExpandClick(node, m, e, true) }\n            }\n          }\n        }, [\n          h('div', {\n            class: 'q-focus-helper',\n            tabindex: -1,\n            ref: el => { blurTargets[ m.key ] = el }\n          }),\n\n          m.lazy === 'loading'\n            ? h(QSpinner, {\n              class: 'q-tree__spinner',\n              color: computedControlColor.value\n            })\n            : (\n                isParent === true\n                  ? h(QIcon, {\n                    class: 'q-tree__arrow'\n                    + (m.expanded === true ? ' q-tree__arrow--rotate' : ''),\n                    name: computedIcon.value,\n                    onClick (e) { onExpandClick(node, m, e) }\n                  })\n                  : null\n              ),\n\n          m.hasTicking === true && m.noTick !== true\n            ? h(QCheckbox, {\n              class: 'q-tree__tickbox',\n              modelValue: m.indeterminate === true ? null : m.ticked,\n              color: computedControlColor.value,\n              dark: isDark.value,\n              dense: true,\n              keepColor: true,\n              disable: m.tickable !== true,\n              onKeydown: stopAndPrevent,\n              'onUpdate:modelValue': v => {\n                onTickedClick(m, v)\n              }\n            })\n            : null,\n\n          h('div', {\n            class: 'q-tree__node-header-content col row no-wrap items-center'\n              + (m.selected === true ? selectedColorClass.value : textColorClass.value)\n          }, [\n            header\n              ? header(slotScope)\n              : [\n                  getNodeMedia(node),\n                  h('div', node[ props.labelKey ])\n                ]\n          ])\n        ]),\n\n        isParent === true\n          ? (\n              props.noTransition === true\n                ? (\n                    m.expanded === true\n                      ? h('div', {\n                        class: 'q-tree__node-collapsible' + textColorClass.value,\n                        key: `${ key }__q`\n                      }, [\n                        body,\n                        h('div', {\n                          class: 'q-tree__children'\n                            + (m.disabled === true ? ' q-tree__node--disabled' : ''),\n                          role: 'group'\n                        }, children)\n                      ])\n                      : null\n                  )\n\n                : h(QSlideTransition, {\n                  duration: props.duration,\n                  onShow,\n                  onHide\n                }, () => withDirectives(\n                  h('div', {\n                    class: 'q-tree__node-collapsible' + textColorClass.value,\n                    key: `${ key }__q`\n                  }, [\n                    body,\n                    h('div', {\n                      class: 'q-tree__children'\n                        + (m.disabled === true ? ' q-tree__node--disabled' : ''),\n                      role: 'group'\n                    }, children)\n                  ]),\n                  [ [ vShow, m.expanded ] ]\n                ))\n            )\n          : body\n      ])\n    }\n\n    function blur (key) {\n      const blurTarget = blurTargets[ key ]\n      blurTarget && blurTarget.focus()\n    }\n\n    function onClick (node, meta, e, keyboard) {\n      keyboard !== true && meta.selectable !== false && blur(meta.key)\n\n      if (hasSelection.value && meta.selectable) {\n        if (props.noSelectionUnset === false) {\n          emit('update:selected', meta.key !== props.selected ? meta.key : null)\n        }\n        else if (meta.key !== props.selected) {\n          emit('update:selected', meta.key === void 0 ? null : meta.key)\n        }\n      }\n      else {\n        onExpandClick(node, meta, e, keyboard)\n      }\n\n      if (typeof node.handler === 'function') {\n        node.handler(node)\n      }\n    }\n\n    function onExpandClick (node, meta, e, keyboard) {\n      if (e !== void 0) {\n        stopAndPrevent(e)\n      }\n      keyboard !== true && meta.selectable !== false && blur(meta.key)\n      setExpanded(meta.key, !meta.expanded, node, meta)\n    }\n\n    function onTickedClick (meta, state) {\n      if (meta.indeterminate === true) {\n        state = meta.indeterminateNextState\n      }\n      if (meta.strictTicking) {\n        setTicked([ meta.key ], state)\n      }\n      else if (meta.leafTicking) {\n        const keys = []\n        const travel = meta => {\n          if (meta.isParent) {\n            if (state !== true && meta.noTick !== true && meta.tickable === true) {\n              keys.push(meta.key)\n            }\n            if (meta.leafTicking === true) {\n              meta.children.forEach(travel)\n            }\n          }\n          else if (\n            meta.noTick !== true\n            && meta.tickable === true\n            && (meta.leafFilteredTicking !== true || meta.matchesFilter === true)\n          ) {\n            keys.push(meta.key)\n          }\n        }\n        travel(meta)\n        setTicked(keys, state)\n      }\n    }\n\n    props.defaultExpandAll === true && expandAll()\n\n    // expose public methods\n    Object.assign(proxy, {\n      getNodeByKey,\n      getTickedNodes,\n      getExpandedNodes,\n      isExpanded,\n      collapseAll,\n      expandAll,\n      setExpanded,\n      isTicked,\n      setTicked\n    })\n\n    return () => {\n      const children = getChildren(props.nodes)\n\n      return h(\n        'div', {\n          class: classes.value,\n          role: 'tree'\n        },\n        children.length === 0\n          ? (\n              props.filter\n                ? props.noResultsLabel || $q.lang.tree.noResults\n                : props.noNodesLabel || $q.lang.tree.noNodes\n            )\n          : children\n      )\n    }\n  }\n})\n",
+      "start": 1703982896623,
+      "end": 1703982896684,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896684,
+      "end": 1703982896684,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896684,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896685,
+      "end": 1703982896685,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896685,
+      "end": 1703982896686,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896686,
+      "end": 1703982896686,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896686,
+      "end": 1703982896686,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896686,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896687,
+      "end": 1703982896687,
+      "order": "normal"
+    }
+  ]
+}

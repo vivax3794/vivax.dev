@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/directives/ScrollFire.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { createDirective } from '../utils/private/create.js'\nimport debounce from '../utils/debounce.js'\nimport { height, offset } from '../utils/dom.js'\nimport { getScrollTarget } from '../utils/scroll.js'\nimport { listenOpts } from '../utils/event.js'\nimport getSSRProps from '../utils/private/noop-ssr-directive-transform.js'\n\nconst { passive } = listenOpts\n\nfunction update (ctx, { value, oldValue }) {\n  if (typeof value !== 'function') {\n    ctx.scrollTarget.removeEventListener('scroll', ctx.scroll, passive)\n    return\n  }\n\n  ctx.handler = value\n  if (typeof oldValue !== 'function') {\n    ctx.scrollTarget.addEventListener('scroll', ctx.scroll, passive)\n    ctx.scroll()\n  }\n}\n\nexport default createDirective(__QUASAR_SSR_SERVER__\n  ? { name: 'scroll-fire', getSSRProps }\n  : {\n      name: 'scroll-fire',\n\n      mounted (el, binding) {\n        const ctx = {\n          scrollTarget: getScrollTarget(el),\n          scroll: debounce(() => {\n            let containerBottom, elBottom\n\n            if (ctx.scrollTarget === window) {\n              elBottom = el.getBoundingClientRect().bottom\n              containerBottom = window.innerHeight\n            }\n            else {\n              elBottom = offset(el).top + height(el)\n              containerBottom = offset(ctx.scrollTarget).top + height(ctx.scrollTarget)\n            }\n\n            if (elBottom > 0 && elBottom < containerBottom) {\n              ctx.scrollTarget.removeEventListener('scroll', ctx.scroll, passive)\n              ctx.handler(el)\n            }\n          }, 25)\n        }\n\n        update(ctx, binding)\n\n        el.__qscrollfire = ctx\n      },\n\n      updated (el, binding) {\n        if (binding.value !== binding.oldValue) {\n          update(el.__qscrollfire, binding)\n        }\n      },\n\n      beforeUnmount (el) {\n        const ctx = el.__qscrollfire\n        ctx.scrollTarget.removeEventListener('scroll', ctx.scroll, passive)\n        ctx.scroll.cancel()\n        delete el.__qscrollfire\n      }\n    }\n)\n",
+      "start": 1703982896644,
+      "end": 1703982896707,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896707,
+      "end": 1703982896707,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896707,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896708,
+      "end": 1703982896708,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { createDirective } from \"../utils/private/create.js\";\nimport debounce from \"../utils/debounce.js\";\nimport { height, offset } from \"../utils/dom.js\";\nimport { getScrollTarget } from \"../utils/scroll.js\";\nimport { listenOpts } from \"../utils/event.js\";\nimport getSSRProps from \"../utils/private/noop-ssr-directive-transform.js\";\nconst { passive } = listenOpts;\nfunction update(ctx, { value, oldValue }) {\n  if (typeof value !== \"function\") {\n    ctx.scrollTarget.removeEventListener(\"scroll\", ctx.scroll, passive);\n    return;\n  }\n  ctx.handler = value;\n  if (typeof oldValue !== \"function\") {\n    ctx.scrollTarget.addEventListener(\"scroll\", ctx.scroll, passive);\n    ctx.scroll();\n  }\n}\nexport default createDirective(\n  false ? { name: \"scroll-fire\", getSSRProps } : {\n    name: \"scroll-fire\",\n    mounted(el, binding) {\n      const ctx = {\n        scrollTarget: getScrollTarget(el),\n        scroll: debounce(() => {\n          let containerBottom, elBottom;\n          if (ctx.scrollTarget === window) {\n            elBottom = el.getBoundingClientRect().bottom;\n            containerBottom = window.innerHeight;\n          } else {\n            elBottom = offset(el).top + height(el);\n            containerBottom = offset(ctx.scrollTarget).top + height(ctx.scrollTarget);\n          }\n          if (elBottom > 0 && elBottom < containerBottom) {\n            ctx.scrollTarget.removeEventListener(\"scroll\", ctx.scroll, passive);\n            ctx.handler(el);\n          }\n        }, 25)\n      };\n      update(ctx, binding);\n      el.__qscrollfire = ctx;\n    },\n    updated(el, binding) {\n      if (binding.value !== binding.oldValue) {\n        update(el.__qscrollfire, binding);\n      }\n    },\n    beforeUnmount(el) {\n      const ctx = el.__qscrollfire;\n      ctx.scrollTarget.removeEventListener(\"scroll\", ctx.scroll, passive);\n      ctx.scroll.cancel();\n      delete el.__qscrollfire;\n    }\n  }\n);\n",
+      "start": 1703982896708,
+      "end": 1703982896715,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896715,
+      "end": 1703982896715,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896715,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896718,
+      "end": 1703982896718,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896718,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896720,
+      "end": 1703982896720,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896720,
+      "end": 1703982896721,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896721,
+      "end": 1703982896721,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896721,
+      "end": 1703982896721,
+      "order": "normal"
+    }
+  ]
+}

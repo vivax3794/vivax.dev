@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/install-quasar.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { createApp } from 'vue'\n\nimport Platform, { isRuntimeSsrPreHydration } from './plugins/Platform.js'\nimport Screen from './plugins/Screen.js'\nimport Dark from './plugins/Dark.js'\nimport History from './history.js'\nimport Lang from './lang.js'\nimport Body from './body.js'\nimport IconSet from './icon-set.js'\n\nimport { quasarKey } from './utils/private/symbols.js'\nimport { globalConfig, globalConfigIsFrozen, freezeGlobalConfig } from './utils/private/global-config.js'\nimport { isObject } from './utils/is.js'\n\nconst autoInstalledPlugins = [\n  Platform,\n  Body,\n  Dark,\n  Screen,\n  History,\n  Lang,\n  IconSet\n]\n\nexport function createChildApp (appCfg, parentApp) {\n  const app = createApp(appCfg)\n\n  app.config.globalProperties = parentApp.config.globalProperties\n\n  const { reload, ...appContext } = parentApp._context\n  Object.assign(app._context, appContext)\n\n  return app\n}\n\nfunction installPlugins (pluginOpts, pluginList) {\n  pluginList.forEach(Plugin => {\n    Plugin.install(pluginOpts)\n    Plugin.__installed = true\n  })\n}\n\nfunction prepareApp (app, uiOpts, pluginOpts) {\n  app.config.globalProperties.$q = pluginOpts.$q\n  app.provide(quasarKey, pluginOpts.$q)\n\n  installPlugins(pluginOpts, autoInstalledPlugins)\n\n  uiOpts.components !== void 0 && Object.values(uiOpts.components).forEach(c => {\n    if (isObject(c) === true && c.name !== void 0) {\n      app.component(c.name, c)\n    }\n  })\n\n  uiOpts.directives !== void 0 && Object.values(uiOpts.directives).forEach(d => {\n    if (isObject(d) === true && d.name !== void 0) {\n      app.directive(d.name, d)\n    }\n  })\n\n  uiOpts.plugins !== void 0 && installPlugins(\n    pluginOpts,\n    Object.values(uiOpts.plugins).filter(\n      p => typeof p.install === 'function' && autoInstalledPlugins.includes(p) === false\n    )\n  )\n\n  if (isRuntimeSsrPreHydration.value === true) {\n    pluginOpts.$q.onSSRHydrated = () => {\n      pluginOpts.onSSRHydrated.forEach(fn => { fn() })\n      pluginOpts.$q.onSSRHydrated = () => {}\n    }\n  }\n}\n\nexport default __QUASAR_SSR_SERVER__\n  ? function (parentApp, opts = {}, ssrContext) {\n    const $q = {\n      version: __QUASAR_VERSION__,\n      config: opts.config || {}\n    }\n\n    Object.assign(ssrContext, {\n      $q,\n      _meta: {\n        htmlAttrs: '',\n        headTags: '',\n        endingHeadTags: '',\n        bodyClasses: '',\n        bodyAttrs: 'data-server-rendered',\n        bodyTags: ''\n      }\n    })\n\n    if (ssrContext._modules === void 0) {\n      // not OK. means the SSR build is not using @quasar/ssr-helpers,\n      // but we shouldn't crash the app\n      ssrContext._modules = []\n    }\n\n    if (ssrContext.onRendered === void 0) {\n      // not OK. means the SSR build is not using @quasar/ssr-helpers,\n      // but we shouldn't crash the app\n      ssrContext.onRendered = () => {}\n    }\n\n    parentApp.config.globalProperties.ssrContext = ssrContext\n\n    prepareApp(parentApp, opts, {\n      parentApp,\n      $q,\n      lang: opts.lang,\n      iconSet: opts.iconSet,\n      ssrContext\n    })\n  }\n  : function (parentApp, opts = {}) {\n    const $q = { version: __QUASAR_VERSION__ }\n\n    if (globalConfigIsFrozen === false) {\n      if (opts.config !== void 0) {\n        Object.assign(globalConfig, opts.config)\n      }\n\n      $q.config = { ...globalConfig }\n      freezeGlobalConfig()\n    }\n    else {\n      $q.config = opts.config || {}\n    }\n\n    prepareApp(parentApp, opts, {\n      parentApp,\n      $q,\n      lang: opts.lang,\n      iconSet: opts.iconSet,\n      onSSRHydrated: []\n    })\n  }\n",
+      "start": 1703982895855,
+      "end": 1703982895987,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982895987,
+      "end": 1703982895987,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { createApp } from \"vue\";\nimport Platform, { isRuntimeSsrPreHydration } from \"./plugins/Platform.js\";\nimport Screen from \"./plugins/Screen.js\";\nimport Dark from \"./plugins/Dark.js\";\nimport History from \"./history.js\";\nimport Lang from \"./lang.js\";\nimport Body from \"./body.js\";\nimport IconSet from \"./icon-set.js\";\nimport { quasarKey } from \"./utils/private/symbols.js\";\nimport { globalConfig, globalConfigIsFrozen, freezeGlobalConfig } from \"./utils/private/global-config.js\";\nimport { isObject } from \"./utils/is.js\";\nconst autoInstalledPlugins = [\n  Platform,\n  Body,\n  Dark,\n  Screen,\n  History,\n  Lang,\n  IconSet\n];\nexport function createChildApp(appCfg, parentApp) {\n  const app = createApp(appCfg);\n  app.config.globalProperties = parentApp.config.globalProperties;\n  const { reload, ...appContext } = parentApp._context;\n  Object.assign(app._context, appContext);\n  return app;\n}\nfunction installPlugins(pluginOpts, pluginList) {\n  pluginList.forEach((Plugin) => {\n    Plugin.install(pluginOpts);\n    Plugin.__installed = true;\n  });\n}\nfunction prepareApp(app, uiOpts, pluginOpts) {\n  app.config.globalProperties.$q = pluginOpts.$q;\n  app.provide(quasarKey, pluginOpts.$q);\n  installPlugins(pluginOpts, autoInstalledPlugins);\n  uiOpts.components !== void 0 && Object.values(uiOpts.components).forEach((c) => {\n    if (isObject(c) === true && c.name !== void 0) {\n      app.component(c.name, c);\n    }\n  });\n  uiOpts.directives !== void 0 && Object.values(uiOpts.directives).forEach((d) => {\n    if (isObject(d) === true && d.name !== void 0) {\n      app.directive(d.name, d);\n    }\n  });\n  uiOpts.plugins !== void 0 && installPlugins(\n    pluginOpts,\n    Object.values(uiOpts.plugins).filter(\n      (p) => typeof p.install === \"function\" && autoInstalledPlugins.includes(p) === false\n    )\n  );\n  if (isRuntimeSsrPreHydration.value === true) {\n    pluginOpts.$q.onSSRHydrated = () => {\n      pluginOpts.onSSRHydrated.forEach((fn) => {\n        fn();\n      });\n      pluginOpts.$q.onSSRHydrated = () => {\n      };\n    };\n  }\n}\nexport default false ? function(parentApp, opts = {}, ssrContext) {\n  const $q = {\n    version: \"2.14.2\",\n    config: opts.config || {}\n  };\n  Object.assign(ssrContext, {\n    $q,\n    _meta: {\n      htmlAttrs: \"\",\n      headTags: \"\",\n      endingHeadTags: \"\",\n      bodyClasses: \"\",\n      bodyAttrs: \"data-server-rendered\",\n      bodyTags: \"\"\n    }\n  });\n  if (ssrContext._modules === void 0) {\n    ssrContext._modules = [];\n  }\n  if (ssrContext.onRendered === void 0) {\n    ssrContext.onRendered = () => {\n    };\n  }\n  parentApp.config.globalProperties.ssrContext = ssrContext;\n  prepareApp(parentApp, opts, {\n    parentApp,\n    $q,\n    lang: opts.lang,\n    iconSet: opts.iconSet,\n    ssrContext\n  });\n} : function(parentApp, opts = {}) {\n  const $q = { version: \"2.14.2\" };\n  if (globalConfigIsFrozen === false) {\n    if (opts.config !== void 0) {\n      Object.assign(globalConfig, opts.config);\n    }\n    $q.config = { ...globalConfig };\n    freezeGlobalConfig();\n  } else {\n    $q.config = opts.config || {};\n  }\n  prepareApp(parentApp, opts, {\n    parentApp,\n    $q,\n    lang: opts.lang,\n    iconSet: opts.iconSet,\n    onSSRHydrated: []\n  });\n};\n",
+      "start": 1703982895987,
+      "end": 1703982895991,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982895991,
+      "end": 1703982895991,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982895991,
+      "end": 1703982895991,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982895991,
+      "end": 1703982895991,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982895991,
+      "end": 1703982895991,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982895996,
+      "end": 1703982895997,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982895997,
+      "end": 1703982895997,
+      "order": "normal"
+    }
+  ]
+}

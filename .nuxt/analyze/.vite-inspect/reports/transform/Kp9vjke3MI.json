@@ -1,0 +1,222 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/popup-edit/QPopupEdit.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, nextTick, getCurrentInstance } from 'vue'\n\nimport QMenu from '../menu/QMenu.js'\nimport QBtn from '../btn/QBtn.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport clone from '../../utils/clone.js'\nimport { isDeepEqual } from '../../utils/is.js'\nimport { injectProp } from '../../utils/private/inject-obj-prop.js'\n\nexport default createComponent({\n  name: 'QPopupEdit',\n\n  props: {\n    modelValue: {\n      required: true\n    },\n    title: String,\n    buttons: Boolean,\n    labelSet: String,\n    labelCancel: String,\n\n    color: {\n      type: String,\n      default: 'primary'\n    },\n    validate: {\n      type: Function,\n      default: () => true\n    },\n\n    autoSave: Boolean,\n\n    /* menu props overrides */\n    cover: {\n      type: Boolean,\n      default: true\n    },\n    /* end of menu props */\n\n    disable: Boolean\n  },\n\n  emits: [\n    'update:modelValue', 'save', 'cancel',\n    'beforeShow', 'show', 'beforeHide', 'hide'\n  ],\n\n  setup (props, { slots, emit }) {\n    const { proxy } = getCurrentInstance()\n    const { $q } = proxy\n\n    const menuRef = ref(null)\n\n    const initialValue = ref('')\n    const currentModel = ref('')\n\n    let validated = false\n\n    const scope = computed(() => {\n      return injectProp({\n        initialValue: initialValue.value,\n        validate: props.validate,\n        set,\n        cancel,\n        updatePosition\n      }, 'value', () => currentModel.value, val => { currentModel.value = val })\n    })\n\n    function set () {\n      if (props.validate(currentModel.value) === false) {\n        return\n      }\n\n      if (hasModelChanged() === true) {\n        emit('save', currentModel.value, initialValue.value)\n        emit('update:modelValue', currentModel.value)\n      }\n\n      closeMenu()\n    }\n\n    function cancel () {\n      if (hasModelChanged() === true) {\n        emit('cancel', currentModel.value, initialValue.value)\n      }\n\n      closeMenu()\n    }\n\n    function updatePosition () {\n      nextTick(() => {\n        menuRef.value.updatePosition()\n      })\n    }\n\n    function hasModelChanged () {\n      return isDeepEqual(currentModel.value, initialValue.value) === false\n    }\n\n    function closeMenu () {\n      validated = true\n      menuRef.value.hide()\n    }\n\n    function onBeforeShow () {\n      validated = false\n      initialValue.value = clone(props.modelValue)\n      currentModel.value = clone(props.modelValue)\n      emit('beforeShow')\n    }\n\n    function onShow () {\n      emit('show')\n    }\n\n    function onBeforeHide () {\n      if (validated === false && hasModelChanged() === true) {\n        if (props.autoSave === true && props.validate(currentModel.value) === true) {\n          emit('save', currentModel.value, initialValue.value)\n          emit('update:modelValue', currentModel.value)\n        }\n        else {\n          emit('cancel', currentModel.value, initialValue.value)\n        }\n      }\n\n      emit('beforeHide')\n    }\n\n    function onHide () {\n      emit('hide')\n    }\n\n    function getContent () {\n      const child = slots.default !== void 0\n        ? [].concat(slots.default(scope.value))\n        : []\n\n      props.title && child.unshift(\n        h('div', { class: 'q-dialog__title q-mt-sm q-mb-sm' }, props.title)\n      )\n\n      props.buttons === true && child.push(\n        h('div', { class: 'q-popup-edit__buttons row justify-center no-wrap' }, [\n          h(QBtn, {\n            flat: true,\n            color: props.color,\n            label: props.labelCancel || $q.lang.label.cancel,\n            onClick: cancel\n          }),\n          h(QBtn, {\n            flat: true,\n            color: props.color,\n            label: props.labelSet || $q.lang.label.set,\n            onClick: set\n          })\n        ])\n      )\n\n      return child\n    }\n\n    // expose public methods\n    Object.assign(proxy, {\n      set,\n      cancel,\n      show (e) { menuRef.value !== null && menuRef.value.show(e) },\n      hide (e) { menuRef.value !== null && menuRef.value.hide(e) },\n      updatePosition\n    })\n\n    return () => {\n      if (props.disable === true) { return }\n\n      return h(QMenu, {\n        ref: menuRef,\n        class: 'q-popup-edit',\n        cover: props.cover,\n        onBeforeShow,\n        onShow,\n        onBeforeHide,\n        onHide,\n        onEscapeKey: cancel\n      }, getContent)\n    }\n  }\n})\n",
+      "start": 1703982896420,
+      "end": 1703982896504,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896504,
+      "end": 1703982896504,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896504,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896505,
+      "end": 1703982896505,
+      "order": "normal"
+    }
+  ]
+}

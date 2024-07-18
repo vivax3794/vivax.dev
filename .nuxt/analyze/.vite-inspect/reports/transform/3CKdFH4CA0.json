@@ -1,0 +1,224 @@
+{
+  "resolvedId": "/home/vivax/coding/vivax.dev/node_modules/quasar/src/components/file/QFile.js",
+  "transforms": [
+    {
+      "name": "vite:load-fallback",
+      "result": "import { h, ref, computed, getCurrentInstance } from 'vue'\n\nimport QChip from '../chip/QChip.js'\n\nimport useField, { useFieldState, useFieldProps, useFieldEmits, fieldValueIsFilled } from '../../composables/private/use-field.js'\nimport { useFormProps, useFormInputNameAttr } from '../../composables/private/use-form.js'\nimport useFile, { useFileProps, useFileEmits } from '../../composables/private/use-file.js'\nimport useFileFormDomProps from '../../composables/private/use-file-dom-props.js'\n\nimport { createComponent } from '../../utils/private/create.js'\nimport { humanStorageSize } from '../../utils/format.js'\nimport { prevent } from '../../utils/event.js'\nimport { injectProp } from '../../utils/private/inject-obj-prop.js'\n\nexport default createComponent({\n  name: 'QFile',\n\n  inheritAttrs: false,\n\n  props: {\n    ...useFieldProps,\n    ...useFormProps,\n    ...useFileProps,\n\n    /* SSR does not know about File & FileList */\n    modelValue: __QUASAR_SSR_SERVER__\n      ? {}\n      : [ File, FileList, Array ],\n\n    append: Boolean,\n    useChips: Boolean,\n    displayValue: [ String, Number ],\n\n    tabindex: {\n      type: [ String, Number ],\n      default: 0\n    },\n\n    counterLabel: Function,\n\n    inputClass: [ Array, String, Object ],\n    inputStyle: [ Array, String, Object ]\n  },\n\n  emits: [\n    ...useFieldEmits,\n    ...useFileEmits\n  ],\n\n  setup (props, { slots, emit, attrs }) {\n    const { proxy } = getCurrentInstance()\n\n    const state = useFieldState()\n\n    const inputRef = ref(null)\n    const dnd = ref(false)\n    const nameProp = useFormInputNameAttr(props)\n\n    const {\n      pickFiles,\n      onDragover,\n      onDragleave,\n      processFiles,\n      getDndNode\n    } = useFile({ editable: state.editable, dnd, getFileInput, addFilesToQueue })\n\n    const formDomProps = useFileFormDomProps(props)\n\n    const innerValue = computed(() => (\n      Object(props.modelValue) === props.modelValue\n        ? ('length' in props.modelValue ? Array.from(props.modelValue) : [ props.modelValue ])\n        : []\n    ))\n\n    const hasValue = computed(() => fieldValueIsFilled(innerValue.value))\n\n    const selectedString = computed(() =>\n      innerValue.value\n        .map(file => file.name)\n        .join(', ')\n    )\n\n    const totalSize = computed(() =>\n      humanStorageSize(\n        innerValue.value.reduce((acc, file) => acc + file.size, 0)\n      )\n    )\n\n    const counterProps = computed(() => ({\n      totalSize: totalSize.value,\n      filesNumber: innerValue.value.length,\n      maxFiles: props.maxFiles\n    }))\n\n    const inputAttrs = computed(() => ({\n      tabindex: -1,\n      type: 'file',\n      title: '', // try to remove default tooltip,\n      accept: props.accept,\n      capture: props.capture,\n      name: nameProp.value,\n      ...attrs,\n      id: state.targetUid.value,\n      disabled: state.editable.value !== true\n    }))\n\n    const fieldClass = computed(() =>\n      'q-file q-field--auto-height'\n      + (dnd.value === true ? ' q-file--dnd' : '')\n    )\n\n    const isAppending = computed(() =>\n      props.multiple === true && props.append === true\n    )\n\n    function removeAtIndex (index) {\n      const files = innerValue.value.slice()\n      files.splice(index, 1)\n      emitValue(files)\n    }\n\n    function removeFile (file) {\n      const index = innerValue.value.indexOf(file)\n      if (index > -1) {\n        removeAtIndex(index)\n      }\n    }\n\n    function emitValue (files) {\n      emit('update:modelValue', props.multiple === true ? files : files[ 0 ])\n    }\n\n    function onKeydown (e) {\n      // prevent form submit if ENTER is pressed\n      e.keyCode === 13 && prevent(e)\n    }\n\n    function onKeyup (e) {\n      // only on ENTER and SPACE to match native input field\n      if (e.keyCode === 13 || e.keyCode === 32) {\n        pickFiles(e)\n      }\n    }\n\n    function getFileInput () {\n      return inputRef.value\n    }\n\n    function addFilesToQueue (e, fileList) {\n      const files = processFiles(e, fileList, innerValue.value, isAppending.value)\n      const fileInput = getFileInput()\n\n      if (fileInput !== void 0 && fileInput !== null) {\n        fileInput.value = ''\n      }\n\n      // if nothing to do...\n      if (files === void 0) { return }\n\n      // protect against input @change being called in a loop\n      // like it happens on Safari, so don't emit same thing:\n      if (\n        props.multiple === true\n          ? props.modelValue && files.every(f => innerValue.value.includes(f))\n          : props.modelValue === files[ 0 ]\n      ) {\n        return\n      }\n\n      emitValue(\n        isAppending.value === true\n          ? innerValue.value.concat(files)\n          : files\n      )\n    }\n\n    function getFiller () {\n      return [\n        h('input', {\n          class: [ props.inputClass, 'q-file__filler' ],\n          style: props.inputStyle\n        })\n      ]\n    }\n\n    function getSelection () {\n      if (slots.file !== void 0) {\n        return innerValue.value.length === 0\n          ? getFiller()\n          : innerValue.value.map(\n            (file, index) => slots.file({ index, file, ref: this })\n          )\n      }\n\n      if (slots.selected !== void 0) {\n        return innerValue.value.length === 0\n          ? getFiller()\n          : slots.selected({ files: innerValue.value, ref: this })\n      }\n\n      if (props.useChips === true) {\n        return innerValue.value.length === 0\n          ? getFiller()\n          : innerValue.value.map((file, i) => h(QChip, {\n            key: 'file-' + i,\n            removable: state.editable.value,\n            dense: true,\n            textColor: props.color,\n            tabindex: props.tabindex,\n            onRemove: () => { removeAtIndex(i) }\n          }, () => h('span', {\n            class: 'ellipsis',\n            textContent: file.name\n          })))\n      }\n\n      const textContent = props.displayValue !== void 0\n        ? props.displayValue\n        : selectedString.value\n\n      return textContent.length !== 0\n        ? [\n            h('div', {\n              class: props.inputClass,\n              style: props.inputStyle,\n              textContent\n            })\n          ]\n        : getFiller()\n    }\n\n    function getInput () {\n      const data = {\n        ref: inputRef,\n        ...inputAttrs.value,\n        ...formDomProps.value,\n        class: 'q-field__input fit absolute-full cursor-pointer',\n        onChange: addFilesToQueue\n      }\n\n      if (props.multiple === true) {\n        data.multiple = true\n      }\n\n      return h('input', data)\n    }\n\n    Object.assign(state, {\n      fieldClass,\n      emitValue,\n      hasValue,\n      inputRef,\n      innerValue,\n\n      floatingLabel: computed(() =>\n        hasValue.value === true\n        || fieldValueIsFilled(props.displayValue)\n      ),\n\n      computedCounter: computed(() => {\n        if (props.counterLabel !== void 0) {\n          return props.counterLabel(counterProps.value)\n        }\n\n        const max = props.maxFiles\n        return `${ innerValue.value.length }${ max !== void 0 ? ' / ' + max : '' } (${ totalSize.value })`\n      }),\n\n      getControlChild: () => getDndNode('file'),\n      getControl: () => {\n        const data = {\n          ref: state.targetRef,\n          class: 'q-field__native row items-center cursor-pointer',\n          tabindex: props.tabindex\n        }\n\n        if (state.editable.value === true) {\n          Object.assign(data, { onDragover, onDragleave, onKeydown, onKeyup })\n        }\n\n        return h('div', data, [ getInput() ].concat(getSelection()))\n      }\n    })\n\n    // expose public methods\n    Object.assign(proxy, {\n      removeAtIndex,\n      removeFile,\n      getNativeElement: () => inputRef.value // deprecated\n    })\n\n    injectProp(proxy, 'nativeEl', () => inputRef.value)\n\n    return useField(state)\n  }\n})\n",
+      "start": 1703982896260,
+      "end": 1703982896347,
+      "sourcemaps": null
+    },
+    {
+      "name": "nuxt:layer-aliasing",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:server-devonly:transform",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "pre"
+    },
+    {
+      "name": "content-slot",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "pre"
+    },
+    {
+      "name": "nuxt:client-fallback-auto-id",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "pre"
+    },
+    {
+      "name": "vite:css",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:esbuild",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:json",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:vue-jsx",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:remove-plugin-metadata",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:chunk-error",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:components:imports",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "replace",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "ssr-styles",
+      "start": 1703982896347,
+      "end": 1703982896347,
+      "order": "normal"
+    },
+    {
+      "name": "vite:define",
+      "result": "import { h, ref, computed, getCurrentInstance } from \"vue\";\nimport QChip from \"../chip/QChip.js\";\nimport useField, { useFieldState, useFieldProps, useFieldEmits, fieldValueIsFilled } from \"../../composables/private/use-field.js\";\nimport { useFormProps, useFormInputNameAttr } from \"../../composables/private/use-form.js\";\nimport useFile, { useFileProps, useFileEmits } from \"../../composables/private/use-file.js\";\nimport useFileFormDomProps from \"../../composables/private/use-file-dom-props.js\";\nimport { createComponent } from \"../../utils/private/create.js\";\nimport { humanStorageSize } from \"../../utils/format.js\";\nimport { prevent } from \"../../utils/event.js\";\nimport { injectProp } from \"../../utils/private/inject-obj-prop.js\";\nexport default createComponent({\n  name: \"QFile\",\n  inheritAttrs: false,\n  props: {\n    ...useFieldProps,\n    ...useFormProps,\n    ...useFileProps,\n    /* SSR does not know about File & FileList */\n    modelValue: false ? {} : [File, FileList, Array],\n    append: Boolean,\n    useChips: Boolean,\n    displayValue: [String, Number],\n    tabindex: {\n      type: [String, Number],\n      default: 0\n    },\n    counterLabel: Function,\n    inputClass: [Array, String, Object],\n    inputStyle: [Array, String, Object]\n  },\n  emits: [\n    ...useFieldEmits,\n    ...useFileEmits\n  ],\n  setup(props, { slots, emit, attrs }) {\n    const { proxy } = getCurrentInstance();\n    const state = useFieldState();\n    const inputRef = ref(null);\n    const dnd = ref(false);\n    const nameProp = useFormInputNameAttr(props);\n    const {\n      pickFiles,\n      onDragover,\n      onDragleave,\n      processFiles,\n      getDndNode\n    } = useFile({ editable: state.editable, dnd, getFileInput, addFilesToQueue });\n    const formDomProps = useFileFormDomProps(props);\n    const innerValue = computed(() => Object(props.modelValue) === props.modelValue ? \"length\" in props.modelValue ? Array.from(props.modelValue) : [props.modelValue] : []);\n    const hasValue = computed(() => fieldValueIsFilled(innerValue.value));\n    const selectedString = computed(\n      () => innerValue.value.map((file) => file.name).join(\", \")\n    );\n    const totalSize = computed(\n      () => humanStorageSize(\n        innerValue.value.reduce((acc, file) => acc + file.size, 0)\n      )\n    );\n    const counterProps = computed(() => ({\n      totalSize: totalSize.value,\n      filesNumber: innerValue.value.length,\n      maxFiles: props.maxFiles\n    }));\n    const inputAttrs = computed(() => ({\n      tabindex: -1,\n      type: \"file\",\n      title: \"\",\n      // try to remove default tooltip,\n      accept: props.accept,\n      capture: props.capture,\n      name: nameProp.value,\n      ...attrs,\n      id: state.targetUid.value,\n      disabled: state.editable.value !== true\n    }));\n    const fieldClass = computed(\n      () => \"q-file q-field--auto-height\" + (dnd.value === true ? \" q-file--dnd\" : \"\")\n    );\n    const isAppending = computed(\n      () => props.multiple === true && props.append === true\n    );\n    function removeAtIndex(index) {\n      const files = innerValue.value.slice();\n      files.splice(index, 1);\n      emitValue(files);\n    }\n    function removeFile(file) {\n      const index = innerValue.value.indexOf(file);\n      if (index > -1) {\n        removeAtIndex(index);\n      }\n    }\n    function emitValue(files) {\n      emit(\"update:modelValue\", props.multiple === true ? files : files[0]);\n    }\n    function onKeydown(e) {\n      e.keyCode === 13 && prevent(e);\n    }\n    function onKeyup(e) {\n      if (e.keyCode === 13 || e.keyCode === 32) {\n        pickFiles(e);\n      }\n    }\n    function getFileInput() {\n      return inputRef.value;\n    }\n    function addFilesToQueue(e, fileList) {\n      const files = processFiles(e, fileList, innerValue.value, isAppending.value);\n      const fileInput = getFileInput();\n      if (fileInput !== void 0 && fileInput !== null) {\n        fileInput.value = \"\";\n      }\n      if (files === void 0) {\n        return;\n      }\n      if (props.multiple === true ? props.modelValue && files.every((f) => innerValue.value.includes(f)) : props.modelValue === files[0]) {\n        return;\n      }\n      emitValue(\n        isAppending.value === true ? innerValue.value.concat(files) : files\n      );\n    }\n    function getFiller() {\n      return [\n        h(\"input\", {\n          class: [props.inputClass, \"q-file__filler\"],\n          style: props.inputStyle\n        })\n      ];\n    }\n    function getSelection() {\n      if (slots.file !== void 0) {\n        return innerValue.value.length === 0 ? getFiller() : innerValue.value.map(\n          (file, index) => slots.file({ index, file, ref: this })\n        );\n      }\n      if (slots.selected !== void 0) {\n        return innerValue.value.length === 0 ? getFiller() : slots.selected({ files: innerValue.value, ref: this });\n      }\n      if (props.useChips === true) {\n        return innerValue.value.length === 0 ? getFiller() : innerValue.value.map((file, i) => h(QChip, {\n          key: \"file-\" + i,\n          removable: state.editable.value,\n          dense: true,\n          textColor: props.color,\n          tabindex: props.tabindex,\n          onRemove: () => {\n            removeAtIndex(i);\n          }\n        }, () => h(\"span\", {\n          class: \"ellipsis\",\n          textContent: file.name\n        })));\n      }\n      const textContent = props.displayValue !== void 0 ? props.displayValue : selectedString.value;\n      return textContent.length !== 0 ? [\n        h(\"div\", {\n          class: props.inputClass,\n          style: props.inputStyle,\n          textContent\n        })\n      ] : getFiller();\n    }\n    function getInput() {\n      const data = {\n        ref: inputRef,\n        ...inputAttrs.value,\n        ...formDomProps.value,\n        class: \"q-field__input fit absolute-full cursor-pointer\",\n        onChange: addFilesToQueue\n      };\n      if (props.multiple === true) {\n        data.multiple = true;\n      }\n      return h(\"input\", data);\n    }\n    Object.assign(state, {\n      fieldClass,\n      emitValue,\n      hasValue,\n      inputRef,\n      innerValue,\n      floatingLabel: computed(\n        () => hasValue.value === true || fieldValueIsFilled(props.displayValue)\n      ),\n      computedCounter: computed(() => {\n        if (props.counterLabel !== void 0) {\n          return props.counterLabel(counterProps.value);\n        }\n        const max = props.maxFiles;\n        return `${innerValue.value.length}${max !== void 0 ? \" / \" + max : \"\"} (${totalSize.value})`;\n      }),\n      getControlChild: () => getDndNode(\"file\"),\n      getControl: () => {\n        const data = {\n          ref: state.targetRef,\n          class: \"q-field__native row items-center cursor-pointer\",\n          tabindex: props.tabindex\n        };\n        if (state.editable.value === true) {\n          Object.assign(data, { onDragover, onDragleave, onKeydown, onKeyup });\n        }\n        return h(\"div\", data, [getInput()].concat(getSelection()));\n      }\n    });\n    Object.assign(proxy, {\n      removeAtIndex,\n      removeFile,\n      getNativeElement: () => inputRef.value\n      // deprecated\n    });\n    injectProp(proxy, \"nativeEl\", () => inputRef.value);\n    return useField(state);\n  }\n});\n",
+      "start": 1703982896347,
+      "end": 1703982896373,
+      "order": "normal",
+      "sourcemaps": null
+    },
+    {
+      "name": "vite:css-post",
+      "start": 1703982896373,
+      "end": 1703982896373,
+      "order": "normal"
+    },
+    {
+      "name": "vite:build-html",
+      "start": 1703982896373,
+      "end": 1703982896373,
+      "order": "normal"
+    },
+    {
+      "name": "vite:worker-import-meta-url",
+      "start": 1703982896373,
+      "end": 1703982896373,
+      "order": "normal"
+    },
+    {
+      "name": "vite:asset-import-meta-url",
+      "start": 1703982896373,
+      "end": 1703982896373,
+      "order": "normal"
+    },
+    {
+      "name": "commonjs",
+      "start": 1703982896375,
+      "end": 1703982896376,
+      "order": "normal"
+    },
+    {
+      "name": "vite:dynamic-import-vars",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "normal"
+    },
+    {
+      "name": "vite:import-glob",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "normal"
+    },
+    {
+      "name": "nuxt:composable-keys",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:imports-transform",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "unctx:transform",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:pages-macros-transform",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:runtime-paths-dep",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "quasar:directive",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:route-injection-plugin",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:components-loader",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "nuxt:tree-shake-composables:transform",
+      "start": 1703982896376,
+      "end": 1703982896376,
+      "order": "post"
+    },
+    {
+      "name": "vite:build-import-analysis",
+      "start": 1703982896376,
+      "end": 1703982896377,
+      "order": "normal"
+    },
+    {
+      "name": "vite:reporter",
+      "start": 1703982896377,
+      "end": 1703982896377,
+      "order": "normal"
+    }
+  ]
+}
