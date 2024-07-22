@@ -1,4 +1,6 @@
-# Logs
+.vite
+
+# Logsgi
 logs
 *.log
 npm-debug.log*
