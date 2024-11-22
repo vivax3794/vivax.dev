@@ -25,10 +25,16 @@ interface Project {
 
 const PROJECTS: Project[] = [
     {
+        title: "Error Mancer",
+        link: "https://crates.io/crates/error_mancer",
+        desc: "A library for creating function specific error enums in rust in a clean and simple way",
+        stats: "Stars: 30+ / Reddit-upvotes: 70+"
+    },
+    {
         title: "ComfyUi-Subnodes",
         link: "https://github.com/vivax3794/ComfyUI-Sub-Nodes",
         desc: "Sub node/graph support for comfyui",
-        stats: "Stars: 100+"
+        stats: "Stars: 140+"
     },
     {
         title: "Spinny jumper",
