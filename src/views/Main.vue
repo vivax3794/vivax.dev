@@ -25,6 +25,12 @@ interface Project {
 
 const PROJECTS: Project[] = [
     {
+        title: "Natrix",
+        link: "https://github.com/vivax3794/natrix",
+        desc: "Rust-First frontend framework",
+        stats: ""
+    },
+    {
         title: "Error Mancer",
         link: "https://crates.io/crates/error_mancer",
         desc: "A library for creating function specific error enums in rust in a clean and simple way",
