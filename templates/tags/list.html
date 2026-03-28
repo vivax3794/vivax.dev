@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Tags — Viv's blog{% endblock title %}
+
+{% block content %}
+<h1>Tags</h1>
+<ul class="tag-list">
+  {% for term in terms %}
+  <li><a class="tag" href="{{ term.permalink | safe }}">{{ term.name }}</a> ({{ term.pages | length }})</li>
+  {% endfor %}
+</ul>
+{% endblock content %}
