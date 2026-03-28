@@ -7,10 +7,10 @@ description = "A journey through skipping work in GitHub Actions."
 tags = ["serpentine", "ci"]
 +++
 
-I have been writing complex integration suits for my projects for a while, the most complex by far being the one for [Natrix](https://github.com/serpent-Tools/natrix), which involves running around 4 different kinds of integration tests, alongside two unit test suits, and a whole range of linters. 
+I have been writing complex integration suites for my projects for a while, the most complex by far being the one for [Natrix](https://github.com/serpent-Tools/natrix), which involves running around 4 different kinds of integration tests, alongside two unit test suites, and a whole range of linters.
 
-And thru all of that I jumped between a few different tools for this, raw github actions, dagger, and eventually writing my own. 
-There were many ergonomics issues and similar with the previous tools that didnt work for my kind of integration tests, but the thing that was ultimately the biggets limiting factor was caching, especially in github runners. 
+And through all of that I jumped between a few different tools for this, raw github actions, dagger, and eventually writing my own.
+There were many ergonomics issues and similar with the previous tools that didn't work for my kind of integration tests, but the thing that was ultimately the biggest limiting factor was caching, especially in github runners.
 
 ## Caching should be invisible.
 
@@ -96,7 +96,7 @@ serpentine run --cache /tmp/serpentine.cache --standalone-cache --ci
 > The reason serpentine's cache isn't portable by default is that it's actually storing most of its data in a [containerd](https://containerd.io/) daemon, what the standalone flag does is instruct serpentine to export this data to the cache file, which on local only runs would be wasted time.
 
 ## So whats the hardest thing in CS?
-Honestly cache invalidation is hard, I wont deny that, but tools keep getting it right, what we do see big tools still fail at is the user facing *cache api design*. Caching is a optimization, and if your optimization requires user collaberation it better be easy and clear what they need to do. `cargo` just asks you to save a target directory, `npm` asks you to save `node_modules`, and `dagger` just asks you to please pay them.
+Honestly cache invalidation is hard, I won't deny that, but tools keep getting it right, what we do see big tools still fail at is the user facing *cache api design*. Caching is an optimization, and if your optimization requires user collaboration it better be easy and clear what they need to do. `cargo` just asks you to save a target directory, `npm` asks you to save `node_modules`, and `dagger` just asks you to please pay them.
 
 # Further reading
 
