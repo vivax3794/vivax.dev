@@ -31,5 +31,37 @@
   </div>
   {{ page.content | safe }}
 </article>
+
+<section class="giscus-container">
+  <script src="https://giscus.app/client.js"
+    data-repo="vivax3794/vivax.dev"
+    data-repo-id="R_kgDOK-8Y7Q"
+    data-category="Comments"
+    data-category-id="DIC_kwDOK-8Y7c4C5o8P"
+    data-mapping="og:title"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-lang="en"
+    data-loading="lazy"
+    crossorigin="anonymous"
+    async>
+  </script>
+  <script>
+    function giscusTheme() {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "catppuccin_mocha"
+        : "catppuccin_latte";
+    }
+    document.querySelector(".giscus-container script").setAttribute("data-theme", giscusTheme());
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      document.querySelector("iframe.giscus-frame")?.contentWindow.postMessage(
+        { giscus: { setConfig: { theme: giscusTheme() } } }, "https://giscus.app"
+      );
+    });
+  </script>
+</section>
+
 <a class="back-link" href="/">&larr; back to posts</a>
 {% endblock content %}
