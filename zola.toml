@@ -1,11 +1,16 @@
 # The URL the site will be built for
 base_url = "https://vivax.dev"
+title = "Viv's blog"
+description = "Viv's blog about software engineering"
 
 # Whether to automatically compile all Sass files in the sass directory
 compile_sass = true
 
 # Whether to build a search index to be used later on by a JavaScript library
 build_search_index = false
+
+generate_feeds = true
+feed_filenames = ["rss.xml"]
 
 taxonomies = [
   {name = "tags"},

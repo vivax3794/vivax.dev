@@ -7,17 +7,17 @@
   <title>{% block title %}Viv's blog{% endblock title %}</title>
   <link rel="stylesheet" href="/style.css">
   <link rel="human-json" href="/human.json">
+  <link rel="alternate" type="application/rss+xml" title="Viv's blog RSS" href="/rss.xml">
   <meta property="og:site_name" content="Viv's blog">
   {% block head %}{% endblock head %}
 </head>
 
 <body>
   <header class="site-header">
-    <a href="/">viv's blog</a>
+    <a href="/" id="site-title">viv's blog</a>
     <nav>
       <a href="https://github.com/vivax3794/vivax.dev">Source Code</a>
       <a href="/ai/">AI Declaration</a>
-      <a href="/privacy/">privacy-policy</a>
     </nav>
   </header>
   <main>
@@ -25,6 +25,11 @@
   </main>
   <footer class="site-footer">
     Blog content &copy; 2026 Viv, licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0</a>.
+
+    <nav>
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/rss.xml/">RSS feed</a>
+    </nav>
   </footer>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
