@@ -16,7 +16,7 @@
   <header class="site-header">
     <a href="/" id="site-title">viv's blog</a>
     <nav>
-      <a href="https://github.com/vivax3794/vivax.dev">Source Code</a>
+      <a href="/about/">About/Contact</a>
       <a href="/ai/">AI Declaration</a>
     </nav>
   </header>
@@ -29,11 +29,78 @@
     <nav>
       <a href="/privacy/">Privacy Policy</a>
       <a href="/rss.xml/">RSS feed</a>
+      <a href="https://github.com/vivax3794/vivax.dev">Source Code</a>
     </nav>
   </footer>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true });
+    const darkMedia = window.matchMedia("(prefers-color-scheme: dark)");
+    const themes = {
+      light: {
+        theme: "base",
+        themeVariables: {
+          background: "#fafaf9",
+          primaryColor: "#e8e5fc",
+          primaryTextColor: "#1c1917",
+          primaryBorderColor: "#4f46e5",
+          secondaryColor: "#f5f5f4",
+          secondaryTextColor: "#1c1917",
+          secondaryBorderColor: "#e7e5e4",
+          tertiaryColor: "#f5f5f4",
+          tertiaryTextColor: "#1c1917",
+          tertiaryBorderColor: "#e7e5e4",
+          lineColor: "#78716c",
+          textColor: "#1c1917",
+          mainBkg: "#e8e5fc",
+          nodeBorder: "#4f46e5",
+          clusterBkg: "#f5f5f4",
+          clusterBorder: "#e7e5e4",
+          titleColor: "#1c1917",
+          edgeLabelBackground: "#fafaf9",
+        },
+      },
+      dark: {
+        theme: "base",
+        themeVariables: {
+          background: "#1e1e2e",
+          primaryColor: "#2a2b4a",
+          primaryTextColor: "#cdd6f4",
+          primaryBorderColor: "#89b4fa",
+          secondaryColor: "#313244",
+          secondaryTextColor: "#cdd6f4",
+          secondaryBorderColor: "#45475a",
+          tertiaryColor: "#313244",
+          tertiaryTextColor: "#cdd6f4",
+          tertiaryBorderColor: "#45475a",
+          lineColor: "#a6adc8",
+          textColor: "#cdd6f4",
+          mainBkg: "#2a2b4a",
+          nodeBorder: "#89b4fa",
+          clusterBkg: "#313244",
+          clusterBorder: "#45475a",
+          titleColor: "#cdd6f4",
+          edgeLabelBackground: "#1e1e2e",
+        },
+      },
+    };
+    function mermaidConfig() {
+      return { startOnLoad: false, ...themes[darkMedia.matches ? "dark" : "light"] };
+    }
+    document.querySelectorAll(".mermaid").forEach(el => {
+      el.setAttribute("data-mermaid-src", el.textContent);
+    });
+    mermaid.initialize(mermaidConfig());
+    await mermaid.run({ querySelector: ".mermaid" });
+    darkMedia.addEventListener("change", async () => {
+      mermaid.initialize(mermaidConfig());
+      const els = document.querySelectorAll(".mermaid");
+      for (let i = 0; i < els.length; i++) {
+        const el = els[i];
+        const src = el.getAttribute("data-mermaid-src");
+        const { svg } = await mermaid.render(`mermaid-rerender-${i}`, src);
+        el.innerHTML = svg;
+      }
+    });
   </script>
 </body>
 

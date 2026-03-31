@@ -92,7 +92,7 @@ By default serpentine stores a *non-portable* cache in the platforms default cac
 serpentine run --cache /tmp/serpentine.cache --standalone-cache --ci
 ```
 
-> [!TIP]
+> [!NOTE]
 > The reason serpentine's cache isn't portable by default is that it's actually storing most of its data in a [containerd](https://containerd.io/) daemon, what the standalone flag does is instruct serpentine to export this data to the cache file, which on local only runs would be wasted time.
 
 ## So whats the hardest thing in CS?
