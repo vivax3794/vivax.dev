@@ -5,7 +5,9 @@ template = "page.html"
 
 This site is hosted on [Cloudflare Pages](https://pages.cloudflare.com/).
 Cloudflare processes request metadata (such as IP addresses) to deliver this site.
-No cookies or client-side tracking are used by this site itself.
+
+Cloudflare may set cookies (such as `cf_clearance`) for bot protection and security purposes.
+No additional cookies or client-side tracking are used by this site.
 
 For details on how Cloudflare handles data, see their [Privacy Policy](https://www.cloudflare.com/privacypolicy).
 
