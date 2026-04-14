@@ -49,17 +49,29 @@
     async>
   </script>
   <script>
+    function isDark() {
+      var t = document.documentElement.getAttribute('data-theme');
+      if (t === 'dark') return true;
+      if (t === 'light') return false;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
     function giscusTheme() {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "catppuccin_mocha"
-        : "catppuccin_latte";
+      return isDark() ? "catppuccin_mocha" : "catppuccin_latte";
+    }
+    function updateGiscus() {
+      var frame = document.querySelector("iframe.giscus-frame");
+      if (frame) {
+        frame.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: giscusTheme() } } }, "https://giscus.app"
+        );
+      }
     }
     document.querySelector(".giscus-container script").setAttribute("data-theme", giscusTheme());
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-      document.querySelector("iframe.giscus-frame")?.contentWindow.postMessage(
-        { giscus: { setConfig: { theme: giscusTheme() } } }, "https://giscus.app"
-      );
-    });
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateGiscus);
+    new MutationObserver(updateGiscus).observe(
+      document.documentElement,
+      { attributes: true, attributeFilter: ['data-theme'] }
+    );
   </script>
 </section>
 
