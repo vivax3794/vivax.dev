@@ -13,5 +13,5 @@ On this blog I'll mainly write various technical write ups and mini rants (I wil
 * **itch.io:** [vivax](https://vivax.itch.io/)
 * **Twitch:** [vivax_dev](https://www.twitch.tv/vivax_dev)
 * **Discord:** `vivax.dev`
-* **Email:** [vivax3794@pm.me](mailto:vivax3794@pm.me)
+* **Email:** [contact@vivax.dev](mailto:contact@vivax.dev)
 
