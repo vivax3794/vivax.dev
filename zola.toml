@@ -18,6 +18,7 @@ taxonomies = [
 
 [markdown]
 github_alerts = true
+bottom_footnotes = true
 
 [markdown.highlighting]
 theme = "catppuccin-mocha"

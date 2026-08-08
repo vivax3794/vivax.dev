@@ -62,6 +62,28 @@ struct Foo {
 }
 ```
 
+# Shell
+
+{% shell() %}
+~/coding/blog 
+❯ zola build --drafts
+Building site...
+Done in 102ms.
+
+~/coding/blog 
+❯ eza -lh --total-size --git
+Permissions Size User Date Modified Git Name
+.rw-r--r--   525 viv  19 Jun 06:02 -- zola.toml
+drwxr-xr-x     - viv  19 Jun 06:02 -- content
+{% end %}
+
+# Footnotes
+
+Windows and Unix disagree on path separators.[^sep] This trips up many libraries.[^libs] Some text after the references to show where the definitions land.
+
+[^sep]: Windows uses `\`, Unix uses `/`. See the [Wikipedia article](https://en.wikipedia.org/wiki/Path_(computing)).
+[^libs]: Even the standard library doesn't *fully* abstract it.
+
 # Tabels 
 
 | Normal | Left aligned | Right Aligned | Centered |

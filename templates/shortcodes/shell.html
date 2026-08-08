@@ -1,0 +1,20 @@
+{%- set lines = body | trim_end | split(pat="
+") -%}
+<pre class="shell"><code>{% for line in lines -%}
+{%- if line is starting_with("❯") -%}
+{%- set cmd = line | trim_start_matches(pat="❯") | trim_start -%}
+{%- set words = cmd | split(pat=" ") -%}
+<span class="sh-prompt">❯</span> {% for w in words -%}
+{%- if w == "" %}{% elif loop.first -%}<span class="sh-program">{{ w }}</span>
+{%- elif w is starting_with("-") -%}<span class="sh-flag">{{ w }}</span>
+{%- else -%}<span class="sh-arg">{{ w }}</span>
+{%- endif -%}
+{%- if not loop.last %} {% endif -%}
+{%- endfor %}
+{% elif not loop.last and lines[loop.index] is starting_with("❯") -%}
+<span class="sh-path">{{ line | trim_end }}</span>
+{% else -%}
+<span class="sh-output">{{ line }}</span>
+{% endif -%}
+{%- endfor -%}
+</code></pre>

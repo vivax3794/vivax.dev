@@ -6,6 +6,13 @@
   --accent: #89b4fa;
   --accent-hover: #b4d0fb;
   --border: #45475a;
+
+  --sh-path: #a6e3a1;
+  --sh-prompt: #f5c2e7;
+  --sh-program: #89b4fa;
+  --sh-flag: #f9e2af;
+  --sh-arg: #cdd6f4;
+  --sh-output: #a6adc8;
 }
 
 :root {
@@ -19,6 +26,13 @@
   --accent: #4f46e5;
   --accent-hover: #4338ca;
   --border: #e7e5e4;
+
+  --sh-path: #15803d;
+  --sh-prompt: #c026d3;
+  --sh-program: #4f46e5;
+  --sh-flag: #b45309;
+  --sh-arg: #1c1917;
+  --sh-output: #78716c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -216,6 +230,15 @@ article {
     line-height: 1.6;
   }
 
+  // Syntect-highlighted blocks carry an inline dark background equal to the
+  // dark-mode page colour, so they vanish into the page. Override it with a
+  // distinct surface + border so they read as cards, like the shell snippet.
+  // They stay dark in both themes since the token colours are tuned for it.
+  pre[style] {
+    background-color: #313244 !important;
+    border: 1px solid var(--border);
+  }
+
   code {
     font-family: var(--font-mono);
   }
@@ -236,6 +259,53 @@ article {
     border: none;
     border-top: 1px solid var(--border);
     margin: 2rem 0;
+  }
+
+  sup.footnote-reference a {
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0 0.1rem;
+  }
+
+  .footnotes {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+
+    &::before {
+      content: "Notes";
+      display: block;
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .footnotes-list {
+      padding-left: 1.25rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      scroll-margin-top: 1rem;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+
+      p {
+        margin-bottom: 0;
+      }
+
+      &:target {
+        background: var(--bg-secondary);
+        border-radius: 0.25rem;
+        box-shadow: 0 0 0 0.3rem var(--bg-secondary);
+      }
+    }
+
+    a {
+      word-break: break-word;
+    }
   }
 
   table {
@@ -388,5 +458,23 @@ pre.mermaid {
   background: transparent;
   text-align: center;
   border: 1px solid var(--border);
+}
+
+// Shell snippets
+
+pre.shell {
+  border: 1px solid var(--border);
+
+  code {
+    font-family: var(--font-mono);
+    color: var(--sh-output);
+  }
+
+  .sh-path { color: var(--sh-path); }
+  .sh-prompt { color: var(--sh-prompt); font-weight: 600; }
+  .sh-program { color: var(--sh-program); font-weight: 600; }
+  .sh-flag { color: var(--sh-flag); }
+  .sh-arg { color: var(--sh-arg); }
+  .sh-output { color: var(--sh-output); }
 }
 
