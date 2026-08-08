@@ -77,6 +77,51 @@ Permissions Size User Date Modified Git Name
 drwxr-xr-x     - viv  19 Jun 06:02 -- content
 {% end %}
 
+# Tabbed code
+
+{% tabs() %}
+@tab Python
+```python
+from pathlib import Path
+
+p = Path("foo") / "bar.txt"
+print(p)
+```
+@tab Rust
+```rust
+use std::path::Path;
+
+let p = Path::new("foo").join("bar.txt");
+println!("{}", p.display());
+```
+@tab Shell
+```bash
+ls foo/bar.txt
+```
+{% end %}
+
+And the same block but with prose and multiple elements inside a tab:
+
+{% tabs() %}
+@tab Python
+Python uses `pathlib` for this. It handles separators for you:
+
+```python
+from pathlib import Path
+p = Path("foo") / "bar.txt"
+```
+
+> Note: `/` is overloaded as the join operator here.
+@tab Rust
+Rust's `std::path` is similar, but explicit:
+
+```rust
+let p = Path::new("foo").join("bar.txt");
+```
+
+The `Path` type is borrowed; `PathBuf` is the owned version.
+{% end %}
+
 # Footnotes
 
 Windows and Unix disagree on path separators.[^sep] This trips up many libraries.[^libs] Some text after the references to show where the definitions land.

@@ -1,0 +1,23 @@
+{%- set blocks = body | split(pat="@tab ") -%}
+<div class="tabs">
+{%- set_global tab_first = true -%}
+{%- for block in blocks -%}
+{%- if block | trim != "" -%}
+{%- set name = block | split(pat="
+") | first | trim -%}
+<input type="radio" name="tabs-{{ nth }}" id="tab-{{ nth }}-{{ loop.index }}"{% if tab_first %} checked{% endif %}>
+<label for="tab-{{ nth }}-{{ loop.index }}">{{ name }}</label>
+{%- set_global tab_first = false -%}
+{%- endif -%}
+{%- endfor -%}
+<div class="tab-panels">
+{%- for block in blocks -%}
+{%- if block | trim != "" -%}
+{%- set content = block | split(pat="
+") | slice(start=1) | join(sep="
+") -%}
+<div class="tab-panel">{{ content | markdown | safe }}</div>
+{%- endif -%}
+{%- endfor -%}
+</div>
+</div>
